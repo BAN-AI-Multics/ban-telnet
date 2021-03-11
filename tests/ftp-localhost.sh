@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+# 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -33,6 +34,14 @@
 #
 #    OpenBSD uses /etc/services directly, not via /etc/nsswitch.conf.
 
+# Influential shell variables:
+#
+#   TARGET	IPv4 address for tests.  Defaults to 127.0.0.1.
+#   TARGET6	IPv6 address for tests.  Defaults to ::1.
+#   TARGET46	IPv4-mapped-IPv6 address.  Defaults to ::ffff:127.0.0.1.
+#   VERBOSE	Whenever defined, test runs in verbose mode.
+#   LOGGING	When defined, let `ftpd' do system logging.
+#
 # FIXME: Better test coverage!
 #
 # Implemented: anonymous-only in inetd-mode.
@@ -114,7 +123,12 @@ if [ $VERBOSE ]; then
     $INETD --version | $SED '1q'
 fi
 
-if [ `func_id_uid` != 0 ]; then
+if test "$TEST_IPV4" = "no" && test "$TEST_IPV6" = "no"; then
+    echo >&2 "Inet socket testing is disabled.  Skipping test."
+    exit 77
+fi
+
+if test `func_id_uid` != 0; then
     echo "ftpd needs to run as root" >&2
     exit 77
 fi
@@ -248,35 +262,47 @@ if test -z "$PORT"; then
     fi
 fi
 
-cat <<EOT > "$TMPDIR/inetd.conf"
-$PORT stream tcp4 nowait $USER $PWD/$FTPD ftpd -A -l
-EOT
+# Create an empty configuration file for inetd.
+: > "$TMPDIR/inetd.conf" 2>/dev/null ||
+    {
+	echo 'Failed at writing configuration for Inetd.  Skipping test.' >&2
+	exit 77
+    }
+
+test "$TEST_IPV4" = "no" ||
+    cat <<-EOT > "$TMPDIR/inetd.conf"
+	$PORT stream tcp4 nowait $USER $PWD/$FTPD ftpd -A ${LOGGING+"-l"}
+	EOT
 
 test "$TEST_IPV6" = "no" ||
-    cat <<EOT >> "$TMPDIR/inetd.conf"
-$PORT stream tcp6 nowait $USER $PWD/$FTPD ftpd -A -l
-EOT
+    cat <<-EOT >> "$TMPDIR/inetd.conf"
+	$PORT stream tcp6 nowait $USER $PWD/$FTPD ftpd -A ${LOGGING+"-l"}
+	EOT
 
-if test $? -ne 0; then
-    echo 'Failed at writing configuration for Inetd.  Skipping test.' >&2
-    exit 77
-fi
+: > "$TMPDIR/.netrc" 2>/dev/null ||
+    {
+	echo 'Failed at writing access file ".netrc".  Skipping test.' >&2
+	exit 77
+    }
 
-cat <<EOT > "$TMPDIR/.netrc"
-machine $TARGET login $FTPUSER password foobar
-EOT
+if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+    cat <<-EOT >> "$TMPDIR/.netrc"
+	machine $TARGET login $FTPUSER password foobar
+	EOT
+fi # TEST_IPV4 && TARGET
 
-if test $? -ne 0; then
-    echo 'Failed at writing access file ".netrc".  Skipping test.' >&2
-    exit 77
-fi
-
-if test "$TEST_IPV6" != "no"; then
+if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
     cat <<-EOT >> "$TMPDIR/.netrc"
 	machine $TARGET6 login $FTPUSER password foobar
+	EOT
+fi # TEST_IPV6 && TARGET6
+
+if test "$TEST_IPV4" != "no" && test "$TEST_IPV6" != "no" &&
+   test -n "$TARGET46"; then
+    cat <<-EOT >> "$TMPDIR/.netrc"
 	machine $TARGET46 login $FTPUSER password foobar
 	EOT
-fi
+fi # TEST_IPV4 && TEST_IPV6 && TARGET46
 
 chmod 600 "$TMPDIR/.netrc"
 
@@ -338,142 +364,147 @@ test_report () {
     fi
 }
 
-# Test a passive connection: PASV and IPv4.
-#
-echo "PASV to $TARGET (IPv4) using inetd."
-cat <<STOP |
-rstatus
-dir
-`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
-STOP
-HOME=$TMPDIR $FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+    # Test a passive connection: PASV and IPv4.
+    #
+    echo "PASV to $TARGET (IPv4) using inetd."
+    cat <<-STOP |
+	rstatus
+	dir
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
+	STOP
+    HOME=$TMPDIR \
+	$FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
 
-test_report $? "$TMPDIR/ftp.stdout" "PASV/$TARGET"
+    test_report $? "$TMPDIR/ftp.stdout" "PASV/$TARGET"
 
-$do_transfer && \
-    if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
-	test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
-	date "+%s" >> "$TMPDIR/$GETME"
-    else
-	echo >&2 'Binary transfer failed.'
-	exit 1
-    fi
+    $do_transfer && {
+	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
+	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
+	    date "+%s" >> "$TMPDIR/$GETME"
+	else
+	    echo >&2 'Binary transfer failed.'
+	    exit 1
+	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
 
-# Test an active connection: PORT and IPv4.
-#
-echo "PORT to $TARGET (IPv4) using inetd."
-cat <<STOP |
-rstatus
-dir
-`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
-STOP
-HOME=$TMPDIR $FTP "$TARGET" $PORT -4 -v -t >$TMPDIR/ftp.stdout 2>&1
+    # Test an active connection: PORT and IPv4.
+    #
+    echo "PORT to $TARGET (IPv4) using inetd."
+    cat <<-STOP |
+	rstatus
+	dir
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
+	STOP
+    HOME=$TMPDIR \
+	$FTP "$TARGET" $PORT -4 -v -t >$TMPDIR/ftp.stdout 2>&1
 
-test_report $? "$TMPDIR/ftp.stdout" "PORT/$TARGET"
+    test_report $? "$TMPDIR/ftp.stdout" "PORT/$TARGET"
 
-$do_transfer && \
-    if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
-	test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
-	date "+%s" >> "$TMPDIR/$GETME"
-    else
-	echo >&2 'Binary transfer failed.'
-	exit 1
-    fi
+    $do_transfer && {
+	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
+	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
+	    date "+%s" >> "$TMPDIR/$GETME"
+	else
+	    echo >&2 'Binary transfer failed.'
+	    exit 1
+	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
 
-# Test a passive connection: EPSV and IPv4.
-#
-echo "EPSV to $TARGET (IPv4) using inetd."
-cat <<STOP |
-rstatus
-epsv4
-dir
-STOP
-HOME=$TMPDIR $FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+    # Test a passive connection: EPSV and IPv4.
+    #
+    echo "EPSV to $TARGET (IPv4) using inetd."
+    cat <<-STOP |
+	rstatus
+	epsv4
+	dir
+	STOP
+    HOME=$TMPDIR \
+	$FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
 
-test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET"
+    test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET"
 
-# Test a passive connection: EPSV and IPv4.
-#
-# Set NETRC in environment to regulate login.
-#
-echo "EPSV to $TARGET (IPv4) using inetd, setting NETRC."
-cat <<STOP |
-rstatus
-epsv4
-dir
-`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
-STOP
+    # Test a passive connection: EPSV and IPv4.
+    #
+    # Set NETRC in environment to regulate login.
+    #
+    echo "EPSV to $TARGET (IPv4) using inetd, setting NETRC."
+    cat <<-STOP |
+	rstatus
+	epsv4
+	dir
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
+	STOP
+    NETRC=$TMPDIR/.netrc \
+	$FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
 
-NETRC=$TMPDIR/.netrc \
-  $FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+    test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET with NETRC"
 
-test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET with NETRC"
+    $do_transfer && {
+	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
+	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
+	    date "+%s" >> "$TMPDIR/$GETME"
+	else
+	    echo >&2 'Binary transfer failed.'
+	    exit 1
+	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
 
-$do_transfer && \
-    if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
-	test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
-	date "+%s" >> "$TMPDIR/$GETME"
-    else
-	echo >&2 'Binary transfer failed.'
-	exit 1
-    fi
+    # Test an active connection: EPRT and IPv4.
+    #
+    echo "EPRT to $TARGET (IPv4) using inetd."
+    cat <<-STOP |
+	rstatus
+	epsv4
+	dir
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
+	STOP
+    HOME=$TMPDIR \
+	$FTP "$TARGET" $PORT -4 -v -t >$TMPDIR/ftp.stdout 2>&1
 
-# Test an active connection: EPRT and IPv4.
-#
-echo "EPRT to $TARGET (IPv4) using inetd."
-cat <<STOP |
-rstatus
-epsv4
-dir
-`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
-STOP
-HOME=$TMPDIR $FTP "$TARGET" $PORT -4 -v -t >$TMPDIR/ftp.stdout 2>&1
+    test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET"
 
-test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET"
+    $do_transfer && {
+	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
+	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
+	    date "+%s" >> "$TMPDIR/$GETME"
+	else
+	    echo >&2 'Binary transfer failed.'
+	    exit 1
+	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
 
-$do_transfer && \
-    if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
-	test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
-	date "+%s" >> "$TMPDIR/$GETME"
-    else
-	echo >&2 'Binary transfer failed.'
-	exit 1
-    fi
+    # Test an active connection: EPRT and IPv4.
+    #
+    # Use `-N' to set location of .netrc file.
+    #
+    echo "EPRT to $TARGET (IPv4) using inetd, apply the switch -N."
+    cat <<-STOP |
+	rstatus
+	epsv4
+	dir
+	STOP
+    $FTP "$TARGET" $PORT -N"$TMPDIR/.netrc" -4 -v -t >$TMPDIR/ftp.stdout 2>&1
 
-# Test an active connection: EPRT and IPv4.
-#
-# Use `-N' to set location of .netrc file.
-#
-echo "EPRT to $TARGET (IPv4) using inetd, apply the switch -N."
-cat <<STOP |
-rstatus
-epsv4
-dir
-STOP
+    test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET"
 
-$FTP "$TARGET" $PORT -N"$TMPDIR/.netrc" -4 -v -t >$TMPDIR/ftp.stdout 2>&1
-
-test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET"
+fi # TEST_IPV4 && TARGET
 
 if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
     # Test a passive connection: EPSV and IPv6.
@@ -483,9 +514,39 @@ if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
 	rstatus
 	dir
 	STOP
-    HOME=$TMPDIR $FTP "$TARGET6" $PORT -6 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+    HOME=$TMPDIR \
+	$FTP "$TARGET6" $PORT -6 -v -p -t >$TMPDIR/ftp.stdout 2>&1
 
     test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET6"
+
+    # Test a passive connection: EPSV and IPv6.
+    #
+    # Set NETRC in environment to regulate login.
+    #
+    echo "EPSV to $TARGET6 (IPv6) using inetd, setting NETRC."
+    cat <<-STOP |
+	rstatus
+	dir
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
+	STOP
+    NETRC=$TMPDIR/.netrc \
+	$FTP "$TARGET6" $PORT -6 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+
+    test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET6 with NETRC"
+
+    $do_transfer && {
+	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
+	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
+	    date "+%s" >> "$TMPDIR/$GETME"
+	else
+	    echo >&2 'Binary transfer failed.'
+	    exit 1
+	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
 
     # Test an active connection: EPRT and IPv6.
     #
@@ -493,31 +554,46 @@ if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
     cat <<-STOP |
 	rstatus
 	dir
-	`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-	`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
 	STOP
-    HOME=$TMPDIR $FTP "$TARGET6" $PORT -6 -v -t >$TMPDIR/ftp.stdout 2>&1
+    HOME=$TMPDIR \
+	$FTP "$TARGET6" $PORT -6 -v -t >$TMPDIR/ftp.stdout 2>&1
 
     test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET6"
 
-    $do_transfer && \
-    if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
-	test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
-	date "+%s" >> "$TMPDIR/$GETME"
-    else
-	echo >&2 'Binary transfer failed.'
-	exit 1
-    fi
-fi # TEST_IPV6
+    $do_transfer && {
+	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
+	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
+	    date "+%s" >> "$TMPDIR/$GETME"
+	else
+	    echo >&2 'Binary transfer failed.'
+	    exit 1
+	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
+
+    # Test an active connection: EPRT and IPv6.
+    #
+    # Use `-N' to set location of .netrc file.
+    #
+    echo "EPRT to $TARGET6 (IPv6) using inetd, apply the switch -N."
+    cat <<-STOP |
+	rstatus
+	dir
+	STOP
+    $FTP "$TARGET6" $PORT -N"$TMPDIR/.netrc" -6 -v -t >$TMPDIR/ftp.stdout 2>&1
+
+    test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET6"
+
+fi # TEST_IPV6 && TARGET6
 
 # Availability of IPv4-mapped IPv6 addresses.
 #
 # These are impossible on OpenBSD, so a flexible test
-# is implemented using sysctl(1) as tool.
+# is implemented using sysctl(8) as tool.
 
 # Helpers tp catch relevant execution path.
 have_sysctl=false
@@ -531,8 +607,12 @@ test `uname -s` = 'SunOS' && have_address_mapping=true
 if $have_address_mapping; then
     :
 else
-    # Do we have sysctl(1) available?
-    if sysctl -a >/dev/null 2>&1; then
+    # Do we have sysctl(8) available?
+    # It need not be present with the default search path,
+    # so locally augment PATH!
+    SYSCTL=`PATH="$PATH":/usr/sbin:/sbin command -v sysctl`
+
+    if test -n "$SYSCTL"; then
 	have_sysctl=true
     else
 	echo "Warning: Not testing IPv4-mapped addresses." >&2
@@ -548,7 +628,7 @@ elif $have_sysctl; then
     # or
     #    net.inet6.ip6.v6only (BSD).
     #
-    value_v6only=`sysctl -a 2>/dev/null | $GREP v6only`
+    value_v6only=`$SYSCTL -a 2>/dev/null | $GREP v6only || true`
     if test -n "$value_v6only"; then
 	value_v6only=`echo $value_v6only | $SED 's/^.*[=:] *//'`
 	if test "$value_v6only" -eq 0; then
@@ -567,26 +647,25 @@ fi
 
 # Test functionality of IPv4-mapped IPv6 addresses.
 #
-if $have_address_mapping && test -n "$TARGET46" &&
-   test "$TEST_IPV6" != "no"; then
+if test "$TEST_IPV4" != "no" &&test "$TEST_IPV6" != "no" &&
+   test -n "$TARGET46" && $have_address_mapping ; then
     # Test a passive connection: EPSV and IPv4-mapped-IPv6.
     #
     echo "EPSV to $TARGET46 (IPv4-as-IPv6) using inetd."
     cat <<-STOP |
 	rstatus
 	dir
-	`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-	`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
 	STOP
-    HOME=$TMPDIR $FTP "$TARGET46" $PORT -6 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+    HOME=$TMPDIR \
+	$FTP "$TARGET46" $PORT -6 -v -p -t >$TMPDIR/ftp.stdout 2>&1
 
     test_report $? "$TMPDIR/ftp.stdout" "EPSV/$TARGET46"
 
-    $do_transfer && \
+    $do_transfer && {
 	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
 	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
 	    date "+%s" >> "$TMPDIR/$GETME"
@@ -594,40 +673,43 @@ put $GETME $PUTME"`
 	    echo >&2 'Binary transfer failed.'
 	    exit 1
 	fi
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
 
-    # Test an active connection: EPRT and IPvIPv6.
+    # Test an active connection: EPRT and IPv4-mapped-IPv6.
     #
     echo "EPRT to $TARGET46 (IPv4-as-IPv6) using inetd."
     cat <<-STOP |
 	rstatus
 	dir
-	`$do_transfer && test -n "$DLDIR" && echo "\
-cd $DLDIR"`
-	`$do_transfer && echo "\
-lcd $TMPDIR
-image
-put $GETME $PUTME"`
+	`$do_transfer && test -n "$DLDIR" && echo "cd $DLDIR"`
+	`$do_transfer && echo "lcd $TMPDIR
+	image
+	put $GETME $PUTME"`
 	STOP
-    HOME=$TMPDIR $FTP "$TARGET46" $PORT -6 -v -t >$TMPDIR/ftp.stdout 2>&1
+    HOME=$TMPDIR \
+	$FTP "$TARGET46" $PORT -6 -v -t >$TMPDIR/ftp.stdout 2>&1
 
     test_report $? "$TMPDIR/ftp.stdout" "EPRT/$TARGET46"
 
-    $do_transfer && \
+    $do_transfer && {
 	if cmp -s "$TMPDIR/$GETME" "$FTPHOME$DLDIR/$PUTME"; then
 	    test "${VERBOSE+yes}" && echo >&2 'Binary transfer succeeded.'
 	else
 	    echo >&2 'Binary transfer failed.'
 	    exit 1
 	fi
-else
+	rm -f "$FTPHOME$DLDIR/$PUTME"
+    }
+elif test "$TEST_IPV4" != "no" || test "$TEST_IPV6" != "no"; then
     # The IPv4-as-IPv6 tests were not performed.
     echo 'Skipping two tests of IPv4 mapped as IPv6.'
-fi # have_address_mapping && TEST_IPV6
+fi # TEST_IPV4 && TEST_IPV6 && TARGET46 && have_address_mapping
 
 # Test name mapping with PASV and IPv4.
 # Needs a writable destination!
 #
-if $do_transfer; then
+if test "$TEST_IPV4" != "no" && test -n "$TARGET" && $do_transfer; then
     echo "Name mapping test at $TARGET (IPv4) using inetd."
 
     cat <<-STOP |
@@ -639,7 +721,8 @@ if $do_transfer; then
 	nmap \$1.\$2.\$3 [\$3,copy].\$1.\$2
 	put $GETME
 	STOP
-    HOME=$TMPDIR $FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+    HOME=$TMPDIR \
+	$FTP "$TARGET" $PORT -4 -v -p -t >$TMPDIR/ftp.stdout 2>&1
 
     sIFS=$IFS
     IFS=.
@@ -662,6 +745,47 @@ if $do_transfer; then
 	rm -f $FTPHOME$DLDIR/$2.$1 $FTPHOME$DLDIR/copy.$GETME
 	exit 1
     fi
-fi
+fi # TEST_IPV4 && TARGET && do_transfer
+
+# Test name mapping with EPSV and IPv6.
+# Needs a writable destination!
+#
+if test "$TEST_IPV6" != "no" && test -n "$TARGET6" && $do_transfer; then
+    echo "Name mapping test at $TARGET6 (IPv6) using inetd."
+
+    cat <<-STOP |
+	`test -z "$DLDIR" || echo "cd $DLDIR"`
+	lcd $TMPDIR
+	image
+	nmap \$1.\$2 \$2.\$1
+	put $GETME
+	nmap \$1.\$2.\$3 [\$3,decoy].\$1.\$2
+	put $GETME
+	STOP
+    HOME=$TMPDIR \
+	$FTP "$TARGET6" $PORT -6 -v -p -t >$TMPDIR/ftp.stdout 2>&1
+
+    sIFS=$IFS
+    IFS=.
+    set -- $GETME
+    IFS=$sIFS
+
+    # Are the expected file copies present?
+
+    if test -s $FTPHOME$DLDIR/$2.$1 && \
+	test -s $FTPHOME$DLDIR/decoy.$GETME
+    then
+	test "${VERBOSE+yes}" && echo >&2 'Name mapping succeeded.'
+	rm -f $FTPHOME$DLDIR/$2.$1 $FTPHOME$DLDIR/decoy.$GETME
+    else
+	echo >&2 'Binary transfer failed.'
+	test -s $FTPHOME$DLDIR/$2.$1 || \
+	    echo >&2 'Mapping "nmap $1.$2 $2.$1" failed.'
+	test -s $FTPHOME$DLDIR/copy.$GETME || \
+	    echo >&2 'Mapping "nmap $1.$2.$3 [$3,decoy].$1.$2" failed.'
+	rm -f $FTPHOME$DLDIR/$2.$1 $FTPHOME$DLDIR/decoy.$GETME
+	exit 1
+    fi
+fi # TEST_IPV6 && TARGET6 && do_transfer
 
 exit 0

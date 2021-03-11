@@ -1,6 +1,7 @@
 /*
-  Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-  2013, 2014, 2015 Free Software Foundation, Inc.
+  Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
+  2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software
+  Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -45,7 +46,9 @@
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif
-#ifdef HAVE_IDNA_H
+#if defined HAVE_IDN2_H && defined HAVE_IDN2
+# include <idn2.h>
+#elif defined HAVE_IDNA_H
 # include <idna.h>
 #endif
 
@@ -160,6 +163,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'i':
       options |= OPT_INTERVAL;
       interval = ping_cvt_number (arg, 0, 0);
+      interval *= PING_PRECISION;
+      if (!is_root && interval < PING_MIN_USER_INTERVAL)
+	error (EXIT_FAILURE, 0, "option value too small: %s", arg);
       break;
 
     case 'l':
@@ -215,6 +221,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing host operand");
 
+      /* FALLTHROUGH */
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -252,7 +259,8 @@ main (int argc, char **argv)
   setsockopt (ping->ping_fd, SOL_SOCKET, SO_BROADCAST, (char *) &one, sizeof (one));
 
   /* Reset root privileges */
-  setuid (getuid ());
+  if (setuid (getuid ()) != 0)
+    error (EXIT_FAILURE, errno, "setuid");
 
   /* Force line buffering regardless of output device.  */
   setvbuf (stdout, NULL, _IOLBF, 0);
@@ -655,7 +663,7 @@ print_dst_unreach (struct icmp6_hdr *icmp6)
 static void
 print_packet_too_big (struct icmp6_hdr *icmp6)
 {
-  printf ("Packet too big, mtu=%d\n", icmp6->icmp6_mtu);
+  printf ("Packet too big, mtu=%u\n", icmp6->icmp6_mtu);
 }
 
 static struct icmp_code_descr icmp_time_exceeded_desc[] = {
@@ -998,18 +1006,19 @@ ping_recv (PING * p)
 }
 
 static int
-ping_set_dest (PING * ping, char *host)
+ping_set_dest (PING * ping, const char *host)
 {
   int err;
   struct addrinfo *result, hints;
   char *rhost;
 
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   err = idna_to_ascii_lz (host, &rhost, 0);
   if (err)
     return 1;
-#else /* !HAVE_IDN */
-  rhost = host;
+  host = rhost;
+#else /* !HAVE_IDN && !HAVE_IDN2 */
+  rhost = NULL;
 #endif
 
   memset (&hints, 0, sizeof (hints));
@@ -1022,19 +1031,22 @@ ping_set_dest (PING * ping, char *host)
   hints.ai_flags |= AI_CANONIDN;
 #endif
 
-  err = getaddrinfo (rhost, NULL, &hints, &result);
+  err = getaddrinfo (host, NULL, &hints, &result);
   if (err)
-    return 1;
+    {
+      free (rhost);
+      return 1;
+    }
 
   memcpy (&ping->ping_dest.ping_sockaddr6, result->ai_addr, result->ai_addrlen);
 
   if (result->ai_canonname)
     ping->ping_hostname = strdup (result->ai_canonname);
   else
-    ping->ping_hostname = strdup (rhost);
-
-#if HAVE_IDN
-  free (rhost);
+#if defined HAVE_IDN || defined HAVE_IDN2
+    ping->ping_hostname = host;
+#else
+  ping->ping_hostname = strdup (host);
 #endif
   freeaddrinfo (result);
 

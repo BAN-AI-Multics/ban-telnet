@@ -1,6 +1,6 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-# 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-# Foundation, Inc.
+# 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+# 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -58,7 +58,7 @@
 .as	whois.nic.as
 .at	whois.ripe.net
 .net.au	whois.connect.com.au
-.au	whois.aunic.net
+.au	whois.auda.org.au
 #.aw			# NIC? www.setarnet.aw
 #.az	NONE		# NIC? http://www.az/ www.domain.az
 .ba	NONE		# http://www.utic.net.ba
@@ -81,7 +81,7 @@
 #.bw			# NIC? www.botsnet.bw
 #.by	NONE		# NIC? http://unibel.by www.open.by
 .bz	NONE		# http://www.psg.com/dns/bz/
-.ca	whois.cdnnet.ca
+.ca	whois.cira.ca
 .cc	whois.nic.cc
 .cd	WEB http://www.nic.cd/database/cd/
 #.cf	NONE		# NIC? http://www.socatel.intnet.cf

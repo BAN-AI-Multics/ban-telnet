@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -75,7 +76,9 @@
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif
-#ifdef HAVE_IDNA_H
+#if defined HAVE_IDN2_H && defined HAVE_IDN2
+# include <idn2.h>
+#elif defined HAVE_IDNA_H
 # include <idna.h>
 #endif
 
@@ -236,7 +239,7 @@ set_port (struct sockaddr_storage *ss, in_port_t port)
 }
 
 void recvfile (int, char *, char *);
-void send_file (int, char *, char *);
+void tftp_sendfile (int, char *, char *);
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
@@ -315,14 +318,14 @@ resolve_name (char *name)
   struct sockaddr_storage ss;
   struct addrinfo hints, *ai, *aiptr;
 
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   err = idna_to_ascii_lz (name, &rname, 0);
   if (err)
     {
       fprintf (stderr, "tftp: %s: %s\n", name, idna_strerror (err));
       return RESOLVE_FAIL;
     }
-#else /* !HAVE_IDN */
+#else /* !HAVE_IDN && !HAVE_IDN2 */
   rname = name;
 #endif
 
@@ -344,7 +347,7 @@ resolve_name (char *name)
       return RESOLVE_FAIL;
     }
 
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   free (rname);
 #endif
 
@@ -614,7 +617,7 @@ put (int argc, char *argv[])
       if (verbose)
 	printf ("putting %s to %s:%s [%s]\n", cp, hostname, targ, mode);
       set_port (&peeraddr, port);
-      send_file (fd, targ, mode);
+      tftp_sendfile (fd, targ, mode);
       return;
     }
   /* this assumes the target is a directory */
@@ -634,7 +637,7 @@ put (int argc, char *argv[])
       if (verbose)
 	printf ("putting %s to %s:%s [%s]\n", argv[n], hostname, targ, mode);
       set_port (&peeraddr, port);
-      send_file (fd, targ, mode);
+      tftp_sendfile (fd, targ, mode);
     }
 }
 
@@ -980,7 +983,7 @@ setverbose (int argc _GL_UNUSED_PARAMETER, char *argv[] _GL_UNUSED_PARAMETER)
  * Send the requested file.
  */
 void
-send_file (int fd, char *name, char *mode)
+tftp_sendfile (int fd, char *name, char *mode)
 {
   register struct tftphdr *ap;	/* data and ack packets */
   struct tftphdr *r_init (void), *dp;
@@ -1296,8 +1299,8 @@ nak (int error)
       pe->e_msg = strerror (error - 100);
       tp->th_code = EUNDEF;
     }
-  strcpy (tp->th_msg, pe->e_msg);
   length = strlen (pe->e_msg) + 4;
+  memcpy (tp->th_msg, pe->e_msg, length - 3);
   if (trace)
     tpacket ("sent", tp, length);
   if (sendto (f, ackbuf, length, 0, (struct sockaddr *) &peeraddr,

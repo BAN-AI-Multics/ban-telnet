@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.3.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2019 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,11 +41,14 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
+
 /* Identify Bison output.  */
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.4"
+#define YYBISON_VERSION "3.3.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -61,8 +65,8 @@
 
 
 
-/* Copy the first part of user declarations.  */
-#line 72 "ftpcmd.y" /* yacc.c:339  */
+/* First part of user prologue.  */
+#line 73 "ftpcmd.y" /* yacc.c:337  */
 
 
 #include <config.h>
@@ -133,13 +137,16 @@ static int yylex          (void);
 static void yyerror       (const char *s);
 
 
-#line 137 "ftpcmd.c" /* yacc.c:339  */
-
+#line 141 "ftpcmd.c" /* yacc.c:337  */
 # ifndef YY_NULLPTR
-#  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULLPTR nullptr
+#  if defined __cplusplus
+#   if 201103L <= __cplusplus
+#    define YY_NULLPTR nullptr
+#   else
+#    define YY_NULLPTR 0
+#   endif
 #  else
-#   define YY_NULLPTR 0
+#   define YY_NULLPTR ((void*)0)
 #  endif
 # endif
 
@@ -330,12 +337,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 143 "ftpcmd.y" /* yacc.c:355  */
+#line 144 "ftpcmd.y" /* yacc.c:352  */
 
 	intmax_t i;
 	char   *s;
 
-#line 339 "ftpcmd.c" /* yacc.c:355  */
+#line 346 "ftpcmd.c" /* yacc.c:352  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -350,9 +357,7 @@ int yyparse (void);
 
 
 
-/* Copy the second part of user declarations.  */
 
-#line 356 "ftpcmd.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -373,13 +378,13 @@ typedef signed char yytype_int8;
 #ifdef YYTYPE_UINT16
 typedef YYTYPE_UINT16 yytype_uint16;
 #else
-typedef unsigned short int yytype_uint16;
+typedef unsigned short yytype_uint16;
 #endif
 
 #ifdef YYTYPE_INT16
 typedef YYTYPE_INT16 yytype_int16;
 #else
-typedef short int yytype_int16;
+typedef short yytype_int16;
 #endif
 
 #ifndef YYSIZE_T
@@ -391,7 +396,7 @@ typedef short int yytype_int16;
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
-#  define YYSIZE_T unsigned int
+#  define YYSIZE_T unsigned
 # endif
 #endif
 
@@ -427,15 +432,6 @@ typedef short int yytype_int16;
 # define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
 #endif
 
-#if !defined _Noreturn \
-     && (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112)
-# if defined _MSC_VER && 1200 <= _MSC_VER
-#  define _Noreturn __declspec (noreturn)
-# else
-#  define _Noreturn YY_ATTRIBUTE ((__noreturn__))
-# endif
-#endif
-
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
 # define YYUSE(E) ((void) (E))
@@ -443,7 +439,7 @@ typedef short int yytype_int16;
 # define YYUSE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
+#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
 # define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
     _Pragma ("GCC diagnostic push") \
@@ -605,16 +601,16 @@ union yyalloc
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  290
 
-/* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
-   by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   335
 
+/* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
+   as returned by yylex, with out-of-bounds checking.  */
 #define YYTRANSLATE(YYX)                                                \
-  ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+  ((unsigned) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
-   as returned by yylex, without out-of-bounds checking.  */
+   as returned by yylex.  */
 static const yytype_uint8 yytranslate[] =
 {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -657,15 +653,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   186,   186,   188,   194,   198,   203,   209,   248,   253,
-     291,   303,   315,   319,   323,   329,   335,   341,   346,   352,
-     357,   363,   369,   373,   379,   394,   398,   403,   409,   413,
-     431,   435,   441,   447,   452,   457,   470,   482,   489,   497,
-     501,   506,   517,   533,   547,   553,   571,   577,   621,   636,
-     664,   815,   820,   835,   876,   882,   887,   893,   908,   920,
-     925,   928,   932,   936,   949,   953,   957,  1006,  1068,  1137,
-    1141,  1145,  1152,  1157,  1162,  1167,  1172,  1176,  1181,  1187,
-    1195,  1199,  1203,  1210,  1214,  1218,  1225,  1266,  1270,  1299
+       0,   187,   187,   189,   195,   199,   204,   210,   249,   254,
+     292,   304,   316,   320,   324,   330,   336,   342,   347,   353,
+     358,   364,   370,   374,   380,   395,   399,   404,   410,   414,
+     432,   436,   442,   448,   453,   458,   471,   483,   490,   498,
+     502,   507,   518,   534,   548,   554,   572,   578,   622,   637,
+     665,   816,   821,   836,   877,   883,   888,   894,   909,   921,
+     926,   929,   933,   937,   950,   954,   958,  1007,  1069,  1138,
+    1142,  1146,  1153,  1158,  1163,  1168,  1173,  1177,  1182,  1188,
+    1196,  1200,  1204,  1211,  1215,  1219,  1226,  1267,  1271,  1300
 };
 #endif
 
@@ -953,22 +949,22 @@ static const yytype_uint8 yyr2[] =
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)                                  \
-do                                                              \
-  if (yychar == YYEMPTY)                                        \
-    {                                                           \
-      yychar = (Token);                                         \
-      yylval = (Value);                                         \
-      YYPOPSTACK (yylen);                                       \
-      yystate = *yyssp;                                         \
-      goto yybackup;                                            \
-    }                                                           \
-  else                                                          \
-    {                                                           \
-      yyerror (YY_("syntax error: cannot back up")); \
-      YYERROR;                                                  \
-    }                                                           \
-while (0)
+#define YYBACKUP(Token, Value)                                    \
+  do                                                              \
+    if (yychar == YYEMPTY)                                        \
+      {                                                           \
+        yychar = (Token);                                         \
+        yylval = (Value);                                         \
+        YYPOPSTACK (yylen);                                       \
+        yystate = *yyssp;                                         \
+        goto yybackup;                                            \
+      }                                                           \
+    else                                                          \
+      {                                                           \
+        yyerror (YY_("syntax error: cannot back up")); \
+        YYERROR;                                                  \
+      }                                                           \
+  while (0)
 
 /* Error token number */
 #define YYTERROR        1
@@ -1008,37 +1004,37 @@ do {                                                                      \
 } while (0)
 
 
-/*----------------------------------------.
-| Print this symbol's value on YYOUTPUT.  |
-`----------------------------------------*/
+/*-----------------------------------.
+| Print this symbol's value on YYO.  |
+`-----------------------------------*/
 
 static void
-yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
 {
-  FILE *yyo = yyoutput;
-  YYUSE (yyo);
+  FILE *yyoutput = yyo;
+  YYUSE (yyoutput);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
   if (yytype < YYNTOKENS)
-    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+    YYPRINT (yyo, yytoknum[yytype], *yyvaluep);
 # endif
   YYUSE (yytype);
 }
 
 
-/*--------------------------------.
-| Print this symbol on YYOUTPUT.  |
-`--------------------------------*/
+/*---------------------------.
+| Print this symbol on YYO.  |
+`---------------------------*/
 
 static void
-yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep)
 {
-  YYFPRINTF (yyoutput, "%s %s (",
+  YYFPRINTF (yyo, "%s %s (",
              yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
 
-  yy_symbol_value_print (yyoutput, yytype, yyvaluep);
-  YYFPRINTF (yyoutput, ")");
+  yy_symbol_value_print (yyo, yytype, yyvaluep);
+  YYFPRINTF (yyo, ")");
 }
 
 /*------------------------------------------------------------------.
@@ -1072,7 +1068,7 @@ do {                                                            \
 static void
 yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)
 {
-  unsigned long int yylno = yyrline[yyrule];
+  unsigned long yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
   YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
@@ -1083,7 +1079,7 @@ yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
                        yystos[yyssp[yyi + 1 - yynrhs]],
-                       &(yyvsp[(yyi + 1) - (yynrhs)])
+                       &yyvsp[(yyi + 1) - (yynrhs)]
                                               );
       YYFPRINTF (stderr, "\n");
     }
@@ -1187,7 +1183,10 @@ yytnamerr (char *yyres, const char *yystr)
           case '\\':
             if (*++yyp != '\\')
               goto do_not_strip_quotes;
-            /* Fall through.  */
+            else
+              goto append;
+
+          append:
           default:
             if (yyres)
               yyres[yyn] = *yyp;
@@ -1205,7 +1204,7 @@ yytnamerr (char *yyres, const char *yystr)
   if (! yyres)
     return yystrlen (yystr);
 
-  return yystpcpy (yyres, yystr) - yyres;
+  return (YYSIZE_T) (yystpcpy (yyres, yystr) - yyres);
 }
 # endif
 
@@ -1283,10 +1282,10 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                 yyarg[yycount++] = yytname[yyx];
                 {
                   YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
-                  if (! (yysize <= yysize1
-                         && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
+                  if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
+                    yysize = yysize1;
+                  else
                     return 2;
-                  yysize = yysize1;
                 }
               }
         }
@@ -1298,6 +1297,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
       case N:                               \
         yyformat = S;                       \
       break
+    default: /* Avoid compiler warnings. */
       YYCASE_(0, YY_("syntax error"));
       YYCASE_(1, YY_("syntax error, unexpected %s"));
       YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
@@ -1309,9 +1309,10 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
 
   {
     YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
-    if (! (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
+    if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
+      yysize = yysize1;
+    else
       return 2;
-    yysize = yysize1;
   }
 
   if (*yymsg_alloc < yysize)
@@ -1437,23 +1438,31 @@ yyparse (void)
   yychar = YYEMPTY; /* Cause a token to be read.  */
   goto yysetstate;
 
+
 /*------------------------------------------------------------.
-| yynewstate -- Push a new state, which is found in yystate.  |
+| yynewstate -- push a new state, which is found in yystate.  |
 `------------------------------------------------------------*/
- yynewstate:
+yynewstate:
   /* In all cases, when you get here, the value and location stacks
      have just been pushed.  So pushing a state here evens the stacks.  */
   yyssp++;
 
- yysetstate:
-  *yyssp = yystate;
+
+/*--------------------------------------------------------------------.
+| yynewstate -- set current state (the top of the stack) to yystate.  |
+`--------------------------------------------------------------------*/
+yysetstate:
+  *yyssp = (yytype_int16) yystate;
 
   if (yyss + yystacksize - 1 <= yyssp)
+#if !defined yyoverflow && !defined YYSTACK_RELOCATE
+    goto yyexhaustedlab;
+#else
     {
       /* Get the current used size of the three stacks, in elements.  */
-      YYSIZE_T yysize = yyssp - yyss + 1;
+      YYSIZE_T yysize = (YYSIZE_T) (yyssp - yyss + 1);
 
-#ifdef yyoverflow
+# if defined yyoverflow
       {
         /* Give user a chance to reallocate the stack.  Use copies of
            these so that the &'s don't force the real ones into
@@ -1469,14 +1478,10 @@ yyparse (void)
                     &yyss1, yysize * sizeof (*yyssp),
                     &yyvs1, yysize * sizeof (*yyvsp),
                     &yystacksize);
-
         yyss = yyss1;
         yyvs = yyvs1;
       }
-#else /* no yyoverflow */
-# ifndef YYSTACK_RELOCATE
-      goto yyexhaustedlab;
-# else
+# else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
         goto yyexhaustedlab;
@@ -1492,22 +1497,22 @@ yyparse (void)
           goto yyexhaustedlab;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
-#  undef YYSTACK_RELOCATE
+# undef YYSTACK_RELOCATE
         if (yyss1 != yyssa)
           YYSTACK_FREE (yyss1);
       }
 # endif
-#endif /* no yyoverflow */
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long int) yystacksize));
+                  (unsigned long) yystacksize));
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
     }
+#endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
 
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
@@ -1516,11 +1521,11 @@ yyparse (void)
 
   goto yybackup;
 
+
 /*-----------.
 | yybackup.  |
 `-----------*/
 yybackup:
-
   /* Do appropriate processing given the current state.  Read a
      lookahead token if we need one and don't already have one.  */
 
@@ -1593,7 +1598,7 @@ yydefault:
 
 
 /*-----------------------------.
-| yyreduce -- Do a reduction.  |
+| yyreduce -- do a reduction.  |
 `-----------------------------*/
 yyreduce:
   /* yyn is the number of a rule to reduce with.  */
@@ -1614,36 +1619,36 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 189 "ftpcmd.y" /* yacc.c:1646  */
+#line 190 "ftpcmd.y" /* yacc.c:1652  */
     {
 			free (fromname);
 			fromname = (char *) 0;
 			restart_point = (off_t) 0;
 		}
-#line 1624 "ftpcmd.c" /* yacc.c:1646  */
+#line 1629 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 5:
-#line 199 "ftpcmd.y" /* yacc.c:1646  */
+#line 200 "ftpcmd.y" /* yacc.c:1652  */
     {
 			user ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1633 "ftpcmd.c" /* yacc.c:1646  */
+#line 1638 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 6:
-#line 204 "ftpcmd.y" /* yacc.c:1646  */
+#line 205 "ftpcmd.y" /* yacc.c:1652  */
     {
 			pass ((yyvsp[-1].s));
 			memset ((yyvsp[-1].s), 0, strlen ((yyvsp[-1].s)));
 			free ((yyvsp[-1].s));
 		}
-#line 1643 "ftpcmd.c" /* yacc.c:1646  */
+#line 1648 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 7:
-#line 210 "ftpcmd.y" /* yacc.c:1646  */
+#line 211 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -1682,20 +1687,20 @@ yyreduce:
 			      }
 			  }
 		}
-#line 1686 "ftpcmd.c" /* yacc.c:1646  */
+#line 1691 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 8:
-#line 249 "ftpcmd.y" /* yacc.c:1646  */
+#line 250 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  passive (PASSIVE_PASV, AF_INET);
 		}
-#line 1695 "ftpcmd.c" /* yacc.c:1646  */
+#line 1700 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 9:
-#line 254 "ftpcmd.y" /* yacc.c:1646  */
+#line 255 "ftpcmd.y" /* yacc.c:1652  */
     {
 			switch (cmd_type)
 			  {
@@ -1733,11 +1738,11 @@ yyreduce:
 #endif /* NBBY == 8 */
 			  }
 		}
-#line 1737 "ftpcmd.c" /* yacc.c:1646  */
+#line 1742 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 10:
-#line 292 "ftpcmd.y" /* yacc.c:1646  */
+#line 293 "ftpcmd.y" /* yacc.c:1652  */
     {
 			switch ((yyvsp[-1].i))
 			  {
@@ -1749,11 +1754,11 @@ yyreduce:
 			    reply (504, "Unimplemented STRU type.");
 			  }
 		}
-#line 1753 "ftpcmd.c" /* yacc.c:1646  */
+#line 1758 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 11:
-#line 304 "ftpcmd.y" /* yacc.c:1646  */
+#line 305 "ftpcmd.y" /* yacc.c:1652  */
     {
 			switch ((yyvsp[-1].i))
 			  {
@@ -1765,123 +1770,123 @@ yyreduce:
 			    reply (502, "Unimplemented MODE type.");
 			  }
 		}
-#line 1769 "ftpcmd.c" /* yacc.c:1646  */
+#line 1774 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 12:
-#line 316 "ftpcmd.y" /* yacc.c:1646  */
+#line 317 "ftpcmd.y" /* yacc.c:1652  */
     {
 			reply (202, "ALLO command ignored.");
 		}
-#line 1777 "ftpcmd.c" /* yacc.c:1646  */
+#line 1782 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 13:
-#line 320 "ftpcmd.y" /* yacc.c:1646  */
+#line 321 "ftpcmd.y" /* yacc.c:1652  */
     {
 			reply (202, "ALLO command ignored.");
 		}
-#line 1785 "ftpcmd.c" /* yacc.c:1646  */
+#line 1790 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 14:
-#line 324 "ftpcmd.y" /* yacc.c:1646  */
+#line 325 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  retrieve ((char *) 0, (yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1795 "ftpcmd.c" /* yacc.c:1646  */
+#line 1800 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 15:
-#line 330 "ftpcmd.y" /* yacc.c:1646  */
+#line 331 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  store ((yyvsp[-1].s), "w", 0);
 			free ((yyvsp[-1].s));
 		}
-#line 1805 "ftpcmd.c" /* yacc.c:1646  */
+#line 1810 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 16:
-#line 336 "ftpcmd.y" /* yacc.c:1646  */
+#line 337 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  store ((yyvsp[-1].s), "a", 0);
 			free ((yyvsp[-1].s));
 		}
-#line 1815 "ftpcmd.c" /* yacc.c:1646  */
+#line 1820 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 17:
-#line 342 "ftpcmd.y" /* yacc.c:1646  */
+#line 343 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  send_file_list (".");
 		}
-#line 1824 "ftpcmd.c" /* yacc.c:1646  */
+#line 1829 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 18:
-#line 347 "ftpcmd.y" /* yacc.c:1646  */
+#line 348 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  send_file_list ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1834 "ftpcmd.c" /* yacc.c:1646  */
+#line 1839 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 19:
-#line 353 "ftpcmd.y" /* yacc.c:1646  */
+#line 354 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  retrieve ("/bin/ls -lgA", "");
 		}
-#line 1843 "ftpcmd.c" /* yacc.c:1646  */
+#line 1848 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 20:
-#line 358 "ftpcmd.y" /* yacc.c:1646  */
+#line 359 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  retrieve ("/bin/ls -lgA %s", (yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1853 "ftpcmd.c" /* yacc.c:1646  */
+#line 1858 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 21:
-#line 364 "ftpcmd.y" /* yacc.c:1646  */
+#line 365 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  statfilecmd ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1863 "ftpcmd.c" /* yacc.c:1646  */
+#line 1868 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 22:
-#line 370 "ftpcmd.y" /* yacc.c:1646  */
+#line 371 "ftpcmd.y" /* yacc.c:1652  */
     {
 			statcmd ();
 		}
-#line 1871 "ftpcmd.c" /* yacc.c:1646  */
+#line 1876 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 23:
-#line 374 "ftpcmd.y" /* yacc.c:1646  */
+#line 375 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  delete ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1881 "ftpcmd.c" /* yacc.c:1646  */
+#line 1886 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 24:
-#line 380 "ftpcmd.y" /* yacc.c:1646  */
+#line 381 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -1896,46 +1901,46 @@ yyreduce:
 			  }
 			free ((yyvsp[-1].s));
 		}
-#line 1900 "ftpcmd.c" /* yacc.c:1646  */
+#line 1905 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 25:
-#line 395 "ftpcmd.y" /* yacc.c:1646  */
+#line 396 "ftpcmd.y" /* yacc.c:1652  */
     {
 			reply (225, "ABOR command successful.");
 		}
-#line 1908 "ftpcmd.c" /* yacc.c:1646  */
+#line 1913 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 26:
-#line 399 "ftpcmd.y" /* yacc.c:1646  */
+#line 400 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  cwd (cred.homedir);
 		}
-#line 1917 "ftpcmd.c" /* yacc.c:1646  */
+#line 1922 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 27:
-#line 404 "ftpcmd.y" /* yacc.c:1646  */
+#line 405 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  cwd ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1927 "ftpcmd.c" /* yacc.c:1646  */
+#line 1932 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 28:
-#line 410 "ftpcmd.y" /* yacc.c:1646  */
+#line 411 "ftpcmd.y" /* yacc.c:1652  */
     {
 			help (cmdtab, (char *) 0);
 		}
-#line 1935 "ftpcmd.c" /* yacc.c:1646  */
+#line 1940 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 29:
-#line 414 "ftpcmd.y" /* yacc.c:1646  */
+#line 415 "ftpcmd.y" /* yacc.c:1652  */
     {
 			char *cp = (yyvsp[-1].s);
 
@@ -1953,57 +1958,57 @@ yyreduce:
 			  help (cmdtab, (yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1957 "ftpcmd.c" /* yacc.c:1646  */
+#line 1962 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 30:
-#line 432 "ftpcmd.y" /* yacc.c:1646  */
+#line 433 "ftpcmd.y" /* yacc.c:1652  */
     {
 			reply (200, "NOOP command successful.");
 		}
-#line 1965 "ftpcmd.c" /* yacc.c:1646  */
+#line 1970 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 31:
-#line 436 "ftpcmd.y" /* yacc.c:1646  */
+#line 437 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  makedir ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1975 "ftpcmd.c" /* yacc.c:1646  */
+#line 1980 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 32:
-#line 442 "ftpcmd.y" /* yacc.c:1646  */
+#line 443 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  removedir ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 1985 "ftpcmd.c" /* yacc.c:1646  */
+#line 1990 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 33:
-#line 448 "ftpcmd.y" /* yacc.c:1646  */
+#line 449 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  pwd ();
 		}
-#line 1994 "ftpcmd.c" /* yacc.c:1646  */
+#line 1999 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 34:
-#line 453 "ftpcmd.y" /* yacc.c:1646  */
+#line 454 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  cwd ("..");
 		}
-#line 2003 "ftpcmd.c" /* yacc.c:1646  */
+#line 2008 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 35:
-#line 458 "ftpcmd.y" /* yacc.c:1646  */
+#line 459 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  {
@@ -2015,11 +2020,11 @@ yyreduce:
 			    reply (211, "End");
 			  }
 		}
-#line 2019 "ftpcmd.c" /* yacc.c:1646  */
+#line 2024 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 36:
-#line 471 "ftpcmd.y" /* yacc.c:1646  */
+#line 472 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -2027,22 +2032,22 @@ yyreduce:
 			    free ((yyvsp[-1].s));
 			  }
 		}
-#line 2031 "ftpcmd.c" /* yacc.c:1646  */
+#line 2036 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 37:
-#line 483 "ftpcmd.y" /* yacc.c:1646  */
+#line 484 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  {
 			    reply (501, "Must have an argument.");
 			  }
 		}
-#line 2042 "ftpcmd.c" /* yacc.c:1646  */
+#line 2047 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 38:
-#line 490 "ftpcmd.y" /* yacc.c:1646  */
+#line 491 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -2050,28 +2055,28 @@ yyreduce:
 			    free ((yyvsp[-1].s));
 			  }
 		}
-#line 2054 "ftpcmd.c" /* yacc.c:1646  */
+#line 2059 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 39:
-#line 498 "ftpcmd.y" /* yacc.c:1646  */
+#line 499 "ftpcmd.y" /* yacc.c:1652  */
     {
 			help (sitetab, (char *) 0);
 		}
-#line 2062 "ftpcmd.c" /* yacc.c:1646  */
+#line 2067 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 40:
-#line 502 "ftpcmd.y" /* yacc.c:1646  */
+#line 503 "ftpcmd.y" /* yacc.c:1652  */
     {
 			help (sitetab, (yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 2071 "ftpcmd.c" /* yacc.c:1646  */
+#line 2076 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 41:
-#line 507 "ftpcmd.y" /* yacc.c:1646  */
+#line 508 "ftpcmd.y" /* yacc.c:1652  */
     {
 			int oldmask;
 
@@ -2082,11 +2087,11 @@ yyreduce:
 			    reply (200, "Current UMASK is %03o", oldmask);
 			  }
 		}
-#line 2086 "ftpcmd.c" /* yacc.c:1646  */
+#line 2091 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 42:
-#line 518 "ftpcmd.y" /* yacc.c:1646  */
+#line 519 "ftpcmd.y" /* yacc.c:1652  */
     {
 			int oldmask;
 
@@ -2102,11 +2107,11 @@ yyreduce:
 			      }
 			  }
 		}
-#line 2106 "ftpcmd.c" /* yacc.c:1646  */
+#line 2111 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 43:
-#line 534 "ftpcmd.y" /* yacc.c:1646  */
+#line 535 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-5].i) && ((yyvsp[-1].s) != NULL))
 			  {
@@ -2120,21 +2125,21 @@ yyreduce:
 			  }
 			free ((yyvsp[-1].s));
 		}
-#line 2124 "ftpcmd.c" /* yacc.c:1646  */
+#line 2129 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 44:
-#line 548 "ftpcmd.y" /* yacc.c:1646  */
+#line 549 "ftpcmd.y" /* yacc.c:1652  */
     {
 			reply (200,
 			       "Current IDLE time limit is %d seconds; max %d",
 			       timeout, maxtimeout);
 		}
-#line 2134 "ftpcmd.c" /* yacc.c:1646  */
+#line 2139 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 45:
-#line 554 "ftpcmd.y" /* yacc.c:1646  */
+#line 555 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -2152,21 +2157,21 @@ yyreduce:
 			      }
 			  }
 		}
-#line 2156 "ftpcmd.c" /* yacc.c:1646  */
+#line 2161 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 46:
-#line 572 "ftpcmd.y" /* yacc.c:1646  */
+#line 573 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  store ((yyvsp[-1].s), "w", 1);
 			free ((yyvsp[-1].s));
 		}
-#line 2166 "ftpcmd.c" /* yacc.c:1646  */
+#line 2171 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 47:
-#line 578 "ftpcmd.y" /* yacc.c:1646  */
+#line 579 "ftpcmd.y" /* yacc.c:1652  */
     {
 		        const char *sys_type; /* Official rfc-defined os type.  */
 			char *version = 0; /* A more specific type. */
@@ -2203,21 +2208,21 @@ yyreduce:
 			free (version);
 #endif
 		}
-#line 2207 "ftpcmd.c" /* yacc.c:1646  */
+#line 2212 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 48:
-#line 622 "ftpcmd.y" /* yacc.c:1646  */
+#line 623 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  sizecmd ((yyvsp[-1].s));
 			free ((yyvsp[-1].s));
 		}
-#line 2217 "ftpcmd.c" /* yacc.c:1646  */
+#line 2222 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 49:
-#line 637 "ftpcmd.y" /* yacc.c:1646  */
+#line 638 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i) && (yyvsp[-1].s) != NULL)
 			  {
@@ -2241,11 +2246,11 @@ yyreduce:
 			  }
 			free ((yyvsp[-1].s));
 		}
-#line 2245 "ftpcmd.c" /* yacc.c:1646  */
+#line 2250 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 50:
-#line 665 "ftpcmd.y" /* yacc.c:1646  */
+#line 666 "ftpcmd.y" /* yacc.c:1652  */
     {
 			usedefault = 0;
 			if (pdata >= 0)
@@ -2392,20 +2397,20 @@ yyreduce:
 			   */
 			  reply (500, "Illegal EPRT Command");
 		}
-#line 2396 "ftpcmd.c" /* yacc.c:1646  */
+#line 2401 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 51:
-#line 816 "ftpcmd.y" /* yacc.c:1646  */
+#line 817 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  passive (PASSIVE_EPSV, AF_UNSPEC);
 		}
-#line 2405 "ftpcmd.c" /* yacc.c:1646  */
+#line 2410 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 52:
-#line 821 "ftpcmd.y" /* yacc.c:1646  */
+#line 822 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -2416,11 +2421,11 @@ yyreduce:
 				     "Network protocol not supported, use (1,2)");
 			  }
 		}
-#line 2420 "ftpcmd.c" /* yacc.c:1646  */
+#line 2425 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 53:
-#line 836 "ftpcmd.y" /* yacc.c:1646  */
+#line 837 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-3].i))
 			  {
@@ -2457,37 +2462,37 @@ yyreduce:
 			      }
 			  } /* check_login */
 		}
-#line 2461 "ftpcmd.c" /* yacc.c:1646  */
+#line 2466 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 54:
-#line 877 "ftpcmd.y" /* yacc.c:1646  */
+#line 878 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if ((yyvsp[-1].i))
 			  passive (PASSIVE_LPSV, 0 /* not used */);
 		}
-#line 2470 "ftpcmd.c" /* yacc.c:1646  */
+#line 2475 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 55:
-#line 883 "ftpcmd.y" /* yacc.c:1646  */
+#line 884 "ftpcmd.y" /* yacc.c:1652  */
     {
 			reply (221, "Goodbye.");
 			dologout (0);
 		}
-#line 2479 "ftpcmd.c" /* yacc.c:1646  */
+#line 2484 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 56:
-#line 888 "ftpcmd.y" /* yacc.c:1646  */
+#line 889 "ftpcmd.y" /* yacc.c:1652  */
     {
 			yyerrok;
 		}
-#line 2487 "ftpcmd.c" /* yacc.c:1646  */
+#line 2492 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 57:
-#line 894 "ftpcmd.y" /* yacc.c:1646  */
+#line 895 "ftpcmd.y" /* yacc.c:1652  */
     {
 			restart_point = (off_t) 0;
 			if ((yyvsp[-3].i) && (yyvsp[-1].s))
@@ -2498,11 +2503,11 @@ yyreduce:
 			if (fromname == (char *) 0 && (yyvsp[-1].s))
 			  free ((yyvsp[-1].s));
 		}
-#line 2502 "ftpcmd.c" /* yacc.c:1646  */
+#line 2507 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 58:
-#line 909 "ftpcmd.y" /* yacc.c:1646  */
+#line 910 "ftpcmd.y" /* yacc.c:1652  */
     {
 		        free (fromname);
 			fromname = (char *) 0;
@@ -2511,19 +2516,19 @@ yyreduce:
 			       (intmax_t) restart_point,
 			       "Send STORE or RETRIEVE to initiate transfer.");
 		}
-#line 2515 "ftpcmd.c" /* yacc.c:1646  */
+#line 2520 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 60:
-#line 925 "ftpcmd.y" /* yacc.c:1646  */
+#line 926 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.s) = (char *) calloc (1, sizeof (char));
 		}
-#line 2523 "ftpcmd.c" /* yacc.c:1646  */
+#line 2528 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 63:
-#line 937 "ftpcmd.y" /* yacc.c:1646  */
+#line 938 "ftpcmd.y" /* yacc.c:1652  */
     {
 			/* Rewrite as valid address family.  */
 			if ((yyvsp[0].i) == 1)
@@ -2533,11 +2538,11 @@ yyreduce:
 			else
 			  (yyval.i) = -1;	/* Invalid protocol.  */
 		}
-#line 2537 "ftpcmd.c" /* yacc.c:1646  */
+#line 2542 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 66:
-#line 959 "ftpcmd.y" /* yacc.c:1646  */
+#line 960 "ftpcmd.y" /* yacc.c:1652  */
     {
 			int err;
 			char a[INET6_ADDRSTRLEN], p[8];
@@ -2582,11 +2587,11 @@ yyreduce:
 			    (yyval.i) = 1;
 			  }
 		}
-#line 2586 "ftpcmd.c" /* yacc.c:1646  */
+#line 2591 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 67:
-#line 1009 "ftpcmd.y" /* yacc.c:1646  */
+#line 1010 "ftpcmd.y" /* yacc.c:1652  */
     {
 			int err;
 			char a[INET6_ADDRSTRLEN], p[8];
@@ -2646,11 +2651,11 @@ yyreduce:
 			      }
 			  }
 		}
-#line 2650 "ftpcmd.c" /* yacc.c:1646  */
+#line 2655 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 68:
-#line 1074 "ftpcmd.y" /* yacc.c:1646  */
+#line 1075 "ftpcmd.y" /* yacc.c:1652  */
     {
 			int err;
 			char a[INET6_ADDRSTRLEN], p[8];
@@ -2711,154 +2716,154 @@ yyreduce:
 			      }
 			  }
 		}
-#line 2715 "ftpcmd.c" /* yacc.c:1646  */
+#line 2720 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 69:
-#line 1138 "ftpcmd.y" /* yacc.c:1646  */
+#line 1139 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = FORM_N;
 		}
-#line 2723 "ftpcmd.c" /* yacc.c:1646  */
+#line 2728 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 70:
-#line 1142 "ftpcmd.y" /* yacc.c:1646  */
+#line 1143 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = FORM_T;
 		}
-#line 2731 "ftpcmd.c" /* yacc.c:1646  */
+#line 2736 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 71:
-#line 1146 "ftpcmd.y" /* yacc.c:1646  */
+#line 1147 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = FORM_C;
 		}
-#line 2739 "ftpcmd.c" /* yacc.c:1646  */
+#line 2744 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 72:
-#line 1153 "ftpcmd.y" /* yacc.c:1646  */
+#line 1154 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_A;
 			cmd_form = FORM_N;
 		}
-#line 2748 "ftpcmd.c" /* yacc.c:1646  */
+#line 2753 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 73:
-#line 1158 "ftpcmd.y" /* yacc.c:1646  */
+#line 1159 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_A;
 			cmd_form = (yyvsp[0].i);
 		}
-#line 2757 "ftpcmd.c" /* yacc.c:1646  */
+#line 2762 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 74:
-#line 1163 "ftpcmd.y" /* yacc.c:1646  */
+#line 1164 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_E;
 			cmd_form = FORM_N;
 		}
-#line 2766 "ftpcmd.c" /* yacc.c:1646  */
+#line 2771 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 75:
-#line 1168 "ftpcmd.y" /* yacc.c:1646  */
+#line 1169 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_E;
 			cmd_form = (yyvsp[0].i);
 		}
-#line 2775 "ftpcmd.c" /* yacc.c:1646  */
+#line 2780 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 76:
-#line 1173 "ftpcmd.y" /* yacc.c:1646  */
+#line 1174 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_I;
 		}
-#line 2783 "ftpcmd.c" /* yacc.c:1646  */
+#line 2788 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 77:
-#line 1177 "ftpcmd.y" /* yacc.c:1646  */
+#line 1178 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_L;
 			cmd_bytesz = NBBY;
 		}
-#line 2792 "ftpcmd.c" /* yacc.c:1646  */
+#line 2797 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 78:
-#line 1182 "ftpcmd.y" /* yacc.c:1646  */
+#line 1183 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_L;
 			cmd_bytesz = (yyvsp[0].i);
 		}
-#line 2801 "ftpcmd.c" /* yacc.c:1646  */
+#line 2806 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 79:
-#line 1188 "ftpcmd.y" /* yacc.c:1646  */
+#line 1189 "ftpcmd.y" /* yacc.c:1652  */
     {
 			cmd_type = TYPE_L;
 			cmd_bytesz = (yyvsp[0].i);
 		}
-#line 2810 "ftpcmd.c" /* yacc.c:1646  */
+#line 2815 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 80:
-#line 1196 "ftpcmd.y" /* yacc.c:1646  */
+#line 1197 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = STRU_F;
 		}
-#line 2818 "ftpcmd.c" /* yacc.c:1646  */
+#line 2823 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 81:
-#line 1200 "ftpcmd.y" /* yacc.c:1646  */
+#line 1201 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = STRU_R;
 		}
-#line 2826 "ftpcmd.c" /* yacc.c:1646  */
+#line 2831 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 82:
-#line 1204 "ftpcmd.y" /* yacc.c:1646  */
+#line 1205 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = STRU_P;
 		}
-#line 2834 "ftpcmd.c" /* yacc.c:1646  */
+#line 2839 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 83:
-#line 1211 "ftpcmd.y" /* yacc.c:1646  */
+#line 1212 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = MODE_S;
 		}
-#line 2842 "ftpcmd.c" /* yacc.c:1646  */
+#line 2847 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 84:
-#line 1215 "ftpcmd.y" /* yacc.c:1646  */
+#line 1216 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = MODE_B;
 		}
-#line 2850 "ftpcmd.c" /* yacc.c:1646  */
+#line 2855 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 85:
-#line 1219 "ftpcmd.y" /* yacc.c:1646  */
+#line 1220 "ftpcmd.y" /* yacc.c:1652  */
     {
 			(yyval.i) = MODE_C;
 		}
-#line 2858 "ftpcmd.c" /* yacc.c:1646  */
+#line 2863 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 86:
-#line 1226 "ftpcmd.y" /* yacc.c:1646  */
+#line 1227 "ftpcmd.y" /* yacc.c:1652  */
     {
 			/*
 			 * Problem: this production is used for all pathname
@@ -2896,11 +2901,11 @@ yyreduce:
 			else
 			  (yyval.s) = (yyvsp[0].s);
 		}
-#line 2900 "ftpcmd.c" /* yacc.c:1646  */
+#line 2905 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 88:
-#line 1271 "ftpcmd.y" /* yacc.c:1646  */
+#line 1272 "ftpcmd.y" /* yacc.c:1652  */
     {
 			int ret, dec, multby, digit;
 
@@ -2925,11 +2930,11 @@ yyreduce:
 			  }
 			(yyval.i) = ret;
 		}
-#line 2929 "ftpcmd.c" /* yacc.c:1646  */
+#line 2934 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
   case 89:
-#line 1299 "ftpcmd.y" /* yacc.c:1646  */
+#line 1300 "ftpcmd.y" /* yacc.c:1652  */
     {
 			if (cred.logged_in)
 			  (yyval.i) = 1;
@@ -2939,11 +2944,11 @@ yyreduce:
 			    (yyval.i) = 0;
 			  }
 		}
-#line 2943 "ftpcmd.c" /* yacc.c:1646  */
+#line 2948 "ftpcmd.c" /* yacc.c:1652  */
     break;
 
 
-#line 2947 "ftpcmd.c" /* yacc.c:1646  */
+#line 2952 "ftpcmd.c" /* yacc.c:1652  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2968,14 +2973,13 @@ yyreduce:
   /* Now 'shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
      number reduced by.  */
-
-  yyn = yyr1[yyn];
-
-  yystate = yypgoto[yyn - YYNTOKENS] + *yyssp;
-  if (0 <= yystate && yystate <= YYLAST && yycheck[yystate] == *yyssp)
-    yystate = yytable[yystate];
-  else
-    yystate = yydefgoto[yyn - YYNTOKENS];
+  {
+    const int yylhs = yyr1[yyn] - YYNTOKENS;
+    const int yyi = yypgoto[yylhs] + *yyssp;
+    yystate = (0 <= yyi && yyi <= YYLAST && yycheck[yyi] == *yyssp
+               ? yytable[yyi]
+               : yydefgoto[yylhs]);
+  }
 
   goto yynewstate;
 
@@ -3058,12 +3062,10 @@ yyerrlab:
 | yyerrorlab -- error raised explicitly by YYERROR.  |
 `---------------------------------------------------*/
 yyerrorlab:
-
-  /* Pacify compilers like GCC when the user code never invokes
-     YYERROR and the label yyerrorlab therefore never appears in user
-     code.  */
-  if (/*CONSTCOND*/ 0)
-     goto yyerrorlab;
+  /* Pacify compilers when the user code never invokes YYERROR and the
+     label yyerrorlab therefore never appears in user code.  */
+  if (0)
+    YYERROR;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -3125,12 +3127,14 @@ yyacceptlab:
   yyresult = 0;
   goto yyreturn;
 
+
 /*-----------------------------------.
 | yyabortlab -- YYABORT comes here.  |
 `-----------------------------------*/
 yyabortlab:
   yyresult = 1;
   goto yyreturn;
+
 
 #if !defined yyoverflow || YYERROR_VERBOSE
 /*-------------------------------------------------.
@@ -3142,6 +3146,10 @@ yyexhaustedlab:
   /* Fall through.  */
 #endif
 
+
+/*-----------------------------------------------------.
+| yyreturn -- parsing is finished, return the result.  |
+`-----------------------------------------------------*/
 yyreturn:
   if (yychar != YYEMPTY)
     {
@@ -3171,7 +3179,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1310 "ftpcmd.y" /* yacc.c:1906  */
+#line 1311 "ftpcmd.y" /* yacc.c:1918  */
 
 
 #define	CMD	0	/* beginning of command */

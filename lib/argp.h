@@ -1,5 +1,5 @@
 /* Hierarchical argument parsing, layered over getopt.
-   Copyright (C) 1995-1999, 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Miles Bader <miles@gnu.ai.mit.edu>.
 
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _ARGP_H
 #define _ARGP_H
@@ -34,24 +34,13 @@
 # define __NTH(fct) fct __THROW
 #endif
 
-/* The __attribute__ feature is available in gcc versions 2.5 and later.
-   The __-protected variants of the attributes 'format' and 'printf' are
-   accepted by gcc versions 2.6.4 (effectively 2.7) and later.
-   We enable _GL_ATTRIBUTE_FORMAT only if these are supported too, because
-   gnulib and libintl do '#define printf __printf__' when they override
-   the 'printf' function.  */
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-# define _GL_ATTRIBUTE_FORMAT(spec) __attribute__ ((__format__ spec))
-#else
-# define _GL_ATTRIBUTE_FORMAT(spec) /* empty */
-#endif
-
 /* GCC 2.95 and later have "__restrict"; C99 compilers have
    "restrict", and "configure" may have defined "restrict".
    Other compilers use __restrict, __restrict__, and _Restrict, and
    'configure' might #define 'restrict' to those words.  */
 #ifndef __restrict
-# if ! (2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__))
+# if ! (2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__) \
+        || __clang_major__ >= 3)
 #  if 199901L <= __STDC_VERSION__
 #   define __restrict restrict
 #  else
@@ -68,6 +57,9 @@ typedef int error_t;
 #ifdef  __cplusplus
 extern "C" {
 #endif
+
+/* Glibc documentation:
+   https://www.gnu.org/software/libc/manual/html_node/Argp.html */
 
 /* A description of a particular option.  A pointer to an array of
    these is passed in the OPTIONS field of an argp structure.  Each option
@@ -146,15 +138,14 @@ struct argp_option
 /* Valid only in conjunction with OPTION_DOC. This option disables translation
    of option name. */
 #define OPTION_NO_TRANS         0x20
-
 
 struct argp;                    /* fwd declare this type */
 struct argp_state;              /* " */
 struct argp_child;              /* " */
 
 /* The type of a pointer to an argp parsing function.  */
-typedef error_t (*argp_parser_t) (int key, char *arg,
-                                  struct argp_state *state);
+typedef error_t (*argp_parser_t) (int __key, char *__arg,
+                                  struct argp_state *__state);
 
 /* What to return for unrecognized keys.  For special ARGP_KEY_ keys, such
    returns will simply be ignored.  For user keys, this error will be turned
@@ -237,9 +228,9 @@ struct argp
      ARGP_KEY_ definitions below.  */
   argp_parser_t parser;
 
-  /* A string describing what other arguments are wanted by this program.  It
-     is only used by argp_usage to print the "Usage:" message.  If it
-     contains newlines, the strings separated by them are considered
+  /* If non-NULL, a string describing what other arguments are wanted by this
+     program.  It is only used by argp_usage to print the "Usage:" message.
+     If it contains newlines, the strings separated by them are considered
      alternative usage patterns, and printed on separate lines (lines after
      the first are prefix by "  or: " instead of "Usage:").  */
   const char *args_doc;
@@ -530,10 +521,20 @@ extern void __argp_usage (const struct argp_state *__state);
    message, then exit (1).  */
 extern void argp_error (const struct argp_state *__restrict __state,
                         const char *__restrict __fmt, ...)
-     _GL_ATTRIBUTE_FORMAT ((__printf__, 2, 3));
+#if GNULIB_VFPRINTF_POSIX
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_STANDARD, 2, 3))
+#else
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM, 2, 3))
+#endif
+     ;
 extern void __argp_error (const struct argp_state *__restrict __state,
                           const char *__restrict __fmt, ...)
-     _GL_ATTRIBUTE_FORMAT ((__printf__, 2, 3));
+#if GNULIB_VFPRINTF_POSIX
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_STANDARD, 2, 3))
+#else
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM, 2, 3))
+#endif
+     ;
 
 /* Similar to the standard gnu error-reporting function error(), but will
    respect the ARGP_NO_EXIT and ARGP_NO_ERRS flags in STATE, and will print
@@ -546,11 +547,21 @@ extern void __argp_error (const struct argp_state *__restrict __state,
 extern void argp_failure (const struct argp_state *__restrict __state,
                           int __status, int __errnum,
                           const char *__restrict __fmt, ...)
-     _GL_ATTRIBUTE_FORMAT ((__printf__, 4, 5));
+#if GNULIB_VFPRINTF_POSIX
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_STANDARD, 4, 5))
+#else
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM, 4, 5))
+#endif
+     ;
 extern void __argp_failure (const struct argp_state *__restrict __state,
                             int __status, int __errnum,
                             const char *__restrict __fmt, ...)
-     _GL_ATTRIBUTE_FORMAT ((__printf__, 4, 5));
+#if GNULIB_VFPRINTF_POSIX
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_STANDARD, 4, 5))
+#else
+     _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM, 4, 5))
+#endif
+     ;
 
 #if _LIBC
 /* Returns true if the option OPT is a valid short option.  */
@@ -589,28 +600,7 @@ _GL_INLINE_HEADER_BEGIN
 # endif
 
 # ifndef ARGP_EI
-#  ifdef __GNUC__
-    /* GCC 4.3 and above with -std=c99 or -std=gnu99 implements ISO C99
-       inline semantics, unless -fgnu89-inline is used.  It defines a macro
-       __GNUC_STDC_INLINE__ to indicate this situation or a macro
-       __GNUC_GNU_INLINE__ to indicate the opposite situation.
-       GCC 4.2 with -std=c99 or -std=gnu99 implements the GNU C inline
-       semantics but warns, unless -fgnu89-inline is used:
-         warning: C99 inline functions are not supported; using GNU89
-         warning: to disable this warning use -fgnu89-inline or the gnu_inline function attribute
-       It defines a macro __GNUC_GNU_INLINE__ to indicate this situation.  */
-#   if defined __GNUC_STDC_INLINE__
-#    define ARGP_EI __inline__
-#   elif defined __GNUC_GNU_INLINE__
-#    define ARGP_EI extern __inline__ __attribute__ ((__gnu_inline__))
-#   else
-#    define ARGP_EI extern __inline__
-#   endif
-#  else
-    /* With other compilers, assume the ISO C99 meaning of 'inline', if
-       the compiler supports 'inline' at all.  */
-#   define ARGP_EI inline
-#  endif
+#  define ARGP_EI __extern_inline
 # endif
 
 ARGP_EI void

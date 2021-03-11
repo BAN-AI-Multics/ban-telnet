@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-  2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+  Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -50,8 +51,11 @@ struct ifconfig
   int mtu;
 # define IF_VALID_METRIC	0x100
   int metric;
+# define IF_VALID_FLAGS		0x200
   int setflags;
   int clrflags;
+# define IF_VALID_HWADDR	0x400
+  char *hwaddr;
 };
 
 struct format
@@ -64,9 +68,6 @@ struct format
 extern struct format formats[];
 extern int all_option;
 extern int ifs_cmdline;
-
-extern int pending_setflags;
-extern int pending_clrflags;
 
 /* Array of interfaces mentioned on the command line.  */
 extern struct ifconfig *ifs;
@@ -84,6 +85,7 @@ void parse_opt_set_address (struct ifconfig *ifp, char *addr);
 void parse_opt_set_brdaddr (struct ifconfig *ifp, char *addr);
 void parse_opt_set_dstaddr (struct ifconfig *ifp, char *addr);
 void parse_opt_set_netmask (struct ifconfig *ifp, char *addr);
+void parse_opt_set_hwaddr (struct ifconfig *ifp, char *addr);
 void parse_opt_set_mtu (struct ifconfig *ifp, char *addr);
 void parse_opt_set_metric (struct ifconfig *ifp, char *addr);
 void parse_opt_set_default_format (const char *format);

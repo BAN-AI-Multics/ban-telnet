@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -70,7 +71,7 @@
 int
 ctl_transact (struct in_addr target, CTL_MSG msg, int type, CTL_RESPONSE * rp)
 {
-  int nready, cc;
+  int nready = 0, cc;
   fd_set read_mask, ctl_mask;
   struct timeval wait;
 

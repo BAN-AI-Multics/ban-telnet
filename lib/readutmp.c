@@ -1,6 +1,6 @@
 /* GNU's read utmp module.
 
-   Copyright (C) 1992-2001, 2003-2006, 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 1992-2001, 2003-2006, 2009-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by jla; revised by djm */
 
@@ -36,6 +36,10 @@
 
 #if USE_UNLOCKED_IO
 # include "unlocked-io.h"
+#endif
+
+#if 8 <= __GNUC__
+# pragma GCC diagnostic ignored "-Wsizeof-pointer-memaccess"
 #endif
 
 /* Copy UT->ut_name into storage obtained from malloc.  Then remove any
@@ -97,7 +101,7 @@ read_utmp (char const *file, size_t *n_entries, STRUCT_UTMP **utmp_buf,
      Solaris' utmpname returns 1 upon success -- which is contrary
      to what the GNU libc version does.  In addition, older GNU libc
      versions are actually void.   */
-  UTMP_NAME_FUNCTION (file);
+  UTMP_NAME_FUNCTION ((char *) file);
 
   SET_UTMP_ENT ();
 
@@ -128,7 +132,7 @@ read_utmp (char const *file, size_t *n_entries, STRUCT_UTMP **utmp_buf,
   size_t n_alloc = 0;
   STRUCT_UTMP *utmp = NULL;
   int saved_errno;
-  FILE *f = fopen (file, "r");
+  FILE *f = fopen (file, "re");
 
   if (! f)
     return -1;

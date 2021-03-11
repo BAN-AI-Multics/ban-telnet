@@ -1,7 +1,7 @@
 # configure.ac - Configuration for inetutils
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015
-# Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+# 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -18,10 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see `http://www.gnu.org/licenses/'.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 
 AC_INIT([GNU inetutils],
- m4_esyscmd([build-aux/git-version-gen .tarball-version 's/inetutils-/v/;s/_/./g']),
+ m4_esyscmd([build-aux/git-version-gen .tarball-version]),
  [bug-inetutils@gnu.org])
 
 AC_CONFIG_SRCDIR([src/inetd.c])
@@ -88,7 +88,7 @@ AC_ARG_WITH([pam],
                            [Add support for PAM]))
 AC_ARG_WITH([idn],
   AS_HELP_STRING([--with-idn[[=DIR]]],
-		 [Use IDN support, with optional inclusion directory]), ,
+		 [Use IDN or IDN2 support, with optional inclusion directory]), ,
 		 [with_idn=no])
 AC_ARG_WITH([libidn-prefix],
   AS_HELP_STRING([--with-libidn-prefix[[=DIR]]],
@@ -125,8 +125,6 @@ IU_ENABLE_CLIENT(traceroute)
 
 AM_SILENT_RULES([yes])
 
-AC_ISC_POSIX
-
 ### Checks for programs.
 AC_PROG_CC
 gl_EARLY
@@ -137,6 +135,8 @@ AC_PATH_PROG(MKTEMP, mktemp, mktemp)
 AC_PATH_PROG(NETSTAT, netstat, netstat)
 AC_PATH_PROG(RM, rm, rm)
 AC_PROG_CPP
+AC_PROG_EGREP
+AC_PROG_FGREP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
@@ -145,6 +145,8 @@ AC_PROG_LN_S
 AC_PROG_SED
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
 AC_ARG_VAR(GREP, [Location of preferred 'grep' utility.])
+AC_ARG_VAR(EGREP, [Location of preferred 'egrep' utility.])
+AC_ARG_VAR(FGREP, [Location of preferred 'fgrep' utility.])
 AC_ARG_VAR(SED, [Location of preferred 'sed' utility.])
 AC_ARG_VAR(DD, [Location of 'dd'.])
 AC_ARG_VAR(MKTEMP, [Location of 'mktemp'.])
@@ -161,11 +163,6 @@ AC_SEARCH_LIBS([getpeername], [socket])
 # See if a termcap library is available (under one of several names)
 IU_LIB_TERMCAP
 
-# Find libreadline -- the ftp client will be built without
-# command editing and history capability if readline() cannot
-# be found, neither in libreadline, nor in libedit.
-gl_FUNC_READLINE
-
 # See if there's a separate libcrypt (many systems put crypt there).
 AC_CHECK_LIB(crypt, crypt, LIBCRYPT=-lcrypt)
 AC_SUBST(LIBCRYPT)
@@ -180,17 +177,6 @@ AC_CHECK_LIB(util, logoutx, LIBUTIL=-lutil)
 AC_CHECK_LIB(util, logwtmp, LIBUTIL=-lutil)
 AC_CHECK_LIB(util, logwtmpx, LIBUTIL=-lutil)
 AC_SUBST(LIBUTIL)
-
-# FreeBSD 9.0 has changed access to wtmp system, abolishing
-# logout(), logwtmp(), etcetera.  We need to use LIBUTIL
-# for rpl_openpty() and forkpty() in libgnu.a.
-if test "$ac_cv_func_login_tty" = yes \
-   || test "$ac_cv_have_decl_openpty" = yes; then
-  # Make sure that linking contains `-lutil'.
-  if test -z "$LIBUTIL"; then
-    LIBUTIL=-lutil
-  fi
-fi
 
 # Check if they want support for PAM.  Certain daemons like ftpd have
 # support for it.
@@ -253,6 +239,15 @@ else
   IU_DISABLE_TARGET(talk)
 fi
 
+# The function rcmd() is crucial for remote shells, but is not
+# always implemented in libraries intended for embedded systems.
+# Check for its availability in order to later disable our rcp,
+# rlogin, and rsh when no alternative is present.
+AC_CHECK_FUNC(rcmd, , , [#include <netdb.h>])
+if test "$ac_cv_func_rcmd" = yes; then
+  AC_DEFINE([WITH_RCMD], 1, [Define to one if you can use rcmd.])
+fi
+
 # NetBSD offers orcmd() and orcmd_af() for getting
 # exactly the functionality that rcmd() and rcmd_af()
 # offer on all other targetted systems.
@@ -308,6 +303,17 @@ else
   fi
 fi
 
+# Disable targets rcp, rlogin, and rsh when no rcmd variant is available.
+if test "$ac_cv_func_rcmd" != yes \
+   && test "$ac_cv_func_orcmd" != yes \
+   && test "$ac_cv_func_rcmd_af" != yes \
+   && test "$ac_cv_func_orcmd_af" != yes
+then
+  AC_MSG_WARN([Disabling rcp, rlogin and rsh, since no rcmd.])
+  IU_DISABLE_TARGET(rcp)
+  IU_DISABLE_TARGET(rlogin)
+  IU_DISABLE_TARGET(rsh)
+fi
 
 # FIXME: Make this test case a bit more robust.  Remove KRB4
 LIBAUTH=
@@ -407,6 +413,23 @@ if test ".$LIBAUTH" != .; then
                    [Define to one if you want encryption.])
 fi
 
+# Make IPv4 tests configurable in testing stage.
+
+AC_ARG_ENABLE([ipv4],
+  AS_HELP_STRING([--disable-ipv4], [disable IPv4 testing]),
+  [case "${enable_ipv4}" in
+  no)
+    AC_MSG_NOTICE([Disabling IPv4 tests at user request])
+    ipv4=no
+    ;;
+  *)
+    ipv4=yes
+    ;;
+  esac],
+  [ipv4=auto]
+)
+AC_SUBST(TEST_IPV4, [$ipv4])
+
 # Checks for IPv6 support.
 
 AC_ARG_ENABLE([ipv6],
@@ -463,7 +486,7 @@ else
 fi
 
 if test "$ipv6" = "no" || test "$working_ipv6" = "no";then
-  ping6_BUILD=''
+  IU_DISABLE_TARGET([ping6])
 else
   working_icmp6=yes
   AC_CHECK_HEADER(netinet/icmp6.h, , working_icmp6=no,
@@ -552,7 +575,7 @@ else
 
   if test "$working_icmp6" = "no"; then
     AC_MSG_WARN([ICMPv6 support not available, disabling ping6])
-    ping6_BUILD=''
+    IU_DISABLE_TARGET([ping6])
   fi
 fi
 
@@ -594,7 +617,7 @@ AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_DIRENT
 
-AC_CHECK_HEADERS([arpa/nameser.h errno.h fcntl.h features.h \
+AC_CHECK_HEADERS([arpa/nameser.h arpa/tftp.h errno.h fcntl.h features.h \
 		  glob.h memory.h netinet/ether.h netinet/in_systm.h \
 		  netinet/ip.h netinet/ip_icmp.h netinet/ip_var.h \
 		  security/pam_appl.h shadow.h \
@@ -618,8 +641,15 @@ AC_CHECK_HEADERS([arpa/nameser.h errno.h fcntl.h features.h \
 # include <sys/param.h>
 #endif
 ]
-
 )
+
+# Recent Cygwin 2.9 has dropped <arpa/tftp.h>.  Other systems
+# might take similar steps.
+if test "$ac_cv_header_arpa_tftp_h" = no; then
+  AC_MSG_WARN([arpa/tftp.h is not available: not building tftp, nor tftpd])
+  IU_DISABLE_TARGET(tftp)
+  IU_DISABLE_TARGET(tftpd)
+fi
 
 ### Checks for types.
 
@@ -1081,12 +1111,14 @@ rlogind_PROPS="${rlogind_PROPS:+$rlogind_PROPS }$LIBWRAP"
 
 # Support for libidn.
 
-ftp_PROPS="${ftp_PROPS:+$ftp_PROPS }${LIBIDN:+-lidn}"
-ping_PROPS="${ping_PROPS:+$ping_PROPS }${LIBIDN:+-lidn}"
-talk_PROPS="${talk_PROPS:+$talk_PROPS }${LIBIDN:+-lidn}"
-telnet_PROPS="${telnet_PROPS:+$telnet_PROPS }${LIBIDN:+-lidn}"
-tftp_PROPS="${tftp_PROPS:+$tftp_PROPS }${LIBIDN:+-lidn}"
-traceroute_PROPS="${traceroute_PROPS:+$traceroute_PROPS }${LIBIDN:+-lidn}"
+idn_link=`expr X"$LIBIDN" : '.*-l\(idn2*\)'`
+
+ftp_PROPS="${ftp_PROPS:+$ftp_PROPS }${LIBIDN:+$idn_link}"
+ping_PROPS="${ping_PROPS:+$ping_PROPS }${LIBIDN:+$idn_link}"
+talk_PROPS="${talk_PROPS:+$talk_PROPS }${LIBIDN:+$idn_link}"
+telnet_PROPS="${telnet_PROPS:+$telnet_PROPS }${LIBIDN:+$idn_link}"
+tftp_PROPS="${tftp_PROPS:+$tftp_PROPS }${LIBIDN:+$idn_link}"
+traceroute_PROPS="${traceroute_PROPS:+$traceroute_PROPS }${LIBIDN:+$idn_link}"
 
 # Termcap variants.
 

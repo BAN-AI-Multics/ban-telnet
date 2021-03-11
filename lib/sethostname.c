@@ -1,6 +1,6 @@
 /* sethostname emulation for glibc compliance.
 
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,21 +13,21 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Ben Walton <bwalton@artsci.utoronto.ca> */
 
 #include <config.h>
 
-#if !((defined _WIN32 || defined __WIN32__) || defined __CYGWIN__)
+#if !(defined _WIN32 || defined __CYGWIN__)
 /* Unix API.  */
 
 /* Specification.  */
-#include <unistd.h>
+# include <unistd.h>
 
-#include <errno.h>
-#include <stdio.h>
-#include <limits.h>
+# include <errno.h>
+# include <stdio.h>
+# include <limits.h>
 
 /* Set up to LEN chars of NAME as system hostname.
    Return 0 if ok, set errno and return -1 on error. */
@@ -43,7 +43,7 @@ sethostname (const char *name, size_t len)
       return -1;
     }
 
-#ifdef __minix /* Minix */
+# ifdef __minix /* Minix */
   {
     FILE *hostf;
     int r = 0;
@@ -52,7 +52,7 @@ sethostname (const char *name, size_t len)
        these are appropriate for us to set, even if they may match the
        situation, during failed open/write/close operations, so we
        leave errno alone and rely on what the system sets up. */
-    hostf = fopen ("/etc/hostname.file", "w");
+    hostf = fopen ("/etc/hostname.file", "we");
     if (hostf == NULL)
       r = -1;
     else
@@ -76,38 +76,39 @@ sethostname (const char *name, size_t len)
 
     return r;
   }
-#else
+# else
   /* For platforms that we don't have a better option for, simply bail
      out.  */
   errno = ENOSYS;
   return -1;
-#endif
+# endif
 }
 
 #else
 /* Native Windows API.  Also used on Cygwin.  */
 
 /* Ensure that <windows.h> declares SetComputerNameEx.  */
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x500
+# if !defined _WIN32_WINNT || (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
+#  undef _WIN32_WINNT
+#  define _WIN32_WINNT _WIN32_WINNT_WIN2K
+# endif
 
-#define WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN
 
 /* Specification.  */
-#include <unistd.h>
+# include <unistd.h>
 
-#include <errno.h>
-#include <limits.h>
-#include <string.h>
+# include <errno.h>
+# include <limits.h>
+# include <string.h>
 
-#include <windows.h>
-/* The mingw header files don't define GetComputerNameEx, SetComputerNameEx.  */
-#ifndef GetComputerNameEx
+# include <windows.h>
+
+/* Don't assume that UNICODE is not defined.  */
+# undef GetComputerNameEx
 # define GetComputerNameEx GetComputerNameExA
-#endif
-#ifndef SetComputerNameEx
+# undef SetComputerNameEx
 # define SetComputerNameEx SetComputerNameExA
-#endif
 
 /* Set up to LEN chars of NAME as system hostname.
    Return 0 if ok, set errno and return -1 on error. */

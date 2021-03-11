@@ -1,3 +1,1295 @@
+2021-02-01  Alfred M. Szmidt  <ams@gnu.org>
+
+	* ftp/ftp.c (getreply): Fix possible buffer overflow (backport
+	from OpenBSD); reported by O. Bittner, D. Maier, M. Munier,
+	J. Beier of SecT, TU Berlin.
+
+2021-01-29  Simon Josefsson  <simon@josefsson.org>
+
+	ping6: Don't allow unprivileged users to flood ping.
+
+	* ping/ping6.c (parse_opt): For non-root users, limit interval
+	like ping.c to avoid DoS.  Reported in
+	<https://bugs.debian.org/926750>.
+	* ping/ping_common.h (PING_MIN_USER_INTERVAL): Add.
+	* ping/ping.c (MIN_USER_INTERVAL): Remove, replaced by
+	PING_MIN_USER_INTERVAL.
+	(parse_opt): Update use.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	* telnet/commands.c (logoutcmd): Renamed from logout.  Conflicts
+	with system utmp.h's logout(3).
+	(cmdtab): Use logoutcmd instead of logout.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	* tests/libls.sh (LSDIR): Fix parallel testing.  Found on Guix and
+	Debian, solution is to not use CWD as test directory for libls.
+	Inspired by trivial patch by Guillem Jover <guillem@hadrons.org>.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	ping, ping6: Fix unchecked setuid return.
+
+	* ping/ping.c (main): Fail if setuid fail.  Trivial patch from
+	Jayakrishna Vadayath <jvadayat@asu.edu>.
+	* ping/ping6.c (main): Likewise.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	* tests/hostname.sh: Use uname as fallback if system lack hostname
+	command.  Only require mktemp when running root test.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	* tests/hostname.sh: Use system hostname, not system uname, for
+	comparison.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	* configure.ac: Don't call gl_FUNC_READLINE.  Not needed since we
+	now use readline gnulib module.
+
+2021-01-28  Simon Josefsson  <simon@josefsson.org>
+
+	Fix link failure with absent -lutil on Solaris 10.
+
+	* configure.ac (LIBUTIL): Prefer PTY_LIBS in Makefile.am over
+	adding -lutil for pty-functions.
+	* src/Makefile.am (LDADD): Add PTY_LIB.
+	* telnetd/Makefile.am (LDADD): Likewise.
+	* tests/Makefile.am (identify_LDADD): Likewise.
+
+2021-01-27  Simon Josefsson  <simon@josefsson.org>
+
+	* bootstrap.conf (buildreq): Add gzip and xz.
+
+2021-01-27  Simon Josefsson  <simon@josefsson.org>
+
+	* .gitignore: Rewrite to use leading / for most top-level files,
+	and general update.
+
+2021-01-26  Simon Josefsson  <simon@josefsson.org>
+
+	Sync release process with gnulib approach.
+
+	* NEWS: Fix syntax to conform to gnulib release-prep rules.
+	* cfg.mk: Drop news-check-regexp.
+	* bootstrap.conf (gnulib_modules): Use readme-release.  Drop now
+	implicit announce-gen, gnupload and maintainer-makefile.
+	* bootstrap.conf (bootstrap_epilogue): Add function, fixing
+	README-release.
+	* gl/top/README-release.diff: Add file.
+	* .gitignore: Add README-release.
+	* cfg.mk (exclude_file_name_regexp--sc_trailing_blank): Add, for
+	README-release.diff.
+	* configure.ac (AC_INIT): Don't use sed-expression, it is
+	incompatible with gnulib's do-release-commit-and-tag.
+	* cfg.mk (git-version-gen-tag-sed-script): Drop.
+	* .prev-version: Add file, indicating 1.9.4 as previous release.
+	* README-alpha (Release procedures): Removed, replaced by
+	README-release.
+	* cfg.mk (release-prep-hook): Don't disable it, we now support it.
+
+2021-01-25  Simon Josefsson  <simon@josefsson.org>
+
+	Silence 'make syntax-check'.
+
+	* libls/ls.c: Don't include <intprops.h> if we are not using it.
+
+2021-01-25  Simon Josefsson  <simon@josefsson.org>
+
+	Don't use deprecated gnulib module 'gettext' and replace
+	readline.m4 with gnulib readline module.
+
+	* bootstrap.conf (gnulib_modules): Remove gettext.  Add readline.
+	* am/readline.m4: Remove file.
+
+2021-01-25  Simon Josefsson  <simon@josefsson.org>
+
+	Only do what git-version-gen recommends regarding .version.
+
+	* Makefile.am (DISTCLEANFILES): Don't distclean
+	$(top_builddir)/.version.
+
+2021-01-25  Simon Josefsson  <simon@josefsson.org>
+
+	Fix hostname.sh to not call system hostname, and improve
+	diagnostics.
+
+	* tests/hostname.sh: Fix typo.  Improve output on failures.
+
+2021-01-25  Simon Josefsson  <simon@josefsson.org>
+
+	Fix 'make check' on broken platforms without /etc/protocols.
+
+	* tests/traceroute-localhost.sh: Skip test if /etc/protocols
+	doesn't exist, copied from existing code in tests/inetd.sh.
+	* tests/ping-localhost.sh: Likewise.
+
+2021-01-25  Simon Josefsson  <simon@josefsson.org>
+
+	git-version-gen: Sync with git-version-gen usage instructions.
+
+	* Makefile.am (EXTRA_DIST): Add.
+	(BUILT_SOURCES): Use srcdir.
+	(.version): Likewise.
+
+2021-01-24  Simon Josefsson  <simon@josefsson.org>
+
+	* configure.ac: Fix disabling when all rcmd is missing.
+	* configure.ac: Warn when rcmd is missing.
+	* README-alpha (Prerequisites): Mention xz, for dist.
+
+2021-01-24  Simon Josefsson  <simon@josefsson.org>
+
+	Build/doc fixes.
+
+	* README-alpha (Checking Out the Sources): Use git URL mentioned
+	on Savannah page.
+	(Prerequisites): Add bash, gcc, ncurses.
+	* bootstrap: Updated from gnulib.
+
+2020-11-10  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* configure.ac (AC_PREREQ): Require autoconf 2.64, caused
+	by changes in Gnulib.
+
+2020-06-05  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* ifconfig/system/linux.c (linux_if_nameindex): New, incompatible
+	signature of contemporary Gnulib function read_file().
+
+2020-05-10  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* whois/data.h (hide_strings): Add Brazilian pattern.
+	* whois/ip6_del_list: Update with more ranges.
+
+2020-05-08  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Delegation list for IPv6 ranges.
+
+	* whois/.gitignore: Add `ip6_del.h'.
+	* whois/Makefile.am (BUILT_SOURCES): Add `ip6_del.h'.
+	(EXTRA_DIST): Add `ip6_del_list', `ip6_del.h', `make_ip6_del.pl'.
+	(noinst_HEADERS): Add `ip6_del.h'.
+	(ip6_del.h): New target.
+	* whois/data.h (ip6_assign): New array.
+	* whois/ip6_del_list: New file.
+	* whois/make_ip6_del.pl: New file.
+	* whois/whois.c (whichwhois): Regard absence of period, colon,
+	and hyphen as evidence of NSI NIC or ASN.  Test for this and for
+	email address before any test for numeric addressing.  Implement
+	code for IPv6 delegation matching, to be triggered by the presence
+	of a colon in the given query string.
+
+2020-05-07  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Tweak command line arguments.
+
+	* whois/whois.c (whichwhois): Skip any single character token,
+	as it must be a search directive for a server.  Prune the known
+	IPv6 delegations to reflect only the valid one.  Use ARIN as
+	default IPv6 serving instance, since the old 6BONE server is no
+	longer responsive.
+
+2020-05-07  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Improved hiding of legal disclaimers.
+
+	* whois/as_del_list: Two additional delegations.
+	* whois/data.h (hide_strings): Add string patterns for present
+	day services at ARIN, LACNIC, and RIPE.
+	* whois/whois.c (do_query): After successful location of a stop
+	pattern, go back into search state, instead of cancelling further
+	matching.  The service at ARIN inserts identical disclaimer at
+	the beginning, as well as at the end of a response.
+
+2020-05-06  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* bootstrap: Updated from gnulib.
+
+2020-04-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	telnet: Use memove for overlapping memory instead of strncpy.
+
+	Overlapping source and destination buffers are not supported
+	by strncpy and give undefined results.
+
+	7.24.2.3 of ISO/IEC 9899:201x:
+	"If  copying  takes  place  between  objects  thatoverlap,
+	the behavior is undefined."
+
+	* telnet/commands.c (cmds): Use memove for overlapping memory
+	instead of strncpy.
+
+2020-04-12  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Delegation of IP and AS.
+
+	Attempt improving the list of IP range delegation within the scope
+	of old A-class ranges.  The intention is to establish as many
+	ranges of width 22, or wider, and also to verify old claims.
+
+	* whois/as_del_list: Update and correct existing AS range
+	delegations, and add a few more, random but existing.
+	* whois/ip_del_list: Add a large number of delegations within
+	former A-class ranges, and correct two erroneous instances.
+	* whois/whois.c (whereas): Raise the upper limit of known ASN.
+	(queryformat): Rewrite query statement intended for ARIN.
+
+2020-04-06  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Include ERX ranges for APNIC.
+
+	The content of the following web page was scanned to identify
+	the ranges within old B-classes that were assigned to APNIC
+	by the ERX project, Early Registration Transfer.  After some
+	cross checking, a few intermediate ranges for other registars
+	were included for better resolution.
+	https://www.apnic.net/manage-ip/manage-historical-resources/erx-project/erx-transfer-to-apnic/
+
+	* whois/ip_del_list: Add a large amount of APNIC address ranges.
+
+2020-04-05  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Support for libidn2 in addition to libidn.
+
+	* am/libidn.m4 (have_IDN2, have_IDN): New local variables.
+	Detect presence of libidn2 by checking for `idn2_to_ascii_lz',
+	but still aim at backwards compatibility.  Detect header file
+	`idna.h' as well as `idn2.h', but prefer libidn2 to libidn,
+	should both libraries be detected.
+	* configure.ac (--with-idn): Mention that IDN2 is acceptable.
+	(idn_link): New variable.
+	(ftp_PROPS, ping_PROPS, talk_PROPS, telnet_PROPS, tftp_PROPS)
+	(traceroute_PROPS): Update these to state `idn', or `idn2'.
+
+	* ftp/ftp.c [HAVE_IDN2_H && HAVE_IDN2]: Include `idn2.h'.
+	[(!HAVE_IDN2_H || !HAVE_IDN2) && HAVE_IDNA_H]: Include `idna.h'.
+	(hookup) [HAVE_IDN || HAVE_IDN2]: Use compatibility function
+	idna_to_ascii_lz().
+	* ping/libping.c (ping_set_dest): Likewise.
+	* ping/ping6.c (ping_set_dest): Likewise.
+	* src/tftp.c (resolve_name): Likewise.
+	* src/traceroute.c (main): Likewise.
+	* talk/get_addrs.c (get_addrs)
+	[HAVE_DECL_GETADDRINFO || HAVE_IDN || HAVE_IDN2]: Declare ERR.
+	[HAVE_IDN || HAVE_IDN2]: Likewise.
+	* telnet/commands.c (tn): Declare HOSTTMP.  Likewise.
+
+2020-04-04  Alfred M. Szmidt  <ams@gnu.org>
+
+	* ping/ping6.c (print_packet_too_big): Use %u when printing MTU.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	uucpd: Fix buffer overflows.
+
+	This fixes several missing string termination issues with strncpy.
+	Also REMOTEHOST of size NI_MAXHOST was strcpy'ed into LINE, which
+	just had 32 bytes on the stack.
+
+	* src/uucpd.c (SCPYN): Promote macro to global scope, but expand
+	its action by writing the final NUL character.
+	(dologin): Increase size of LINE.  Use existing macro SCPYN
+	instead of strncpy.
+	[PATH_LASTLOG && HAVE_STRUCT_LASTLOG]: Delete local macro SCPYN.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	uucpd: Fix heap buffer overflow.
+
+	Usernames >= 56 bytes would overflow the char arrays Username and
+	Logname.  This change mitigates this, but still silently truncates
+	these arrays.  Silent truncation should be checked throughout the
+	code, possibly within a more comprehensive code review.
+
+	* src/uucpd.c (Username, Logname): Increase size to 72 bytes.
+	(doit): Use snprintf instead of sprintf.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	telnet: Use strdup instead malloc+strcpy.
+
+	* telnet/commands.c (tn): Assign HOSTNAME using strdup().
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	telnet: Fix -Wsign-compare in suboption.
+
+	* telnet/telnet.c (suboption): Explicitly cast sizeof() to int.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	telnetd: Silence -Wimplicit-fallthrough.
+
+	* telnetd/state.c (willoption): Squeelch warning.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	telnetd: Silence unused warning for getterminaltype.
+
+	* telnetd/utility.c (getterminaltype): Squeelch warning.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftp: Silence -Wimplicit-fallthrough warning.
+
+	* ftp/domacro.c (domacro): Squeelch warning.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftp: Silence -Wimplicit-fallthrough.
+
+	* ftp/cmds.c (domap): Squeelch warning.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftp: Fix multipliers for M(ega) and G(iga).
+
+	This is *not* a fix as the comment accidentally states.  It is to
+	silence -Wimplicit-fallthrough and to avoid multiple
+	multiplications in case of a non-optimized build.  The HASHBYTES
+	type needs to be reviewed later as g/G only allows digits 1 and 2
+	without integer overflow, which is undefined behavior.
+
+	* ftp/cmds.c (sethash): Remove cascaded multiplications.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftp: Fix return value of remglob.
+
+	* ftp/cmds.c (remglob): Switch roles of old values after NULL check.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftp: Fix possible buffer overflow.
+
+	* ftp/ftp.c (hookup): Terminate string after strncpy.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftp: Fix two misuses of strncpy (read buffer overflow).
+
+	* ftp/ftp.c (pswitch): Correctly set the terminating NUL.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	talk: Fix uninitialized variable NREADY.
+
+	* talk/ctl_transact.c (ctl_transact): Initialize NREADY to 0.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	whois: Silence -Wimplicit-fallthrough.
+
+	* whois/whois.c (main): Squeelch warning.
+
+2020-02-29  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ping, ping6: Silence -Wimplicit-fallthrough.
+
+	* ping/ping.c (parse_opt): Squeelch warning.
+	* ping/ping6.c (parse_opt): Likewise.
+
+2020-02-17  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ping6: Fix memleak in ping_set_dest.
+
+	* ping/ping6.c (ping_set_dest): New function signature.
+	Rearrange code to avoid memory leak.
+	* ping/ping6.h (ping_set_dest): Change signature in declaration.
+
+2020-02-17  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ping: Fix memleak in ping_set_dest.
+
+	* ping/libping.c (ping_set_dest): New function signature.
+	Rearrange code to avoid memory leak.
+	[HAVE_DECL_GETADDRINFO]: Rename P as RHOST.
+	* ping/ping.h (ping_set_dest): Change signature in declaration.
+
+2020-02-16  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	libls: Remove unused variable kflag.
+
+	* libls/ls.c (ls_main): Remove unused variable.
+
+2020-02-16  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	ftpd: Fix multiple definition (GCC 10).
+
+	* ftpd/extern.h (errcatch): Declare as extern.
+	* ftpd/ftpd.c (errcatch): Define variable.
+
+2020-02-16  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	telnetd: Fix multiple definition (GCC 10).
+
+	* telnetd/utility.c (not42): Declare as extern.
+
+2020-02-16  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	* src/rcp.c (tolocal): Remove unused variable LEN.
+
+2020-02-16  Tim Rühsen <tim.ruehsen@gmx.de>
+
+	telnet: Fix silent truncation (off-by-one check)
+
+	If the DISPLAY variable had exactly 44 bytes, the SE byte (end sub
+	negotiation) was silently truncated.  This concerns CVE-2019-0053.
+
+	* telnet/telnet.c (suboption): Add case of equality in conditional,
+	supplementing strict inequality.
+
+2020-02-21  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Various compiler warnings, getting closer to `-Werror'.
+
+	* libls/print.c (printlong): The functions major() and minor() have
+	no portable value type, so cast as `int'.
+
+	* ping/ping.c (decode_type): Initialize HOSTNAME to NULL.
+
+	* src/hostname.c (parse_opt, main) <SET_NAME_ACTION>: The prototype
+	of sethostname() is not portable, so cast as `void *'.  Do this
+	also on both members in a conditional clause.
+	* src/logger.c (parse_level): Cast PRIORITYNAMES and FACILITYNAMES
+	as `CODE *', since BSD-systems assign these a constant type.
+	* src/syslogd.c (textpri, cfline): Likewise.
+	* src/rcp.c (source, rsource): Type length of `stat.st_mode' is not
+	portable, so cast as `int'.
+	* src/traceroute.c (trace_write): Make loop variable I unsigned.
+
+2020-02-20  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	rexecd, rshd: Avoid false failure message.
+
+	* src/rexecd.c (doit) [HAVE_SETLOGIN]: Only call setsid() in case
+	the session leader is different from the present process.
+	* src/rshd.c (doit) [HAVE_SETLOGIN]: Likewise.
+
+2020-02-20  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	rcp: Recursive reception was broken.
+
+	The commit 67b49c54 broke the use case of locally receiving
+	multiple files for a recursive copying action.  This was found
+	and established by Zhixiong Chi.  Now revert the relevant part
+	of the old commit, as the suggested patch is nearly a verbatim
+	change back.  The differences await further analysis.
+	Original report is contained in:
+	https://lists.gnu.org/archive/html/bug-inetutils/2019-12/msg00000.html
+
+	* src/rcp.c (sink) [targisdir]: Revert to the legacy, and functional,
+	implementation of string allocation.
+
+2020-02-10  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Simplify coding of test program `runtime-ipv6', by using
+	standard getopt() library function, thus making the code
+	self sufficient.
+
+	* tests/runtime-ipv6.c: Migrate away from argp_parse() to
+	standard getopt().  Let environment variable VERBOSE contribute
+	a short message in case the program tests successfully.
+	Also use AI_NUMERICSERV for completeness.
+
+2020-02-09  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	test-snprintf: New test program.
+
+	An implementation dependent feature of snprintf() is tested.
+	The BSD unices and OpenSolaris relatives are known to be more
+	forgiving, than is Linux/glibc and kfreebsd/glibc.  The issue
+	was brought to our attention by Zhixiong Chi in:
+	https://lists.gnu.org/archive/html/bug-inetutils/2019-05/msg00002.html
+
+	* tests/test-snprintf.c: New file.
+	* tests/Makefile.am (check_PROGRAMS, TESTS): Add `test-snprintf'.
+	* tests/.gitignore: Likewise.
+
+2020-02-04  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Buffer overflow in tftp and tftpd.
+	Recent versions of Gnu libc and Gcc are injecting buffer checks
+	into strcpy().  Both executables, tftp and tftpd, are effectively
+	copying into a formally declared `char th_msg[1]', ignorant of
+	the underlying buffer being of size PKTSIZE.
+	Problem was reported by Mike Gilbert and Ricardo Ribalda Delgado:
+	https://lists.gnu.org/archive/html/bug-inetutils/2017-12/msg00001.html
+	https://lists.gnu.org/archive/html/bug-inetutils/2019-07/msg00002.html
+
+	* src/tftp.c (nak): Replace strcpy() by memcpy(), after the
+	needed calculation of string length.
+	* src/tftpd.c (nak): Likewise.
+
+	* tests/tftp.sh: New compound test with multiple requests.
+
+2020-02-03  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: AUDA services Australia.
+	Update server name.  Forwarded from Adam King:
+	https://lists.gnu.org/archive/html/bug-inetutils/2018-07/msg00001.html
+
+	* whois/tld_serv_list (.au): Update server, now at AUDA.
+
+2020-02-03  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Better portability for BSD install.
+	Install hooks for programs that require root ownership, were written
+	with GNU install in mind.  Reported and suggested by Bill Cole:
+	https://lists.gnu.org/archive/html/bug-inetutils/2018-07/msg00005.html
+
+	* ping/Makefile.am (install-ping-hook): Place program switches
+	to INSTALL_PROGRAM before file argument, thus helping BSD install.
+	Rewrite failure comment, and add exit error code.
+	* src/Makefile.am (install-traceroute-hook, install-rsh-hook)
+	(install-rlogin-hook, install-rcp-hook): Likewise.
+
+2020-02-01  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	tests: Less system logging.
+
+	* tests/ftp-localhost.sh (LOGGING): New variable.  Let the server
+	program do system logging only if LOGGING has been defined.
+	* tests/tftp.sh (LOGGING): Likewise.  Add a test case where a
+	non-existing file is requested.  Check that the number of tries
+	and of successes agree in order to suppress the final text.
+
+	* README: Add some remarks on our testing abilities.
+
+2020-01-31  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: IP delegation update.
+
+	* whois/ip_del_list: Update with entries as stated by IANA
+	with publication date 2019-12-27.
+
+2020-01-31  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Failure of service name.
+	The IANA has made badly founded changes to the list of port names,
+	promoting `nicname' and introducing the aliases list `Who Is',
+	thus making `Who' and `Is' into functional services, and also
+	loosing `whois'.  Some systems were careless enough to adopt
+	this badly wrought change.  Reported by Shahab Vahedi in:
+	https://lists.gnu.org/archive/html/bug-inetutils/2020-01/msg00023.html
+
+	* whois/whois.c (openconn): Fall back to service `nicname',
+	should `whois' fail.
+
+2020-01-29  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	More work on CVE-2019-0053.
+	Telnet protocol messages must not be corrupted when buffer
+	overflows are detected, but should be reported as errors.
+
+	* telnet/telnet.c (suboption): Check that prepared protocol
+	message in fact fits in intermediary buffer without truncation.
+	Tweak indentation for visibility of protocol elements in snprintf.
+
+	Allocate space also for final NUL-character.
+
+	* telnetd/telnetd.c (telnetdrun): Increase DATA string size by one.
+	* telnetd/termstat.c (localstat, flowstat, clientstat): Likewise.
+
+	Insufficiently declared length of string variable.
+
+	* telnetd/utility.c (printsub): Declare TBUF with maximal extent.
+
+2020-01-28  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Better test coverage, mostly IPv6.
+
+	* tests/ftp-localhost.sh [TEST_IPV6 && TARGET6]: Add the possible
+	test cases that existed for IPv4, but did not for IPv6.
+	[do_transfer]: Explicitly remove copied $PUTME for reliability.
+	[TEST_IPV6 && TARGET6 && do_transfer]: New test for name mapping.
+	* tests/syslogd.sh [do_unix_socket || do_inet_socket]: Do priority
+	`notice' for each of local socket, IPv4 socket, and IPv6 socket,
+	as is applicable.
+	(COUNT_WRAP): Reworked calculation on grounds as above.
+	[do_inet_socket && TEST_IPV6 && TARGET6]: Test facilities `user.info'
+	and `user.debug' with IPv6.
+	* tests/tftp.sh (do_secure_setting): Test all of $ADDRESSES.
+
+	* tests/.gitignore: Add runtime-ipv6 to list.
+
+2020-01-27  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Portability to an old Solaris shell.
+
+	* tests/tools.sh.in (EGREP, FGREP, RUNTIME_IPV4, RUNTIME_IPV6):
+	Inside parameter substitution, put value between quotes, since
+	some old shells stumble on non-quoted space characters.
+	* tests/ifconfig.sh (evaluation of FORMAT): Likewise.
+
+	Make sure that scripts are individually executable.
+
+	* tests/ftp-parser.sh (EXEEXT): Test empty before reading tools.sh.
+	* tests/libls.sh (EXEEXT): Likewise.
+	* tests/ifconfig_modes.sh: Read tools.sh.
+
+2020-01-26  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Examination of testing scripts.
+
+	* tests/ftp-localhost.sh [TEST_IPV4 && TARGET]: Implement one
+	additional level of indentation in this large text block.
+	Some additional fixes of indentation and improved readability.
+
+	* tests/inetd.sh: Improve regex when refusing test directories.
+	* tests/syslogd.sh: Likewise.
+	* tests/ping-localhost.sh: Use back quotes for portability.
+	* tests/traceroute-localhost.sh: Likewise.
+
+2020-01-24  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	runtime-ipv6: Implicit dependency on services file.
+	In a chrooted test environment, access to a particular
+	resource like /etc/services, need not be granted.
+
+	* tests/runtime-ipv6.c: Replace symbolic service name `tftp'
+	by a numerical and harmless port string.
+
+2020-01-24  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Separation of test cases according to IPv4, and to IPv6.
+	The two precious macros TEST_IPV4 and TEST_IPV6 are controlling
+	whether the indicated address family is checked in our tests.
+	Test coverage is left unequal.
+
+	* configure.ac (TEST_IPV4): New macro.  The new switch
+	`--disable-ipv4' suppresses IPv4 during target `check'.
+	* tests/Makefile.am (tools_subst): Replace @TEST_IPV4@.
+	* tests/tools.sh.in (TEST_IPV4, RUNTIME_IPV4, RUNTIME_IPV6):
+	New variables.
+	(TEST_IPV4, TEST_IPV6): If either is `auto', make a runtime check
+	for availability, and set to `no' in case of failure.
+
+	* tests/runtime-ipv6.c: Implement switches `-4' and `-6', making
+	it possible to test for either address family at runtime.
+	[EAI_NODATA]: Return this error in a corner case, or else EAI_FAIL.
+
+	* tests/ftp-localhost.sh: Remove code now existing in tools.sh.in.
+	Separate existing test cases according to IPv4 and IPv6, by means
+	of conditionals with TEST_IPV4 and TARGET, or TEST_IPV6 and TARGET6.
+	[TEST_IPV4 = TEST_IPV6 = no]: Skip test.
+	* tests/ping-localhost.sh: Likewise.
+	* tests/syslogd.sh: Likewise.
+	* tests/telnet-localhost.sh: Likewise.
+	* tests/tftp.sh: Likewise.
+
+	* tests/ifconfig.sh [TEST_IPV4 = no]: Skip test.
+	* tests/inetd.sh (TARGET6): New variable.
+	[TEST_IPV4 = TEST_IPV6 = no]: Skip test.
+	Implement subcases for IPv6, and condition old cases on TEST_IPV4.
+	* tests/traceroute-localhost.sh [TEST_IPV4 = no]: Skip test.
+	[TEST_IPV4 && TARGET]: Condition each case completely.
+
+2020-01-22  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Correctly detect presence of IPv6.
+
+	* tests/runtime-ipv6.c [AI_ADDRCONFIG] (hints.ai_flags):
+	Add AI_ADDRCONFIG for better selectivity.
+
+2020-01-20  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Test robustly in absence of IPv6.
+	For systems without functional IPv6 addressing at runtime,
+	suppress this address family in our tests, whenever IPv6 was
+	configured as autodetected.  Helpful answer by Bruno Haible
+	originating from effects in a Raspbian system:
+	https://lists.gnu.org/archive/html/bug-inetutils/2020-01/msg00021.html
+
+	* tests/Makefile.am (check_PROGRAMS): Add `runtime-ipv6'.
+	* tests/ftp-localhost.sh (RUNTIME_IPV6): New variable.
+	[TEST_IPV6 == auto]: Set TEST_IPV6 to `no' when runtime presence
+	of IPv6 is in the negative.  Thus effectively inhibiting all use
+	within this script of IPv6 addresses.
+	* tests/ping-localhost.sh: Likewise.
+	* tests/syslogd.sh: Likewise.
+	* tests/telnet-localhost.sh: Likewise.
+	* tests/tftp.sh: Likewise.
+	* tests/runtime-ipv6.c: New file.
+
+	* configure.ac (AC_ISC_POSIX): Delete obsolete test.
+
+2020-01-18  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Minor portability glitches in Solaris and in AIX.
+
+	* am/libcurses.m4 (IU_LIB_TERMCAP) [!_XOPEN_CURSES]: Conditionally
+	include the header <term.h>.
+	* telnet/telnet.c [HAVE_CURSES_TGETENT & !_XOPEN_CURSES]: Likewise.
+	* telnetd/utility.c [HAVE_CURSES_TGETENT & !_XOPEN_CURSES]: Likewise.
+
+	* ftp/ftp.c (h_errno): Delete declaration, not in use.
+	* ftpd/ftpd.c (FTP_NAMES): Assign a value to this macro.
+
+2020-01-14  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Make test of ftp-parser slightly more forgiving.  Darwin systems
+	might prepend a path stem to local directory.  Assaf Gordon reported
+	https://lists.gnu.org/archive/html/bug-inetutils/2020-01/msg00005.html
+
+	* tests/ftp-parser.sh: Check number of responses to mixed command
+	list, and extract any prepended path resulting from `lcd'.
+	(DIR_STEM): New variable.  This modifies matching test after `lpwd'.
+
+2020-01-13  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	The Gnulib module `regex' requires linking that was not made
+	explicit in our source.  Discovered by Bruno Haible with AIX 7.2.
+	https://lists.gnu.org/archive/html/bug-inetutils/2020-01/msg00012.html
+
+	* talkd/Makefile.am (LD_ADD): Add $(LIBTHREAD) and $(LIB_MBRTOWC).
+
+2020-01-13  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Attempt to build correctly on Cygwin, new and old. Reported
+	and suggested by Bruno Haible in
+	https://lists.gnu.org/archive/html/bug-inetutils/2020-01/msg00013.html
+
+	* configure.ac: Check for header <arpa/tftp.h>.  When it is
+	missing disable the targets `tftp', and `tftpd'.
+	* am/enable.m4 (IU_ENABLE_FOO): Append $EXEEXT to `target_BUILD'.
+
+2020-01-12  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Suppress building of remote execution commands on systems that
+	offer no rcmd functionality.  This happens with embedded systems
+	like Alpine Linux and musl libc, as reported by Assaf Gordon and
+	Bruno Haible.
+
+	* configure.ac: Check for function rcmd().  Disable building
+	of `rcp', `rlogin', and `rsh' when no rcmd variant is present.
+	(WITH_RCMD): New precompiler macro.
+
+2020-01-11  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	The glibc manual page for ether address specifies <netinet/ether.h>.
+	Use this for GNU/Linux in the hope of resolving also musl libc, as
+	used with Alpine Linux.  Reported by Bruno Haible.
+
+	* ifconfig/system/linux.c [HAVE_NETINET_ETHER_H]: Include the
+	library header <netinet/ether.h> instead of the system specific
+	header <linux/if_ether.h>.
+
+2020-01-11  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Consistent use of `grep' tools in scripts.
+
+	* configure.ac (EGREP, FGREP): New and precious variables.
+	* tests/Makefile.am (tools_subst): Replace @EGREP@ and @FGREP@.
+	* tests/ftp-parser.sh (reply): Use $EGREP to detect size in answer,
+	and apply a single, alternating regex.
+	* tests/ifconfig_modes.sh: Replace all `grep' by $GREP.
+	* tests/inetd.sh: Likewise.
+	* tests/libls.sh: Likewise.  Drop unused `-e' flag.
+	* tests/syslogd.sh: Likewise.  Use `$FGREP -f' instead of
+	non-portable `$GREP -f'.  In two cases where `grep' needed
+	multiple regexes, use $EGREP and alternating regexes.
+	* tests/tools.sh.in (EGREP, FGREP): New variables.
+
+2020-01-01  Simon Josefsson  <simon@josefsson.org>
+
+	telnet: Validate supplied environment variables. CVE-2019-0053
+	* telnet/telnet.c (suboption): Use snprintf instead of sprintf.
+	* telnet/utilities.c (printsub): Likewise.
+
+2020-01-01  Guillem Jover  <guillem@hadrons.org>  (tiny change)
+
+	* ping/ping_echo.c (struct icmp_diag): Fix typo.
+
+2020-01-01  Simon Josefsson  <simon@josefsson.org>
+
+	* NEWS: Document user-visible changes since last release.
+
+2020-01-01  Simon Josefsson  <simon@josefsson.org>
+
+	* THANKS: Credit Mats.
+
+2020-01-01  Simon Josefsson  <simon@josefsson.org>
+
+	* cfg.mk: Silence 'make syntax-check'.
+
+2020-01-01  Simon Josefsson  <simon@josefsson.org>
+
+	* bootstrap: Updated from gnulib.
+
+2020-01-01  Simon Josefsson  <simon@josefsson.org>
+
+	* telnet/telnet.c (telsnd): Telnet -E(no escape) is treating
+	_POSIX_VDISABLE char as escape.
+	Reported by Mikhail Bychek <mikhail.bychek@sputnix.ru>.
+
+2018-11-12  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* src/tftpd.c (main): Add LOG_NDELAY to openlog().  The file
+	descriptor for logging must be active before chrooting happens.
+
+2018-11-09  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* bootstrap: Updated from gnulib.
+
+	* configure.ac (AC_PREREQ): Require autoconf 2.63.  Gnulib needs
+	a more recent version due to demands put forward by libtool.
+
+2018-09-06  Simon Josefsson  <simon@josefsson.org>
+
+	* README-alpha (Development): Remove broken links.
+
+	* bootstrap: Updated from gnulib.
+
+2017-07-10  Omer Anson <oaanson@gmail.com>  (tiny change)
+
+	* src/hostname.c (parse_file): Free name and allocate one extra
+	byte for it.
+
+2017-07-10  Omer Anson <oaanson@gmail.com>  (tiny change)
+
+	* src/hostname.c (set_name): Handle case when hostname_new is
+	NULL.
+
+2017-07-10  Omer Anson <oaanson@gmail.com>  (tiny change)
+
+	* ftpd/ftpd.c (options) <max-timeout>: Mention mandatory argument.
+
+2017-06-22  Omer Anson <oaanson@gmail.com>  (tiny change)
+
+	* ftp/main.c (main): Don't assume that uninitialized argv[argv] is
+	NULL.
+
+2017-03-04  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	telnetd: Use tty, not pty on Solaris.
+	Setting of terminal attributes as well setting of window size
+	must be done via the slave descriptor, not the master descriptor.
+
+	* telnetd/term.c [SOLARIS || SOLARIS10] (set_termbuf):
+	New variables NAME, TTY.  A call to ptsname() reveals whether
+	`pty' is a master.  Then open that file, update TTY, and call
+	_term_setattr().
+	[SOLARIS || SOLARIS10] (init_termbuf): Simplify to use a single
+	call to _term_getattr(), similar to set_termbuf().
+	* telnetd/termstat.c: Include <fcntl.h>.
+	[TIOCSWINSZ && (SOLARIS || SOLARIS10)] (clientstat) <TELOPT_NAWS>:
+	New variables NAME, TTY.  Similar mechanism as above, but call
+	ioctl with window size.
+	[TIOCSWINSZ && (SOLARIS || SOLARIS10)] (defer_terminit): Likewise.
+
+2017-03-03  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	Test utility displays some termcaps.
+
+	* tests/Makefile.am (identify_LDADD): Set to contain
+	`$(top_builddir)/lib/libgnu.a' and `$(LIBUTIL)'.
+	* tests/identify.c: Include <string.h>.
+	[HAVE_TERMIOS_H]: Include <errno.h>, <termios.h>, <pty.h>.
+	[HAVE_TERMIOS_H && HAVE_FCNTL_H]: Include <fcntl.h>.
+	[HAVE_TCGETATTR] (test_flag): New macro.
+	[HAVE_TCGETATTR] (do_termcap): New function.
+	[HAVE_TCGETATTR] (main): Call do_termcap().
+
+2017-03-02  Fredrik Fornwall  <fredrik@fornwall.net>  (tiny change)
+
+	ftp: Portability to Android.
+	Without a check for HAVE_DECL_GETPASS and without making a
+	local function declaration, the implicit declaration causes
+	crashes on 64-bit systems lacking declared getpass(), such
+	as Android.  Reported in:
+	http://lists.gnu.org/archive/html/bug-inetutils/2016-10/msg00000.html
+
+	* ftp/cmds.c [!HAVE_DECL_GETPASS] (user, account): Declare getpass()
+	as external function.
+	* ftp/ftp.c (login): Likewise.
+
+2017-03-02  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	whois: Update Canadian TLD server.
+	Old host name no longer exists.  Reported by Neil Mayhem:
+	http://lists.gnu.org/archive/html/bug-inetutils/2017-01/msg00000.html
+
+	* whois/tld_serv_list (.ca): New host 'whois.cira.ca'.
+
+2017-02-27  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	telnetd: Portability of TTY termcap to Solaris systems.
+
+	* telnetd/term.c: Include header <fcntl.h>.
+	[SOLARIS10 || SOLARIS] (init_termbuf): If applicable, open
+	the slave TTY and extract terminal capabilities, since these
+	systems do not assign a line discipline to the master PTY.
+	New variables NAME and TTY.
+
+2017-02-27  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	telnetd: Portable option debugging.
+	BSD systems assign IAC and _POSIX_VDISABLE the common decimal
+	value 255. Hence the NVT enforces value duplication more often
+	during their transmission, than GNU and Solaris systems do.
+
+	* telnetd/utility.c (printsub) <LM_SLC>: Increase suboption
+	pointer I sufficiently to counteract duplication.  This has
+	to distinguish between in/out/none.  In recursive mode,
+	suppress newline at the end of suboption printing.
+
+	* telnetd/slc.c (send_slc) <SLC_EC, SLC_EL, SLC_EW, SLC_RP>
+	<SLC_LNEXT>: Editing characters are reported using SLC_DEFAULT
+	rather than ignored due to SLC_NOSUPPORT, when they are not
+	supported locally.  This conforms with RFC 1184, section 2.4.
+	The test for support checks the set 'current', not 'defset',
+	which fits the wording found in RFC 1184.
+
+2017-02-23  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	telnetd: Scrub USER from environment.
+	Discard the environment variable USER.  It will later be set
+	properly for autologin, but at least one BSD system passes
+	a preset value when telnetd starts, a value which will cause
+	rejected login when autologin is not in effect.
+
+	* telnetd/telnetd.c (telnetd_setup): Unset environment
+	variable USER before calling getterminaltype().
+
+2017-02-21  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* bootstrap: Updated from gnulib.
+
+2017-02-21  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	telnetd: Debugging of mainly line mode options.
+
+	* telnetd/telnetd.c (telnetd_run): Assemble flow control data
+	in new string variable DATA, then send it and include for debug
+	reporting in category 'options'.
+	* telnetd/termstat.c (localstat, flowstat, clientstat): Likewise,
+	also for line mode data.
+
+	* telnetd/utility.c (printsub) <LM_MODE>: Test TBUF[0]
+	to calculate replacement string, since TBUF[1] is not
+	guaranteed to be initialized by the preceding snprintf().
+
+2016-05-23  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	hostname: Avoid a trailing space.
+	Suppress the space character after the last presented IP number.
+	Problem reported by Terje Strand in
+	http://lists.gnu.org/archive/html/bug-inetutils/2016-04/msg00001.html
+
+	* src/hostname.c (get_ip_addresses): Emit a space character
+	only in case a further IP address will be printed.
+
+2016-02-16  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	traceroute: Subprivileged use case.
+	A fallback for ICMP tracing relevant to GNU/Linux is implemented,
+	allowing a rudimentary but suid-less use case.  The ability to
+	identify intermediary hosts is missing, due to the crippled
+	capability of receiving ICMP packets other than ICMP_ECHOREPLY.
+
+	* src/traceroute.c (struct trace): New member `no_ident'.
+	(trace_init): Initiate `t->no_ident'.
+	<type TRACE_ICMP or TRACE_UDP>: In case a raw socket for an ICMP
+	protocol fails, fall back to a datagram socket.
+	(trace_read) <type TRACE_ICMP>: Short circuit `ic->icmp_id != pid'
+	with the conditional `t->no_ident == 0'.
+	(trace_write) <type TRACE_ICMP>: New variable I.  Initialize HDR
+	to its full extent.  If `t->no_ident' is non-zero, insert our
+	intended target as payload of HDR for trace identification.
+
+2016-02-12  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ping: Implement subprivileged echo method.
+	Add fallback code usable by GNU/Linux to create a datagram
+	socket for sending ICMP ECHOREQUEST.  The change is related
+	to issue #37252.
+
+	* ping/libping.c (useless_ident): New variable.
+	(ping_init): When a raw socket fails, fall back to a datagram
+	socket.  In case of success, increase `useless_ident' since
+	the kernel choses a packet identity, overwriting our choice.
+	(my_echo_reply, ping_recv): Short circuit the tests for packet
+	identity with the value of `useless_identity'.
+
+2016-02-09  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* configure.ac (missing ipv6 or icmp6): Disable `ping6' using
+	the macro IU_DISABLE_TARGET.
+
+2016-01-23  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ftp: Allow remote user in command.
+	Ability implemented after a query by Andreas Adamcik, on the
+	legacy use of getlogin() versus the more admitting getuid().
+
+	* ftp/ftp.c (hookup): Check for an embedded at-sign in the input
+	variable `host', keeping the rightmost part.  New variable P.
+	(login): Likewise, but also using the string part to the left of
+	the last at-sign as remote user name.
+
+	* doc/inetutils.texi (ftp invocation): Document this ability.
+	* NEWS: Likewise.
+
+2016-01-22  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* bootstrap: Updated from gnulib.
+
+2015-12-29  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	tests/ftp-localhost.sh: Incomplete error handling.
+	The use of sysctl(8) with option `set -e` active during
+	script execution needs a robust exception handler.
+	Reported by Ingo Brückl in
+	http://lists.gnu.org/archive/html/bug-inetutils/2015-12/msg00000.html
+
+	* tests/ftp-localhost.sh: Locate sysctl(8) using `command`
+	with an augmented search path.  When computing VALUE_V6ONLY
+	in a subshell, add a short circuit with `true` to prevent
+	interruption of the test script.
+	(SYSCTL): New variable.
+
+2015-10-08  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	syslogd: Redefine faulty macro LOG_MAKEPRI whenever needed.
+	Systems with Glibc header file <syslog.h> prior to 2.17,
+	are not correctly defining the helper macro LOG_MAKEPRI.
+	This effects our syslog service whenever it receives kernel
+	messages from a remote host.  The issue was mentioned in
+	Debian's BTS as report #729666.
+
+	* src/logprio.h [LOG_MAKEPRI]: Check that the macro does
+	not shift the first argument.  If it does, undefine it and
+	apply our corrected definition.
+	* src/syslogd.c [LOG_MAKEPRI]: Likewise.  Display a precompiler
+	warning to the effect that we have diagnosed an issue.
+
+2015-09-15  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	* doc/inetutils.texi (ifconfig invocation): New chapter.
+
+2015-08-19  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	AIX systems have a system call send_file().  Rename our calls.
+	* src/tftp.c (send_file): Rename to...
+	(tftp_sendfile): ... this.
+	(put): Call tftp_sendfile, not send_file.
+	* src/tftpd.c (send_file): Rename to...
+	(tftpd_sendfile): ... this.
+	(formats): List tftpd_sendfile call, not send_file.
+
+2015-08-15  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	telnetd: Premature connection closure.
+	When many connections are attempted in quick succession,
+	a substantial number of them are cancelled.  This does not
+	appear for manual use cases, but for contrived automated
+	set-ups.  The cause seems to be a change in the evaluation
+	of pty_read(), which was done to coincide with the condition
+	in use by the original BSD implementation.  Issue reported and
+	suggested by Chris Severance in
+	http://lists.gnu.org/archive/html/bug-inetutils/2015-07/msg00006.html
+
+	* telnetd/telnetd.c (telnetd_run): Break the loop only by the
+	stronger condition `pty_read() < 0', i.e., only on non-masked
+	read errors.  This reverts a change introduced in 2015-03-15.
+	* telnetd/utility.c (pty_read): Add a comment that the read
+	errors EWOULDBLOCK, EAGAIN, and EIO are treated specially.
+
+2015-08-07  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Statistics for BSD systems.
+
+	* ifconfig/system/bsd.c (system_fh_ifstat_query)
+	(get_if_data_by_name, system_fh_missing_stat): New functions.
+	(_IU_DECLARE2): New macro.
+	(system_fh_rx_bytes, system_fh_rx_dropped, system_fh_rx_errors)
+	(system_fh_rx_packets, system_fh_tx_bytes, system_fh_tx_errors)
+	(system_fh_tx_packets, system_fh_collisions): New functions
+	defined using _IU_DECLARE2.
+	(system_fh_tx_dropped): New function.
+	* ifconfig/system/bsd.h (_IU_CAT2, _IU_DCL, _IU_EXTRN): New
+	macros identical to those in `ifconfig/system/linux.h'.
+	(SYSTEM_FORMAT_HANDLER) <ifstat?, collisions, rxbytes>
+	<rxdropped, rxerrors, rxfifoerr, rxframeerr, rxpackets>
+	<txbytes, txcarrier, txdropped, txerrors, txfifoerr, txpackets>:
+	New handler hooks.
+	(system_fh_ifstat_query, system_fh_missing_stat): New prototypes.
+	(system_fh_rx_bytes, system_fh_tx_bytes, system_fh_rx_dropped)
+	(system_fh_tx_dropped, system_fh_rx_errors, system_fh_tx_errors)
+	(system_fh_rx_packets, system_fh_tx_packets, system_fh_collisions):
+	New prototypes generated by _IU_EXTERN.
+
+2015-08-02  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Verbose report on changed flags.
+
+	* ifconfig/changeif.c (set_flags): In verbose report mode,
+	compose a message to name those flags that were set, and
+	also those that were cleared.
+
+2015-08-01  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Apply flags correctly.
+	When finalizing actions, some flags could be forgotten.
+	In particular, the flag 'up' was ignored whenever an
+	address was assigned at the same time.  This is related
+	to the fact that an invocation only effecting interface
+	flags, still resulted in a full printout if interface
+	status.  This latter behaviour differs from all other
+	implementations and is rather annoying.  The issue was
+	detected and reported by Hans-Peter Budek in
+	http://lists.gnu.org/archive/html/bug-inetutils/2015-07/msg00000.html
+
+	* ifconfig/options.c (pending_setflags, pending_clrflags):
+	Define as static variables.
+	(pending_valid): New variable.
+	(argp_options) <message 'up'>: Delete the claim that 'up' be
+	a default action together with address.
+	(parse_opt_set_flag): When `ifp' exists, update `ifp->valid'
+	with IF_VALID_FLAGS.  Otherwise, update `pending_valid'.
+	(parse_opt_finalize): If `ifp' exists and `pending_valid` is
+	set, then update `ifp->valid'.  The update of `ifp->setflags'
+	and `ifp->clrflags' is performed independently of assigning
+	an output format, as the latter would cause a printout also
+	when only some flag is being altered.
+	* ifconfig/options.h (IF_VALID_FLAGS): New macro.
+	(IF_VALID_HWADDR): Updated value.
+	(pending_setflags. pending_clrflags): Removed declaration.
+
+2015-07-30  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: A work-around specific to GNU/Hurd.
+	This system uses a mixture of BSD definitions
+	and GNU/Linux interfaces.  In particular, some
+	care is needed to check interface hardware type.
+
+	* ifconfig/system/hurd.c (_ARP_MASK): New macro.
+	(arphrd_symbols): Apply _ARP_MASK to each member `value'.
+
+2015-07-25  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Symbolic name as peer address.
+
+	* ifconfig/changeif.c (set_dstaddr): Adapt code block used
+	by set_address(), thereby first using either getaddrinfo()
+	or gethostbyname() to resolve a possibly symbolic peer
+	destination, then setting the established address.
+
+2015-07-25  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Support changing of hardware address.
+	Implement the setting of link level addresses
+	for systems running GNU/Linux.
+
+	* ifconfig/changeif.c [HAVE_NETINET_ETHER_H]: Include
+	header <netinet/ether.h>.
+	(set_hwaddr): New function.
+	(configure_if): Call set_hwaddr() whenever `ifp->valid'
+	contains IF_VALID_HWADDR.
+	* ifconfig/options.c (ifconfig_initializer): Add a further
+	NULL at the end.
+	(parse_opt_set_hwaddr): New function built by the generic
+	macro PARSE_OPT_SET_ADDR.
+	* ifconfig/options.h (struct ifconfig): Define IF_VALID_HWADDR
+	and add a new member `hwaddr'.
+	(parse_opt_set_hwaddr): New prototype.
+
+	* ifconfig/system/linux.c (system_help): Add parsed option
+	`ether|hwaddr|lladdr MACADDR'.
+	(system_parse_opt_rest): New enum value EXPECT_HWADDR.  Insert
+	this into the parser, triggering on all the keywords `ether',
+	`hwaddr', and `lladdr' for best portability.
+
+2015-07-21  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Implement a hardware list for BSD systems.
+	Patterned on the hardware recognition already in use
+	by GNU/Linux, use a similar mechanism for all of BSD.
+
+	* ifconfig/system/bsd.c (print_hwaddr_ether): New function.
+	(ift_symbols): New variable.
+	(ift_findvalue): New function.
+	(system_fh_hwaddr_query, system_fh_hwaddr)
+	(system_fh_hwtype_query, system_fh_hwtype): Adjust mechanisms
+	to use the table `ift_symbols' via ift_findvalue().
+
+
+	ifconfig: Report tunnels in two more formats.
+
+	* ifconfig/options.c (formats) <gnu-one-entry format>:
+	Add two entries for the endpoints of tunnels.
+	<osf format>: Add a line to display tunnels.
+
+
+	ifconfig: Add a missing interface flag.
+
+	* ifconfig/flags.c [IFF_CANTCONFIG] (if_flags): Add the
+	extended interface flag `CANTCONFIG'.
+
+2015-07-20  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: More info on tunnel interfaces.
+
+	* ifconfig/options.c (formats) <net-tools format>: Add
+	destination address for point-to-point interfaces.  It is
+	present in some other formats.
+	<unix format>: Display tunnel addresses for p-t-p interfaces.
+	<osf format>: Add destination address for p-t-p interfaces
+	and hardware type and hardware address for any device.
+
+	* ifconfig/system/bsd.c (system_fh_brdaddr_query): Check
+	that IFF_BROADCAST is set and access the relevant member
+	`fp->ifa_broadaddr'.
+	(system_fh_brdaddr): Check for set IFF_BROADCAST.
+	(system_fh_tunnel_query, system_fh_tundst, system_fh_tunsrc):
+	New functions.
+	* ifconfig/system/bsd.h (SYSTEM_FORMAT_HANDLER): Add the
+	keys `tunnel?', `tundst', and `tunsrc'.
+	(system_fh_tunnel_query, system_fh_tundst, system_fh_tunsrc):
+	New prototypes.
+
+2015-07-18  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	rcp: Integer overflow.
+	During transmission of large files, size exceeding 2GB,
+	a long integer variable overflows.  Issue reported and
+	identified by Wenlin Kang in
+	http://lists.gnu.org/archive/html/bug-inetutils/2015-07/msg00004.html
+
+	* src/rcp.c (sink): Change SIZE to have type `off_t'.
+
+2015-07-18  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Improve the support for GNU/Hurd.
+	Add system specific abilities, including parsing of command
+	line and hardware addresses.
+
+	* ifconfig/system.h [__GNU__]: Include "system/hurd.h".
+	* ifconfig/system.c [__GNU__]: Include "system/hurd.c".
+	* ifconfig/system/Makefile.am (noinst_HEADERS): Add the
+	files `hurd.h' and `hurd.c'.
+	* ifconfig/system/hurd.h, ifconfig/system/hurd.c: New files.
+
+	* ifconfig/system/generic.c: Include <unused-parameter.h>.
+	(system_parse_opt, system_parse_opt_rest, system_configure):
+	Apply _GL_UNUSED_PARAMETER to all arguments, as these functions
+	are placeholders and no-ops.
+
+2015-07-17  Mats Erik Andersson  <gnu@gisladisker.se>
+
+	ifconfig: Sporadically appearing regression.
+	Device flags are sometimes calculated before their
+	query using SIOCGIFFLAGS.  First observed on GNU/Hurd.
+
+	* ifconfig/printif.c (fh_brdaddr_query, fh_dstaddr_query):
+	Execute ioctl(SIOCGIFFLAGS) before calculating UFLAGS.
+
 2015-05-27  Alfred M. Szmidt  <ams@gnu.org>
 
 	* Makefile.am (ACLOCAL_AMFLAGS): New variable.
@@ -15734,8 +17026,8 @@ russion letters.  Thanks to Vladas Lapinskas <lapinskas@mail.iae.lt>.
 	(main): Add option -V (version).
 
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-    2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-    Foundation, Inc.
+    2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
+    2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 

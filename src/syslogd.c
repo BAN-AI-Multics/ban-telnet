@@ -1,7 +1,7 @@
 /* syslogd - log system messages
   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-  2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-  Foundation, Inc.
+  2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+  2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -115,6 +115,19 @@
 #ifndef HAVE_SYSLOG_INTERNAL
 # include "logprio.h"
 #endif
+
+/* Glibc prior to 2.17 included a definition of LOG_MAKEPRI
+ * that evaluated LOG_MAKEPRI(LOG_USER, 0) to (1 << 9).
+ * The first argument was shifted three bits, ignoring
+ * the definition LOG_USER = (1 << 3).  Avoid this
+ * harmful mistake.
+ */
+#ifdef LOG_MAKEPRI
+# if LOG_MAKEPRI (1, 0) > LOG_PRIMASK
+#  warning Discarding faulty LOG_MAKEPRI defined in system header file.
+#  undef LOG_MAKEPRI
+# endif
+#endif /* LOG_MAKEPRI */
 
 #ifndef LOG_MAKEPRI
 #  define LOG_MAKEPRI(fac, p)	((fac) | (p))
@@ -1144,9 +1157,9 @@ textpri (int pri)
   static char res[20];
   CODE *c_pri, *c_fac;
 
-  for (c_fac = facilitynames; c_fac->c_name
+  for (c_fac = (CODE *) facilitynames; c_fac->c_name
        && !(c_fac->c_val == LOG_FAC (pri) << 3); c_fac++);
-  for (c_pri = prioritynames; c_pri->c_name
+  for (c_pri = (CODE *) prioritynames; c_pri->c_name
        && !(c_pri->c_val == LOG_PRI (pri)); c_pri++);
 
   snprintf (res, sizeof (res), "%s.%s", c_fac->c_name, c_pri->c_name);
@@ -2247,7 +2260,7 @@ cfline (const char *line, struct filed *f)
 	}
       else
 	{
-	  pri = decode (bp, prioritynames);
+	  pri = decode (bp, (CODE *) prioritynames);
 	  if (pri < 0 || (pri > LOG_PRIMASK && pri != INTERNAL_NOPRI))
 	    {
 	      snprintf (ebuf, sizeof (ebuf),
@@ -2293,7 +2306,7 @@ cfline (const char *line, struct filed *f)
 	      }
 	  else
 	    {
-	      i = decode (buf, facilitynames);
+	      i = decode (buf, (CODE *) facilitynames);
 
 	      if (i < 0 || i > (LOG_NFACILITIES << 3))
 		{

@@ -1,5 +1,5 @@
 /* Substitute for <sys/select.h>.
-   Copyright (C) 2007-2015 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 # if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
@@ -81,8 +81,9 @@
    of 'struct timeval', and no definition of this type.
    Also, Mac OS X, AIX, HP-UX, IRIX, Solaris, Interix declare select()
    in <sys/time.h>.
-   But avoid namespace pollution on glibc systems.  */
-# ifndef __GLIBC__
+   But avoid namespace pollution on glibc systems and "unknown type
+   name" problems on Cygwin.  */
+# if !(defined __GLIBC__ || defined __CYGWIN__)
 #  include <sys/time.h>
 # endif
 
@@ -100,10 +101,18 @@
 #endif
 
 /* Get definition of 'sigset_t'.
-   But avoid namespace pollution on glibc systems.
+   But avoid namespace pollution on glibc systems and "unknown type
+   name" problems on Cygwin.
+   On OS/2 kLIBC, sigset_t is defined in <sys/select.h>, too. In addition,
+   if <sys/param.h> is included, <types.h> -> <sys/types.h> -> <sys/select.h>
+   are included. Then <signal.h> -> <pthread.h> are included by GNULIB. By the
+   way, <pthread.h> requires PAGE_SIZE defined in <sys/param.h>. However,
+   <sys/param.h> has not been processed, yet. As a result, 'PAGE_SIZE'
+   undeclared error occurs in <pthread.h>.
    Do this after the include_next (for the sake of OpenBSD 5.0) but before
    the split double-inclusion guard (for the sake of Solaris).  */
-#if !(defined __GLIBC__ && !defined __UCLIBC__)
+#if !((defined __GLIBC__ || defined __CYGWIN__ || defined __KLIBC__) \
+      && !defined __UCLIBC__)
 # include <signal.h>
 #endif
 
@@ -175,14 +184,14 @@ rpl_fd_isset (SOCKET fd, fd_set * set)
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef close
 #   define close close_used_without_including_unistd_h
-#  else
+#  elif !defined __clang__
     _GL_WARN_ON_USE (close,
                      "close() used without including <unistd.h>");
 #  endif
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef gethostname
 #   define gethostname gethostname_used_without_including_unistd_h
-#  else
+#  elif !defined __clang__
     _GL_WARN_ON_USE (gethostname,
                      "gethostname() used without including <unistd.h>");
 #  endif
@@ -217,7 +226,7 @@ rpl_fd_isset (SOCKET fd, fd_set * set)
 #   define setsockopt          setsockopt_used_without_including_sys_socket_h
 #   undef shutdown
 #   define shutdown            shutdown_used_without_including_sys_socket_h
-#  else
+#  elif !defined __clang__
     _GL_WARN_ON_USE (socket,
                      "socket() used without including <sys/socket.h>");
     _GL_WARN_ON_USE (connect,
@@ -289,12 +298,15 @@ _GL_WARN_ON_USE (pselect, "pselect is not portable - "
 #   define select rpl_select
 #  endif
 _GL_FUNCDECL_RPL (select, int,
-                  (int, fd_set *, fd_set *, fd_set *, struct timeval *));
+                  (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
+                   struct timeval *restrict));
 _GL_CXXALIAS_RPL (select, int,
-                  (int, fd_set *, fd_set *, fd_set *, struct timeval *));
+                  (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
+                   timeval *restrict));
 # else
 _GL_CXXALIAS_SYS (select, int,
-                  (int, fd_set *, fd_set *, fd_set *, struct timeval *));
+                  (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
+                   timeval *restrict));
 # endif
 _GL_CXXALIASWARN (select);
 #elif @HAVE_WINSOCK2_H@

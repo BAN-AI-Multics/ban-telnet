@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -59,7 +60,9 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <unistd.h>
-#ifdef HAVE_IDNA_H
+#if defined HAVE_IDN2_H && defined HAVE_IDN2
+# include <idn2.h>
+#elif defined HAVE_IDNA_H
 # include <idna.h>
 #endif
 
@@ -68,7 +71,7 @@
 int
 get_addrs (char *my_machine_name, char *his_machine_name)
 {
-#if HAVE_DECL_GETADDRINFO || defined HAVE_IDN
+#if HAVE_DECL_GETADDRINFO || defined HAVE_IDN || defined HAVE_IDN2
   int err;
 #endif
   char *lhost, *rhost;
@@ -79,7 +82,7 @@ get_addrs (char *my_machine_name, char *his_machine_name)
 #endif
   struct servent *sp;
 
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   err = idna_to_ascii_lz (my_machine_name, &lhost, 0);
   if (err)
     {
@@ -95,7 +98,7 @@ get_addrs (char *my_machine_name, char *his_machine_name)
 	       his_machine_name, idna_strerror (err));
       exit (-1);
     }
-#else /* !HAVE_IDN */
+#else /* !HAVE_IDN && !HAVE_IDN2 */
   lhost = my_machine_name;
   rhost = his_machine_name;
 #endif
@@ -238,7 +241,7 @@ get_addrs (char *my_machine_name, char *his_machine_name)
     }
   daemon_port = ntohs (sp->s_port);
 
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   free (lhost);
   free (rhost);
 #endif

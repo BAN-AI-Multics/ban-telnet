@@ -1,6 +1,7 @@
 /*
-  Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-  2013, 2014, 2015 Free Software Foundation, Inc.
+  Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
+  2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software
+  Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -73,6 +74,9 @@ struct ping_stat
   (t).tv_sec = (i)/PING_PRECISION;\
   (t).tv_usec = ((i)%PING_PRECISION)*(1000000/PING_PRECISION) ;\
 } while (0)
+
+
+#define PING_MIN_USER_INTERVAL (200000/PING_PRECISION)
 
 /* FIXME: Adjust IPv6 case for options and their consumption.  */
 #define _PING_BUFLEN(p, u) ((u)? ((p)->ping_datalen + sizeof (struct icmp6_hdr)) : \

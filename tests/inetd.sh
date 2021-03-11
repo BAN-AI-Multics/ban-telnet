@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+# Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -65,8 +66,9 @@ fi
 #
 do_cleandir=false
 
-# Select numerical target address, only IPv4.
+# Select numerical target addresses.
 TARGET=${TARGET:-127.0.0.1}
+TARGET6=${TARGET6:-::1}
 
 # Executable under test and helper functionality.
 #
@@ -86,6 +88,11 @@ fi
 
 if test ! -x $TCPGET; then
     echo >&2 "No executable '$TCPGET' present.  Skipping test."
+    exit 77
+fi
+
+if test "$TEST_IPV4" = "no" && test "$TEST_IPV6" = "no"; then
+    echo >&2 "Inet socket testing is disabled.  Skipping test."
     exit 77
 fi
 
@@ -112,8 +119,8 @@ if [ ! -d "$IU_TESTDIR" ]; then
 	    echo 'Failed at creating test directory.  Aborting.' >&2
 	    exit 77
 	}
-elif expr X"$IU_TESTDIR" : X"\.\{1,2\}/\{0,1\}$" >/dev/null; then
-    # Eliminating directories: . ./ .. ../
+elif expr X"$IU_TESTDIR" : X'[./]\{1,\}$' >/dev/null; then
+    # Eliminating directories: all mixtures of . and / only.
     echo 'Dangerous input for test directory.  Aborting.' >&2
     exit 77
 fi
@@ -145,8 +152,14 @@ clean_testdir () {
 # Write a fresh configuration file.  Port is input parameter.
 write_conf () {
     # First argument is port number.  Node is fixed.
-    echo "$TARGET:$1 stream tcp4 nowait $USER $ADDRPEEK addrpeek addr" \
-	> $CONF
+    : > $CONF
+
+    test "$TEST_IPV4" = "no" ||
+	echo "$TARGET:$1 stream tcp4 nowait $USER $ADDRPEEK addrpeek addr" \
+	    >> $CONF
+    test "$TEST_IPV6" = "no" ||
+	echo "$TARGET6:$1 stream tcp6 nowait $USER $ADDRPEEK addrpeek addr" \
+	    >> $CONF
 }
 
 errno=0
@@ -168,13 +181,25 @@ if test ! -f $PID; then
 else
     # Repeated SIGHUP testing, with modified port.
     for nn in 1 2 3 4 5; do
+        family=
+
 	# Check for response at chosen port.
-	$TCPGET $TARGET $PORT 2>/dev/null |
-	    grep "Your address is $TARGET." >/dev/null 2>&1 || errno=1
+	if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+	    $TCPGET $TARGET $PORT 2>/dev/null |
+		$GREP "Your address is $TARGET." >/dev/null 2>&1 \
+	    || { errno=`expr $errno + 1`; family=IPv4; }
+	fi # TEST_IPV4 && TARGET
+
+	if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
+	    $TCPGET $TARGET6 $PORT 2>/dev/null |
+		$GREP "Your address is $TARGET6." >/dev/null 2>&1 \
+	    || { errno=`expr $errno + 1`; family="${family:+$family }IPv6"; }
+	fi # TEST_IPV6 && TARGET6
 
 	test $errno -eq 0 ||
 	    { cat >&2 <<-EOT
 		*** Repetition $nn of SIGHUP test has failed. ***
+		*** Offending socket family: $family ***
 		Configuration file:
 		##### $CONF
 		`cat $CONF`

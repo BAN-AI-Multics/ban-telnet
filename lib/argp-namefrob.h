@@ -1,5 +1,5 @@
 /* Name frobnication for compiling argp outside of glibc
-   Copyright (C) 1997, 2003, 2007, 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Miles Bader <miles@gnu.ai.mit.edu>.
 
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if !_LIBC
 /* This code is written for inclusion in gnu-libc, and uses names in the
@@ -138,7 +138,7 @@
 #endif /* !_LIBC */
 
 #ifndef __set_errno
-# define __set_errno(e) (errno = (e))
+#define __set_errno(e) (errno = (e))
 #endif
 
 #if defined GNULIB_ARGP_DISABLE_DIRNAME
@@ -146,7 +146,7 @@
 #elif defined GNULIB_ARGP_EXTERN_BASENAME
 extern char *__argp_base_name (const char *arg);
 #else
-# include "dirname.h"
+# include "basename-lgpl.h"
 # define __argp_base_name last_component
 #endif
 

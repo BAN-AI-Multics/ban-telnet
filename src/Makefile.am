@@ -1,7 +1,7 @@
 #
 # Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-# 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-# Foundation, Inc.
+# 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+# 2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -34,7 +34,8 @@ AM_CPPFLAGS = \
 
 LDADD = \
 	$(iu_LIBRARIES) \
-	$(LIBUTIL)
+	$(LIBUTIL) \
+	$(PTY_LIB)
 
 inetdaemondir = @inetdaemondir@
 
@@ -121,29 +122,29 @@ SUIDMODE = -o root -m 4755
 install-exec-hook: $(traceroute_INSTALL_HOOK) $(rsh_INSTALL_HOOK) $(rlogin_INSTALL_HOOK) $(rcp_INSTALL_HOOK)
 
 install-traceroute-hook:
-	-@$(INSTALL_PROGRAM) traceroute $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) $(DESTDIR)$(bindir)/`echo traceroute|sed '$(transform)'` ; \
-	if test $$? -ne 0; then \
-	  echo "WARNING: insufficient access; not installing traceroute"; \
-	  echo "NOTE: To install traceroute run 'make install' as root"; \
+	-@$(INSTALL_PROGRAM) $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) traceroute $(DESTDIR)$(bindir)/`echo traceroute|sed '$(transform)'` ; OUTCOME=$$?; \
+	if test $$OUTCOME -ne 0; then \
+	  echo "WARNING: Failed to install traceroute (exit code $$OUTCOME)"; \
+	  echo "NOTE: This program often needs to be owned by root."; \
 	fi
 
 install-rsh-hook:
-	-@$(INSTALL_PROGRAM) rsh $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) $(DESTDIR)$(bindir)/`echo rsh|sed '$(transform)'` ; \
-	if test $$? -ne 0; then \
-	  echo "WARNING: insufficient access; not installing rsh"; \
-	  echo "NOTE: To install rsh run 'make install' as root"; \
+	-@$(INSTALL_PROGRAM) $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) rsh $(DESTDIR)$(bindir)/`echo rsh|sed '$(transform)'` ; OUTCOME=$$?; \
+	if test $$OUTCOME -ne 0; then \
+	  echo "WARNING: Failed to install rsh (exit code $$OUTCOME)"; \
+	  echo "NOTE: This program often needs to be owned by root."; \
 	fi
 
 install-rlogin-hook:
-	-@$(INSTALL_PROGRAM) rlogin $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) $(DESTDIR)$(bindir)/`echo rlogin|sed '$(transform)'` ; \
-	if test $$? -ne 0; then \
-	  echo "WARNING: insufficient access; not installing rlogin"; \
-	  echo "NOTE: To install rlogin run 'make install' as root"; \
+	-@$(INSTALL_PROGRAM) $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) rlogin $(DESTDIR)$(bindir)/`echo rlogin|sed '$(transform)'` ; OUTCOME=$$?; \
+	if test $$OUTCOME -ne 0; then \
+	  echo "WARNING: Failed to install rlogin (exit code $$OUTCOME)"; \
+	  echo "NOTE: This program often needs to be owned by root."; \
 	fi
 
 install-rcp-hook:
-	-@$(INSTALL_PROGRAM) rcp $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) $(DESTDIR)$(bindir)/`echo rcp|sed '$(transform)'` ; \
-	if test $$? -ne 0; then \
-	  echo "WARNING: insufficient access; not installing rcp"; \
-	  echo "NOTE: To install rcp run 'make install' as root"; \
+	-@$(INSTALL_PROGRAM) $(SUIDMODE) $(AM_INSTALL_PROGRAM_FLAGS) rcp $(DESTDIR)$(bindir)/`echo rcp|sed '$(transform)'` ; OUTCOME=$$?; \
+	if test $$OUTCOME -ne 0; then \
+	  echo "WARNING: Failed to install rcp (exit code $$OUTCOME)"; \
+	  echo "NOTE: This program often needs to be owned by root."; \
 	fi

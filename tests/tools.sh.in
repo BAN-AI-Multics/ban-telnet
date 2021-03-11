@@ -1,4 +1,5 @@
-# Copyright (C) 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
+# 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -18,13 +19,31 @@
 # Helpers and supporting functionality for test scripts.
 
 GREP=${GREP:-@GREP@}
+EGREP=${EGREP:-"@EGREP@"}
+FGREP=${FGREP:-"@FGREP@"}
 SED=${SED:-@SED@}
 DD=${DD:-@DD@}
 MKTEMP=${MKTEMP:-@MKTEMP@}
 NETSTAT=${NETSTAT:-@NETSTAT@}
 TARGET=${TARGET:-@TARGET@}
 TARGET6=${TARGET6:-@TARGET6@}
+TEST_IPV4=${TEST_IPV4:-@TEST_IPV4@}
 TEST_IPV6=${TEST_IPV6:-@TEST_IPV6@}
+
+RUNTIME_IPV4=${RUNTIME_IPV4:-"./runtime-ipv6$EXEEXT -4"}
+RUNTIME_IPV6=${RUNTIME_IPV6:-"./runtime-ipv6$EXEEXT -6"}
+
+# Avoid IPv4 when not functional.
+if test "$TEST_IPV4" = "auto"; then
+    $RUNTIME_IPV4 || { TEST_IPV4="no"
+	echo "Suppressing non-supported IPv4."; }
+fi
+
+# Avoid IPv6 when not functional.
+if test "$TEST_IPV6" = "auto"; then
+    $RUNTIME_IPV6 || { TEST_IPV6="no"
+	echo "Suppressing non-supported IPv6."; }
+fi
 
 # Variables for signalling presence of a utility:
 #

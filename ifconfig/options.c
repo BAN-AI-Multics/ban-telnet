@@ -1,6 +1,7 @@
 /* options.c -- process the command line options
   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-  2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+  Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -49,8 +50,9 @@ int list_mode;
 int verbose;
 
 /* Flags asked for, possibly still pending application.  */
-int pending_setflags;
-int pending_clrflags;
+static int pending_setflags = 0;
+static int pending_clrflags = 0;
+static int pending_valid = 0;
 
 /* Array of all interfaces on the command line.  */
 struct ifconfig *ifs;
@@ -61,7 +63,7 @@ int nifs;
 static struct ifconfig ifconfig_initializer = {
   NULL,				/* name */
   0,				/* valid */
-  NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0
+  NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0, NULL
 };
 
 struct format formats[] = {
@@ -84,6 +86,10 @@ struct format formats[] = {
    "${netmask?}{  netmask ${tab}{16}${netmask}${\\n}}"
    "${brdaddr?}{  broadcast ${tab}{16}${brdaddr}${\\n}}"
    "${dstaddr?}{  peer address ${tab}{16}${dstaddr}${\\n}}"
+   "${exists?}{tunnel?}{"
+     "${tunnel?}{  tunnel src ${tab}{16}${tunsrc}${\\n}}}"
+   "${exists?}{tunnel?}{"
+     "${tunnel?}{  tunnel dst ${tab}{16}${tundst}${\\n}}}"
    "${flags?}{  flags ${tab}{16}${flags}${\\n}}"
    "${mtu?}{  mtu ${tab}{16}${mtu}${\\n}}"
    "${metric?}{  metric ${tab}{16}${metric}${\\n}}"
@@ -102,6 +108,7 @@ struct format formats[] = {
    "${name}${exists?}{hwtype?}{${hwtype?}{${tab}{10}Link encap:${hwtype}}"
    "${hwaddr?}{  HWaddr ${hwaddr}}}${\\n}"
    "${addr?}{${tab}{10}inet addr:${addr}"
+   "${dstaddr?}{  P-t-P:${dstaddr}}"
    "${brdaddr?}{  Bcast:${brdaddr}}"
    "${netmask?}{  Mask:${netmask}}"
    "${newline}}"
@@ -164,6 +171,8 @@ struct format formats[] = {
    "${exists?}{hwtype?}{"
      "${hwtype?}{${\\t}${hwtype}${exists?}{hwaddr?}{"
        "${hwaddr?}{ ${hwaddr}}}${\\n}}}"
+   "${exists?}{tunnel?}{"
+     "${tunnel?}{${\\t}tunnel inet ${tunsrc} --> ${tundst}${\\n}}}"
    "${addr?}{${\\t}inet ${addr}"
    "${dstaddr?}{ --> ${dstaddr}}"
    " netmask ${netmask}{0}{%#02x}${netmask}{1}{%02x}"
@@ -179,10 +188,16 @@ struct format formats[] = {
    "${format}{check-existence}"
    "${ifdisplay?}{"
    "${name}: flags=${flags}{number}{%x}<${flags}{string}{,}>${\\n}"
+   "${exists?}{tunnel?}{"
+     "${tunnel?}{${\\t}inet tunnel src ${tunsrc} tunnel dst ${tundst}${\\n}}}"
    "${addr?}{${\\t}inet ${addr}"
+   "${dstaddr?}{ --> ${dstaddr}}"
    " netmask ${netmask}{0}{%02x}${netmask}{1}{%02x}"
    "${netmask}{2}{%02x}${netmask}{3}{%02x}"
    "${brdaddr?}{ broadcast ${brdaddr}}" "${mtu?}{ ipmtu ${mtu}}${\\n}}"
+   "${exists?}{hwtype?}{"
+     "${hwtype?}{${\\t}${hwtype}${exists?}{hwaddr?}{"
+       "${hwaddr?}{ ${hwaddr}}}${\\n}}}"
    "}"
   },
   {"check",
@@ -257,7 +272,7 @@ static struct argp_option argp_options[] = {
   { "format", FORMAT_OPTION, "FORMAT", 0,
     "select output format; set to `help' for info", GRP },
   { "up", UP_OPTION, NULL, 0,
-    "activate the interface (default if address is given)", GRP },
+    "activate the interface", GRP },
   { "down", DOWN_OPTION, NULL, 0,
     "shut the interface down", GRP },
   { "flags", 'F', "FLAG[,FLAG...]", 0,
@@ -325,6 +340,7 @@ PARSE_OPT_SET_ADDR (address, address, ADDR)
 PARSE_OPT_SET_ADDR (netmask, netmask, NETMASK)
 PARSE_OPT_SET_ADDR (dstaddr, destination / peer address, DSTADDR)
 PARSE_OPT_SET_ADDR (brdaddr, broadcast address, BRDADDR)
+PARSE_OPT_SET_ADDR (hwaddr, hardware address, HWADDR)
 
 #define PARSE_OPT_SET_INT(field, fname, fvalid) \
 void								\
@@ -367,6 +383,11 @@ void
 parse_opt_set_flag (struct ifconfig *ifp _GL_UNUSED_PARAMETER,
 		    int flag, int rev)
 {
+  if (ifp)
+    ifp->valid |= IF_VALID_FLAGS;
+  else
+    pending_valid |= IF_VALID_FLAGS;
+
   if (rev)
     {
       pending_clrflags |= flag;
@@ -482,12 +503,27 @@ parse_opt_set_default_format_from_file (const char *file)
 void
 parse_opt_finalize (struct ifconfig *ifp)
 {
+  /* The flags `--up' and `--down' are allowed early.  */
+  if (ifp && pending_valid)
+    {
+      ifp->valid |= pending_valid;
+      pending_valid = 0;
+    }
+
+  /* Only the empty set of actions, i.e., only the interface name
+   * is present on the command line, merits printout of status.
+   */
   if (ifp && !ifp->valid)
     {
       ifp->valid = IF_VALID_FORMAT;
       ifp->format = default_format;
+    }
+
+  if (ifp && (pending_setflags | pending_clrflags))
+    {
       ifp->setflags |= pending_setflags;
       ifp->clrflags |= pending_clrflags;
+      pending_setflags = pending_clrflags = 0;
     }
 }
 

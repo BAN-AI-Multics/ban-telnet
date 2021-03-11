@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+  2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -65,6 +66,18 @@ typedef struct _code {
 #ifndef LOG_PRI
 #  define LOG_PRI(p)	((p) & LOG_PRIMASK)
 #endif
+
+/* Glibc prior to 2.17 included a definition of LOG_MAKEPRI
+ * that evaluated LOG_MAKEPRI(LOG_USER, 0) to (1 << 9).
+ * The first argument was shifted three bits, ignoring
+ * the definition LOG_USER = (1 << 3).  Avoid this
+ * harmful mistake.
+ */
+#ifdef LOG_MAKEPRI
+# if LOG_MAKEPRI (1, 0) > LOG_PRIMASK
+#  undef LOG_MAKEPRI
+# endif
+#endif /* LOG_MAKEPRI */
 
 #ifndef LOG_MAKEPRI
 #  define LOG_MAKEPRI(fac, p)	((fac) | (p))

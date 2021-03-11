@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+# 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -25,8 +26,6 @@
 
 . ./tools.sh
 
-$need_mktemp || exit_no_mktemp
-
 hostname=${hostname:-../src/hostname$EXEEXT}
 
 if [ $VERBOSE ]; then
@@ -40,17 +39,29 @@ posttest () {
     test -n "$NAMEFILE" && test -r "$NAMEFILE" && rm "$NAMEFILE"
 }
 
-$hostname || errno=$?
+our_hostname=`$hostname` || errno=$?
 test $errno -eq 0 || echo "Failed to get hostname." >&2
 test $errno -eq 0 || exit $errno
 
-test `$hostname` = `uname -n` || errno=$?
-test $errno -eq 0 || echo "Failed to get same hostname as uname does." >&2
-test $errno -eq 0 || exit $errno
+sys_hostname=`hostname` || errno=$?
+if test $errno -ne 0; then
+    echo "System hostname failed (rc $errno out $sys_hostname)." >&2
+    errno=0
+    sys_hostname=`uname -n` || errno=$?
+    test $errno -eq 0 || echo "Failed uname (rc $errno out $sys_hostname)." >&2
+    test $errno -eq 0 || exit $errno
+fi
+
+if test "$our_hostname" != "$sys_hostname"; then
+    echo "Hostname mismatch $our_hostname != $sys_hostname"
+    exit 1
+fi
 
 if test `func_id_uid` != 0; then
     echo "hostname: skipping tests to set host name"
 else
+    $need_mktemp || exit_no_mktemp
+
     # Only run this if hostname succeeded...
     if test $errno -eq 0; then
 	$hostname `$hostname` || errno=$?
@@ -63,7 +74,7 @@ else
 
 	trap posttest 0 1 2 3 15
 
-	SAVEDNAME=`hostname` || errno=$?
+	SAVEDNAME=`$hostname` || errno=$?
 	echo $SAVEDNAME > $NAMEFILE
 
 	if test $errno -eq 0 && test -s $NAMEFILE; then

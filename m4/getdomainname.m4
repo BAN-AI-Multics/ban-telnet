@@ -1,5 +1,5 @@
 # getdomainname.m4 serial 10
-dnl Copyright (C) 2002-2003, 2008-2015 Free Software Foundation, Inc.
+dnl Copyright (C) 2002-2003, 2008-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -16,7 +16,7 @@ AC_DEFUN([gl_FUNC_GETDOMAINNAME],
   dnl Where is getdomainname() defined?
   dnl - On Solaris, it is in libnsl. But this function is not declared and
   dnl   is discouraged, see
-  dnl   <http://www.sun.com/software/solaris/programs/abi/appcert_faq.xml#q18>.
+  dnl   <https://web.archive.org/web/20100121182558/http://www.sun.com/software/solaris/programs/abi/appcert_faq.xml#q18>.
   dnl   We need to avoid a collision with this function.
   dnl - Otherwise it is in libc.
   AC_CHECK_FUNCS([getdomainname], , [

@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free
+# Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -48,6 +49,8 @@ fi
 set -u
 
 : ${EXEEXT:=}
+
+. ./tools.sh
 
 silence=
 if test -z "${VERBOSE+set}"; then
@@ -127,7 +130,7 @@ make_setup () {
 
   # Change setup whenever the address is in use.
   get_gnu_output |
-    grep "inet address  $ADDRESS1_PATTERN" >/dev/null 2>&1 &&
+    $GREP "inet address  $ADDRESS1_PATTERN" >/dev/null 2>&1 &&
       ADDRESS=$ADDRESS2 ADDRESS_PATTERN=$ADDRESS2_PATTERN \
       BRDADDR=$BRDADDR2 BRDADDR_PATTERN=$BRDADDR2_PATTERN \
       NETMASK=$NETMASK2 NETMASK_HEX=$NETMASK2_HEX \
@@ -148,7 +151,7 @@ increase_status () {
 
 check_output () {
   echo "$OUTPUT" |
-  grep "$1" > /dev/null || { echo >&2 "$2"; increase_status; }
+  $GREP "$1" > /dev/null || { echo >&2 "$2"; increase_status; }
 }
 
 #
@@ -162,8 +165,8 @@ $silence cat <<-HERE
 $IFCONFIG -i $IFACE --down >/dev/null
 OUTPUT=`get_gnu_output`
 
-echo "$OUTPUT" | grep flags |
-  grep -v "flags         UP" >/dev/null ||
+echo "$OUTPUT" | $GREP flags |
+  $GREP -v "flags         UP" >/dev/null ||
     { echo >&2 'Failed to bring interface down with switch.'
       increase_status
     }
@@ -197,7 +200,7 @@ check_output	"flags         UP" \
 # Diagnose a failure to implicitly bring the interface up.
 #
 echo "$OUTPUT" |
-  grep "flags         UP" >/dev/null 2>&1 ||
+  $GREP "flags         UP" >/dev/null 2>&1 ||
     {
       $silence cat <<-HERE
 	** Set only address and explicit 'up' switches:
@@ -212,7 +215,7 @@ echo "$OUTPUT" |
 
       # As a last resort, try a single imperative 'up'.
       echo "$OUTPUT" |
-	grep "flags         UP" >/dev/null 2>&1 ||
+	$GREP "flags         UP" >/dev/null 2>&1 ||
 	  {
 	    $silence cat <<-HERE
 		** Apply a single switch:
@@ -222,7 +225,7 @@ echo "$OUTPUT" |
 	    $IFCONFIG --interface=$IFACE --up >/dev/null
 	    OUTPUT=`get_gnu_output`
 
-	    if echo "$OUTPUT" | grep "flags         UP" >/dev/null 2>&1
+	    if echo "$OUTPUT" | $GREP "flags         UP" >/dev/null 2>&1
 	    then
 	      echo >&2 '!!! This platform needs "--up" in splendid isolation.'
 	    else
@@ -263,8 +266,8 @@ $IFCONFIG --interface=$IFACE --down >/dev/null
 OUTPUT=`get_gnu_output`
 
 # The absence of the flag UP indicates success.
-echo "$OUTPUT" | grep flags |
-  grep -v "flags         UP" >/dev/null ||
+echo "$OUTPUT" | $GREP flags |
+  $GREP -v "flags         UP" >/dev/null ||
     { echo >&2 'Failed to bring interface down with "--down".'
       increase_status
     }
@@ -293,8 +296,8 @@ $silence cat <<-HERE
 $IFCONFIG $IFACE down >/dev/null
 OUTPUT=`get_gnu_output`
 
-echo "$OUTPUT" | grep flags |
-  grep -v "flags         UP" >/dev/null ||
+echo "$OUTPUT" | $GREP flags |
+  $GREP -v "flags         UP" >/dev/null ||
     { echo >&2 'Failed to bring interface down with directive.'
       increase_status
     }
@@ -327,7 +330,7 @@ check_output	"flags         UP" \
 # Diagnose this last failure.
 #
 echo "$OUTPUT" |
-  grep "flags         UP" >/dev/null 2>&1 ||
+  $GREP "flags         UP" >/dev/null 2>&1 ||
     {
       $silence cat <<-HERE
 	** Set only address and explicit 'up' switches:
@@ -342,7 +345,7 @@ echo "$OUTPUT" |
 
       # As a last resort, try a single imperative 'up'.
       echo "$OUTPUT" |
-	grep "flags         UP" >/dev/null 2>&1 ||
+	$GREP "flags         UP" >/dev/null 2>&1 ||
 	  {
 	    $silence cat <<-HERE
 		** Apply a single switch:
@@ -352,7 +355,7 @@ echo "$OUTPUT" |
 	    $IFCONFIG $IFACE up >/dev/null
 	    OUTPUT=`get_gnu_output`
 
-	    if echo "$OUTPUT" | grep "flags         UP" >/dev/null 2>&1
+	    if echo "$OUTPUT" | $GREP "flags         UP" >/dev/null 2>&1
 	    then
 	      echo >&2 '!!! This platform needs specific "ifconfig '$IFACE' up".'
 	    else

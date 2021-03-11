@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-  2013, 2014, 2015 Free Software Foundation, Inc.
+  2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software
+  Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -50,6 +51,8 @@
 #include <config.h>
 
 #include "telnetd.h"
+
+#include <fcntl.h>	/* Solaris */
 
 /*
  * local variables
@@ -304,10 +307,18 @@ localstat (void)
 	}
       else if (lmodetype == REAL_LINEMODE)
 	{
+	  char data[8];
+
 	  send_do (TELOPT_LINEMODE, 1);
 	  /* send along edit modes */
-	  net_output_data ("%c%c%c%c%c%c%c", IAC, SB,
-			   TELOPT_LINEMODE, LM_MODE, useeditmode, IAC, SE);
+	  sprintf (data, "%c%c%c%c%c%c%c",
+		   IAC, SB, TELOPT_LINEMODE,
+		   LM_MODE, useeditmode,
+		   IAC, SE);
+	  net_output_datalen (data, sizeof (data));
+	  DEBUG (debug_options, 1,
+		 printsub ('>', data + 2, sizeof (data) - 2));
+
 	  editmode = useeditmode;
 	}
       linemode = uselinemode;
@@ -331,8 +342,16 @@ localstat (void)
 	  /*
 	   * Send along appropriate edit mode mask.
 	   */
-	  net_output_data ("%c%c%c%c%c%c%c", IAC, SB,
-			   TELOPT_LINEMODE, LM_MODE, useeditmode, IAC, SE);
+	  char data[8];
+
+	  sprintf (data, "%c%c%c%c%c%c%c",
+		   IAC, SB, TELOPT_LINEMODE,
+		   LM_MODE, useeditmode,
+		   IAC, SE);
+	  net_output_datalen (data, sizeof (data));
+	  DEBUG (debug_options, 1,
+		 printsub ('>', data + 2, sizeof (data) - 2));
+
 	  editmode = useeditmode;
 	}
 
@@ -375,20 +394,29 @@ flowstat (void)
 {
   if (his_state_is_will (TELOPT_LFLOW))
     {
+      char data[7];
+
       if (tty_flowmode () != flowmode)
 	{
 	  flowmode = tty_flowmode ();
-	  net_output_data ("%c%c%c%c%c%c",
-			   IAC, SB, TELOPT_LFLOW,
-			   flowmode ? LFLOW_ON : LFLOW_OFF, IAC, SE);
+	  sprintf (data, "%c%c%c%c%c%c",
+		   IAC, SB, TELOPT_LFLOW,
+		   flowmode ? LFLOW_ON : LFLOW_OFF,
+		   IAC, SE);
+	  net_output_datalen (data, sizeof (data));
+	  DEBUG (debug_options, 1,
+		 printsub ('>', data + 2, sizeof (data) - 2));
 	}
       if (tty_restartany () != restartany)
 	{
 	  restartany = tty_restartany ();
-	  net_output_data ("%c%c%c%c%c%c",
-			   IAC, SB, TELOPT_LFLOW,
-			   restartany ? LFLOW_RESTART_ANY
-			   : LFLOW_RESTART_XON, IAC, SE);
+	  sprintf (data, "%c%c%c%c%c%c",
+		   IAC, SB, TELOPT_LFLOW,
+		   restartany ? LFLOW_RESTART_ANY : LFLOW_RESTART_XON,
+		   IAC, SE);
+	  net_output_datalen (data, sizeof (data));
+	  DEBUG (debug_options, 1,
+		 printsub ('>', data + 2, sizeof (data) - 2));
 	}
     }
 }
@@ -451,6 +479,8 @@ clientstat (register int code, register int parm1, register int parm2)
 	  if (lmodetype == REAL_LINEMODE && uselinemode)
 	    if (uselinemode)
 	      {
+		char data[8];
+
 		useeditmode = 0;
 		if (tty_isediting ())
 		  useeditmode |= MODE_EDIT;
@@ -460,9 +490,15 @@ clientstat (register int code, register int parm1, register int parm2)
 		  useeditmode |= MODE_SOFT_TAB;
 		if (tty_islitecho ())
 		  useeditmode |= MODE_LIT_ECHO;
-		net_output_data ("%c%c%c%c%c%c%c", IAC,
-				 SB, TELOPT_LINEMODE, LM_MODE,
-				 useeditmode, IAC, SE);
+
+		sprintf (data, "%c%c%c%c%c%c%c",
+			 IAC, SB, TELOPT_LINEMODE,
+			 LM_MODE, useeditmode,
+			 IAC, SE);
+		net_output_datalen (data, sizeof (data));
+		DEBUG (debug_options, 1,
+		       printsub ('>', data + 2, sizeof (data) - 2));
+
 		editmode = useeditmode;
 	      }
 
@@ -520,9 +556,15 @@ clientstat (register int code, register int parm1, register int parm2)
 
 	    if (!ack)
 	      {
-		net_output_data ("%c%c%c%c%c%c%c", IAC,
-				 SB, TELOPT_LINEMODE, LM_MODE,
-				 useeditmode | MODE_ACK, IAC, SE);
+		char data[8];
+
+		sprintf (data, "%c%c%c%c%c%c%c",
+			 IAC, SB, TELOPT_LINEMODE,
+			 LM_MODE, useeditmode | MODE_ACK,
+			 IAC, SE);
+		net_output_datalen (data, sizeof (data));
+		DEBUG (debug_options, 1,
+		       printsub ('>', data + 2, sizeof (data) - 2));
 	      }
 
 	    editmode = useeditmode;
@@ -552,7 +594,23 @@ clientstat (register int code, register int parm1, register int parm2)
 
 	ws.ws_col = parm1;
 	ws.ws_row = parm2;
+
+# if !defined SOLARIS && !defined SOLARIS10
 	ioctl (pty, TIOCSWINSZ, (char *) &ws);
+# else /* SOLARIS || SOLARIS10 */
+	{
+	  int tty = pty;
+	  char *name = ptsname (pty);
+
+	  if (name)
+	    tty = open (name, O_RDWR | O_NONBLOCK | O_NOCTTY);
+
+	  ioctl (tty, TIOCSWINSZ, (char *) &ws);
+
+	  if (name)
+	    close (tty);
+	}
+# endif /* SOLARIS || SOLARIS10 */
       }
 #endif /* TIOCSWINSZ */
 
@@ -643,9 +701,25 @@ defer_terminit (void)
       memset ((char *) &ws, 0, sizeof (ws));
       ws.ws_col = def_col;
       ws.ws_row = def_row;
+
+# if !defined SOLARIS && !defined SOLARIS10
       ioctl (pty, TIOCSWINSZ, (char *) &ws);
+# else /* SOLARIS || SOLARIS10 */
+      {
+	int tty = pty;
+	char *name = ptsname (pty);
+
+	if (name)
+	  tty = open (name, O_RDWR | O_NONBLOCK | O_NOCTTY);
+
+	ioctl (tty, TIOCSWINSZ, (char *) &ws);
+
+	if (name)
+	  close (tty);
+      }
+# endif /* SOLARIS || SOLARIS10 */
     }
-#endif
+#endif /* TIOCSWINSZ */
 
   /*
    * The only other module that currently defers anything.

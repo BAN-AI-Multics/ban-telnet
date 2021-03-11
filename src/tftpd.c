@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -221,7 +222,7 @@ main (int argc, char *argv[])
   iu_argp_init ("tftpd", default_program_authors);
   argp_parse (&argp, argc, argv, 0, &index, NULL);
 
-  openlog ("tftpd", LOG_PID, LOG_FTP);
+  openlog ("tftpd", LOG_NDELAY | LOG_PID, LOG_FTP);
 
   if (index < argc)
     {
@@ -416,7 +417,7 @@ main (int argc, char *argv[])
 
 struct formats;
 int validate_access (char **, int);
-void send_file (struct formats *);
+void tftpd_sendfile (struct formats *);
 void recvfile (struct formats *);
 
 struct formats
@@ -428,8 +429,8 @@ struct formats
   int f_convert;
 } formats[] =
   {
-    {"netascii", validate_access, send_file, recvfile, 1},
-    {"octet", validate_access, send_file, recvfile, 0},
+    {"netascii", validate_access, tftpd_sendfile, recvfile, 1},
+    {"octet", validate_access, tftpd_sendfile, recvfile, 0},
     {0, NULL, NULL, NULL, 0}
   };
 
@@ -648,7 +649,7 @@ timer (int sig _GL_UNUSED_PARAMETER)
  * Send the requested file.
  */
 void
-send_file (struct formats *pf)
+tftpd_sendfile (struct formats *pf)
 {
   struct tftphdr *dp, *r_init (void);
   register struct tftphdr *ap;	/* ack packet */
@@ -864,8 +865,8 @@ nak (int error)
       pe->e_msg = strerror (error - 100);
       tp->th_code = EUNDEF;	/* set 'undef' errorcode */
     }
-  strcpy (tp->th_msg, pe->e_msg);
   length = strlen (pe->e_msg);
+  memcpy (tp->th_msg, pe->e_msg, length);
   tp->th_msg[length] = '\0';
   length += 5;
   if (sendto (peer, buf, length, 0, (struct sockaddr *) &from, fromlen) != length)

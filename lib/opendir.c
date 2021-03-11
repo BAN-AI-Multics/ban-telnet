@@ -1,5 +1,5 @@
 /* Start reading the entries of a directory.
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -40,6 +40,21 @@
 # include <unistd.h>
 #endif
 
+#ifdef __KLIBC__
+# include <io.h>
+# include <fcntl.h>
+#endif
+
+#if defined _WIN32 && ! defined __CYGWIN__
+/* Don't assume that UNICODE is not defined.  */
+# undef WIN32_FIND_DATA
+# define WIN32_FIND_DATA WIN32_FIND_DATAA
+# undef GetFullPathName
+# define GetFullPathName GetFullPathNameA
+# undef FindFirstFile
+# define FindFirstFile FindFirstFileA
+#endif
+
 DIR *
 opendir (const char *dir_name)
 {
@@ -51,6 +66,22 @@ opendir (const char *dir_name)
   if (dirp == NULL)
     return NULL;
 
+# ifdef __KLIBC__
+  {
+    int fd = open (dir_name, O_RDONLY);
+    if (fd == -1 || _gl_register_dirp_fd (fd, dirp))
+      {
+        int saved_errno = errno;
+
+        close (fd);
+        closedir (dirp);
+
+        errno = saved_errno;
+
+        return NULL;
+      }
+  }
+# endif
 #else
 
   char dir_name_mask[MAX_PATH + 1 + 1 + 1];

@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -74,7 +75,9 @@
 #include <arpa/inet.h>
 #include <arpa/telnet.h>
 
-#ifdef HAVE_IDNA_H
+#if defined HAVE_IDN2_H && defined HAVE_IDN2
+# include <idn2.h>
+#elif defined HAVE_IDNA_H
 # include <idna.h>
 #endif
 
@@ -1658,7 +1661,7 @@ quit (void)
 }
 
 int
-logout (void)
+logoutcmd (void)
 {
   send_do (TELOPT_LOGOUT, 1);
   netflush ();
@@ -2456,7 +2459,7 @@ tn (int argc, char *argv[])
   const int on = 1;
   int err;
   char *cmd, *hostp = 0, *portp = 0, *user = 0;
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   char *hosttmp = 0;
 #endif
 
@@ -2585,10 +2588,8 @@ tn (int argc, char *argv[])
     }
 
   free (hostname);
-  hostname = malloc (strlen (hostp) + 1);
-  if (hostname)
-    strcpy (hostname, hostp);
-  else
+  hostname = strdup (hostp);
+  if (!hostname)
     {
       printf ("Can't allocate memory to copy hostname\n");
       return 0;
@@ -2606,7 +2607,7 @@ tn (int argc, char *argv[])
   }
 #endif /* AUTHENTICATION || ENCRYPTION */
 
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   err = idna_to_ascii_lz (hostp, &hosttmp, 0);
   if (err)
     {
@@ -2615,7 +2616,7 @@ tn (int argc, char *argv[])
       return 0;
     }
   hostp = hosttmp;
-#endif /* !HAVE_IDN */
+#endif /* !HAVE_IDN && !HAVE_IDN2 */
 
 #ifdef IPV6
   hints.ai_socktype = SOCK_STREAM;
@@ -2790,7 +2791,7 @@ tn (int argc, char *argv[])
 #endif /* !IPV6 */
 
   cmdrc (hostp, hostname);
-#ifdef HAVE_IDN
+#if defined HAVE_IDN || defined HAVE_IDN2
   /* Last use of HOSTP, alias HOSTTMP.  */
   free (hosttmp);
 #endif
@@ -2862,7 +2863,7 @@ static int help (int argc, char **argv);
 
 static Command cmdtab[] = {
   {"close", closehelp, bye, 1},
-  {"logout", logouthelp, logout, 1},
+  {"logout", logouthelp, logoutcmd, 1},
   {"display", displayhelp, display, 0},
   {"mode", modestring, modecmd, 0},
   {"open", openhelp, tn, 0},
@@ -3110,11 +3111,11 @@ cmdrc (char *m1, char *m2)
 	  if (isspace (line[0]))
 	    continue;
 	  if (strncasecmp (line, m1, l1) == 0)
-	    strncpy (line, &line[l1], sizeof (line) - l1);
+	    memmove (line, &line[l1], strlen(&line[l1]) + 1);
 	  else if (strncasecmp (line, m2, l2) == 0)
-	    strncpy (line, &line[l2], sizeof (line) - l2);
+	    memmove (line, &line[l2], strlen(&line[l2]) + 1);
 	  else if (strncasecmp (line, "DEFAULT", 7) == 0)
-	    strncpy (line, &line[7], sizeof (line) - 7);
+	    memmove (line, &line[7], strlen(&line[7]) + 1);
 	  else
 	    continue;
 	  if (line[0] != ' ' && line[0] != '\t' && line[0] != '\n')

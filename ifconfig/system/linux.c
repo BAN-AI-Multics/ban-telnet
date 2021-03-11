@@ -1,6 +1,7 @@
 /* linux.c -- Linux specific code for ifconfig
   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-  2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+  Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -42,7 +43,9 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <net/if_arp.h>
-#include <linux/if_ether.h>
+#ifdef HAVE_NETINET_ETHER_H
+# include <netinet/ether.h>
+#endif
 
 #include <read-file.h>
 #include <unused-parameter.h>
@@ -675,6 +678,7 @@ system_fh_txqlen (format_data_t form, int argc, char *argv[])
 const char *system_help = "\
  NAME [ADDR] [broadcast BRDADDR]\
  [pointopoint|dstaddr DSTADDR] [netmask MASK]\
+ [ether|hwaddr|lladdr MACADDR]\
  [metric N] [mtu N] [txqueuelen N] [up|down] [FLAGS]";
 
 void
@@ -768,6 +772,7 @@ system_parse_opt_rest (struct ifconfig **ifp, int argc, char *argv[])
     EXPECT_BROADCAST,
     EXPECT_DSTADDR,
     EXPECT_NETMASK,
+    EXPECT_HWADDR,
     EXPECT_MTU,
     EXPECT_METRIC,
     EXPECT_TXQLEN,
@@ -790,6 +795,10 @@ system_parse_opt_rest (struct ifconfig **ifp, int argc, char *argv[])
 
 	case EXPECT_NETMASK:
 	  parse_opt_set_netmask (*ifp, argv[i]);
+	  break;
+
+	case EXPECT_HWADDR:
+	  parse_opt_set_hwaddr (*ifp, argv[i]);
 	  break;
 
 	case EXPECT_MTU:
@@ -828,6 +837,10 @@ system_parse_opt_rest (struct ifconfig **ifp, int argc, char *argv[])
 	expect = EXPECT_DSTADDR;
       else if (!strcmp (argv[i], "netmask"))
 	expect = EXPECT_NETMASK;
+      else if (!strcmp (argv[i], "ether")
+	       || !strcmp(argv[i], "hwaddr")
+	       || !strcmp(argv[i], "lladdr"))
+	expect = EXPECT_HWADDR;
       else if (!strcmp (argv[i], "metric"))
 	expect = EXPECT_METRIC;
       else if (!strcmp (argv[i], "mtu"))
@@ -857,6 +870,10 @@ system_parse_opt_rest (struct ifconfig **ifp, int argc, char *argv[])
 
     case EXPECT_NETMASK:
       error (0, 0, "option `netmask' requires an argument");
+      break;
+
+    case EXPECT_HWADDR:
+      error (0, 0, "option `hwaddr' requires an argument");
       break;
 
     case EXPECT_METRIC:
@@ -914,7 +931,8 @@ linux_if_nameindex (void)
   if (fd < 0)
     return NULL;
 
-  content = read_file (PATH_PROCNET_DEV, &length);
+  /* Read a public text file.  */
+  content = read_file (PATH_PROCNET_DEV, 0, &length);
   if (content == NULL)
     return NULL;
 

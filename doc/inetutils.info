@@ -1,10 +1,11 @@
-This is inetutils.info, produced by makeinfo version 5.2 from
+This is inetutils.info, produced by makeinfo version 6.5 from
 inetutils.texi.
 
-This manual documents version 1.9.4 of the GNU networking utilities.
+This manual documents version 2.0 of the GNU networking utilities.
 
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
+2021 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -24,6 +25,7 @@ START-INFO-DIR-ENTRY
 * ftp: (inetutils)ftp invocation.                 FTP client.
 * ftpd: (inetutils)ftpd invocation.               FTP Daemon.
 * hostname: (inetutils)hostname invocation.       Show or set system host name.
+* ifconfig: (inetutils)ifconfig invocation.       Configure network interfaces.
 * inetd: (inetutils)inetd invocation.             Internet super-server.
 * logger: (inetutils)logger invocation.           Send messages to the system log.
 * ping6: (inetutils)ping6 invocation.             Packets to IPv6 network hosts.
@@ -53,10 +55,11 @@ File: inetutils.info,  Node: Top,  Next: Introduction,  Up: (dir)
 GNU Inetutils
 *************
 
-This manual documents version 1.9.4 of the GNU networking utilities.
+This manual documents version 2.0 of the GNU networking utilities.
 
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
+2021 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -74,6 +77,7 @@ Diagnostic programs
 
 * dnsdomainname invocation::           Show DNS domain name.
 * hostname invocation::                Show or set system host name.
+* ifconfig invocation::                Configure network interfaces.
 * logger invocation::                  Send messages to system log.
 * ping invocation::                    Packets to network hosts.
 * ping6 invocation::                   Packets to IPv6 network hosts.
@@ -211,7 +215,7 @@ Synopsis:
 There is no command specific option.
 
 
-File: inetutils.info,  Node: hostname invocation,  Next: logger invocation,  Prev: dnsdomainname invocation,  Up: Top
+File: inetutils.info,  Node: hostname invocation,  Next: ifconfig invocation,  Prev: dnsdomainname invocation,  Up: Top
 
 4 'hostname': Show or set system host name.
 *******************************************
@@ -259,9 +263,163 @@ where NAME is the name to be used by the running host.
      Get NIS/YP domain name.
 
 
-File: inetutils.info,  Node: logger invocation,  Next: ping invocation,  Prev: hostname invocation,  Up: Top
+File: inetutils.info,  Node: ifconfig invocation,  Next: logger invocation,  Prev: hostname invocation,  Up: Top
 
-5 'logger': Send messages to system log
+5 'ifconfig': Configure network interfaces
+******************************************
+
+'ifconfig' is a program to retrieve and to set selected properties of
+network interfaces.  It is best viewed as a tool to get information,
+rather than for changing the behaviour of adapters, since it is hard to
+support property setting in a portable manner.
+
+Synopsis:
+
+     ifconfig IFACE [ARG...]
+     ifconfig -i IFACE [OPTION...] [-i IFACE2 [OPTION...]]
+
+5.1 Command line options
+========================
+
+'-a'
+'--all'
+     Display all available interfaces, including those that not are
+     marked as 'up', i.e., also the inactive interfaces.
+
+'-A ADDR'
+'--address=ADDR'
+     Set address of selected interface to ADDR.
+
+'-b ADDR'
+'-B ADDR'
+'--brdaddr=ADDR'
+'--broadcast=ADDR'
+     Set broadcast address of selected interface to ADDR.
+
+'-d ADDR'
+'-p ADDR'
+'--dstaddr=ADDR'
+'--peer=ADDR'
+     Set destination (peer) address of selected interface.
+
+'--down'
+     Deactivate the selected interface.
+
+'-F LIST'
+'--flags=LIST'
+     Change those interface flags mentioned in LIST.  The argument is a
+     comma separated list of one ore more flag names to be set, or in
+     case the name is prepended with 'no', the corresponding flag is
+     cleared.  The output of 'ifconfig' with the option '--help'
+     contains a list of available flag names.
+
+'--format=FORMAT'
+     Select output format; the value 'help' prints a list of all
+     available formats.
+
+'-i NAME'
+'--interface=NAME'
+     Select the named interface for any following action.
+
+'-l'
+'--list'
+     List, with name only, all available interfaces, or only those
+     selected should at least one option '-i' have specified.
+
+'-m MASK'
+'--netmask=MASK'
+     Set netmask of selected interface to MASK.
+
+'--metric=N'
+     Set the metric of selected interface to the number N.
+
+'-M N'
+'--mtu=N'
+     Set MTU of selected interface to the number N.
+
+'-s'
+'--short'
+     Use short output format.  This is identical to specifying
+     '--format=netstat'.
+
+'--up'
+     Activate the selected interface.
+
+'-v'
+'--verbose'
+     Print informational messages when configuring an interface.
+
+   Observe that the use of program options is the only manner in which
+'ifconfig' is able to handle multiple interfaces in one invocation.
+Once a particular interface has been selected using '-i', it is affected
+by any following option until replaced by another interface selector.
+This is also the main cause, that 'ifconfig' is unable to treat options
+independently of their order, as is mostly the case in other GNU
+software.
+
+5.2 Formatted status output
+===========================
+
+The status of one or more interfaces can be presented in a number of
+different formats.  A list of them is printed by the option
+'--format=help'.  In the following table the valid formats are given,
+each is used in the form '--format=NAME'.
+
+check
+check-existence
+?
+     Place holders for the ability to check whether the interfaces
+     selected by one or more options '-i' are determining existing
+     interfaces in the running system.  No output in case of success, an
+     error message in case of a failure.
+
+gnu
+default
+     Standard GNU output format.
+
+gnu-one-entry
+     Like the previous format, but with intermediary newlines removed.
+
+help
+     Display a list of valid formats, together with a short description
+     for each choice.
+
+net-tools
+     Imitation of presentation used by the implementation in
+     'net-tools'.  Default format for GNU/Linux.
+
+netstat
+     Terse output with statistics, similar to that of 'netstat -i'.
+
+osf
+     Format variant of 'unix' preferred by OSF's implementation.
+
+unix
+     Traditional UNIX type format.  Default for BSD, HPUX and Solaris.
+
+5.3 Legacy syntax
+=================
+
+The traditional mode of invoking 'ifconfig' is via a parsed command
+line, without all use of program switches and options, relying fully on
+argument parsing.  This mode of use is supported also in the present
+implementation, but keep in mind that only one interface can be
+manipulated using this legacy syntax.
+
+     ifconfig NAME [ADDR [DSTADDR]] [broadcast BRDADDR] [netmask MASK]
+              [metric N] [mtu N] [up|down]
+
+   As is conventional, only the primary address and possibly the peer
+destination address are stated as bare arguments, without a specifying
+keyword.  Some slight variation on this syntax will depend on the target
+system for which the program is being built, as not all platforms
+support identical abilities.  The best information is found via the
+usage massage 'ifconfig --usage'.
+
+
+File: inetutils.info,  Node: logger invocation,  Next: ping invocation,  Prev: ifconfig invocation,  Up: Top
+
+6 'logger': Send messages to system log
 ***************************************
 
 'logger' is a program to send entries to system log.  It provides a
@@ -272,7 +430,7 @@ Synopsis:
 
      logger [OPTION...] [MESSAGE]
 
-5.1 Command line options
+6.1 Command line options
 ========================
 
 '-4'
@@ -355,7 +513,7 @@ Synopsis:
 the log.  If not specified, and the '-f' flag is not provided, standard
 input is logged.
 
-5.2 Examples
+6.2 Examples
 ============
 
 The following examples illustrate the usage of the 'logger' command:
@@ -379,7 +537,7 @@ The following examples illustrate the usage of the 'logger' command:
 
 File: inetutils.info,  Node: ping invocation,  Next: ping6 invocation,  Prev: logger invocation,  Up: Top
 
-6 'ping': Packets to network hosts
+7 'ping': Packets to network hosts
 **********************************
 
 'ping' uses ICMP datagrams to provoke a response from the chosen
@@ -409,7 +567,7 @@ only use case.
 
 File: inetutils.info,  Node: Ping options,  Next: Fault isolation,  Up: ping invocation
 
-6.1 Command line options
+7.1 Command line options
 ========================
 
 Selection of packet type is handled by these first options:
@@ -541,7 +699,7 @@ matter.
 
 File: inetutils.info,  Node: Fault isolation,  Next: Duplicate and damaged packets,  Prev: Ping options,  Up: ping invocation
 
-6.2 Using ping for network fault isolation
+7.2 Using ping for network fault isolation
 ==========================================
 
 When using 'ping' for fault isolation, it should first be run on the
@@ -561,7 +719,7 @@ unwise to use ping during normal operations or from automated scripts.
 
 File: inetutils.info,  Node: Duplicate and damaged packets,  Next: Data patterns,  Prev: Fault isolation,  Up: ping invocation
 
-6.3 Duplicate and damaged packets
+7.3 Duplicate and damaged packets
 =================================
 
 Ping will report duplicate and damaged packets.  Duplicate packets
@@ -577,7 +735,7 @@ network or in the hosts).
 
 File: inetutils.info,  Node: Data patterns,  Next: TTL details,  Prev: Duplicate and damaged packets,  Up: ping invocation
 
-6.4 Trying different data patterns
+7.4 Trying different data patterns
 ==================================
 
 The (inter)network layer should never treat packets differently
@@ -602,7 +760,7 @@ using the '-p' option of ping.
 
 File: inetutils.info,  Node: TTL details,  Next: Further remarks,  Prev: Data patterns,  Up: ping invocation
 
-6.5 TTL details
+7.5 TTL details
 ===============
 
 The TTL field, "Time To Live", of an IP packet represents the maximum
@@ -640,7 +798,7 @@ one of three things to the TTL field in its response packet:
 
 File: inetutils.info,  Node: Further remarks,  Prev: TTL details,  Up: ping invocation
 
-6.6 Further observations
+7.6 Further observations
 ========================
 
 Many hosts and gateways ignore the 'RECORD_ROUTE' field, since the
@@ -658,7 +816,7 @@ answer the request with a valid netmask, or to drop the request, causing
 
 File: inetutils.info,  Node: ping6 invocation,  Next: traceroute invocation,  Prev: ping invocation,  Up: Top
 
-7 'ping6': Packets to IPv6 network hosts
+8 'ping6': Packets to IPv6 network hosts
 ****************************************
 
 'ping6' uses ICMPv6 datagrams to get a response from the chosen
@@ -682,7 +840,7 @@ is by far not the only use case.
    This command is a close parallel to 'ping', except that it handles
 IPv6 and is thus not able to handle peculiarities of IPv4.
 
-7.1 Command line options
+8.1 Command line options
 ========================
 
 '-c N'
@@ -773,7 +931,7 @@ invocation::.
 
 File: inetutils.info,  Node: traceroute invocation,  Next: whois invocation,  Prev: ping6 invocation,  Up: Top
 
-8 'traceroute': Trace the route to a host
+9 'traceroute': Trace the route to a host
 *****************************************
 
 'traceroute' prints a trace of the route IP packets are travelling to a
@@ -783,7 +941,7 @@ Synopsis:
 
      traceroute [OPTION...] HOST
 
-8.1 Command line options
+9.1 Command line options
 ========================
 
 '-f NUM'
@@ -839,7 +997,7 @@ Synopsis:
      Set timeout in seconds, within which a returning response packet is
      accepted as such.  Default waiting time is three seconds.
 
-8.2 Diagnostic tokens
+9.2 Diagnostic tokens
 =====================
 
 During execution, 'traceroute' sends three datagrams for each value for
@@ -885,8 +1043,8 @@ by an additional short hand hint of the reason:
 
 File: inetutils.info,  Node: whois invocation,  Next: ftp invocation,  Prev: traceroute invocation,  Up: Top
 
-9 'whois': User interface to WHOIS data bases.
-**********************************************
+10 'whois': User interface to WHOIS data bases.
+***********************************************
 
 The functionality of a world wide Internet is dependent on stored node
 information of different kinds.  Registrars keep much relevant material
@@ -902,8 +1060,8 @@ Synopsis:
 
      whois [OPTION...] OBJECT...
 
-9.1 Command line options
-========================
+10.1 Command line options
+=========================
 
 '-a'
      Search all data bases.
@@ -973,8 +1131,8 @@ Synopsis:
 '-x'
      Search only for exact matches.  Applicable only to RPSL.
 
-9.2 Environment variables
-=========================
+10.2 Environment variables
+==========================
 
 'whois' holds an internal list of information servers and their assigned
 data bases.  Queries are examined against this list to select the most
@@ -1000,7 +1158,7 @@ turn overruled by a server name in the environment variable
 
 File: inetutils.info,  Node: ftp invocation,  Next: rcp invocation,  Prev: whois invocation,  Up: Top
 
-10 'ftp': FTP client
+11 'ftp': FTP client
 ********************
 
 'ftp' is the user interface to FTP, the File Transfer Protocol.  The
@@ -1012,14 +1170,18 @@ Synopsis:
      ftp [OPTION...] [HOST [PORT]]
      pftp [OPTION...] [HOST [PORT]]
 
+     ftp [OPTION...] USER@HOST [PORT]
+     pftp [OPTION...] USER@HOST [PORT]
+
 The alternate name 'pftp' is starting in passive mode, but is otherwise
 identical to 'ftp'.
 
    The client host with which 'ftp' is to communicate may be specified
 on the command line.  If this is done, 'ftp' will immediately attempt to
 establish a connection to the FTP server running on that host.
-Otherwise, the program will start a command interpreter and will await
-further instructions from the user.  Commands can either be entered
+Optionally, a remote user name can be specified at will.  Otherwise, the
+program will start a command interpreter and will await further
+instructions from the user.  Commands can either be entered
 interactively, or piped as a batched job read from standard input.
 'ftp' is able to distinguish between these two modes of operation.
 
@@ -1036,7 +1198,7 @@ interactively, or piped as a batched job read from standard input.
 
 File: inetutils.info,  Node: Ftp options,  Next: Ftp commands,  Up: ftp invocation
 
-10.1 Command line options
+11.1 Command line options
 =========================
 
 Many command line options have counterparts among the commands handled
@@ -1109,7 +1271,7 @@ by the internal interpreter.
 
 File: inetutils.info,  Node: Ftp commands,  Next: Ftp environment,  Prev: Ftp options,  Up: ftp invocation
 
-10.2 Commands interpreted by 'ftp'
+11.2 Commands interpreted by 'ftp'
 ==================================
 
 When 'ftp' is awaiting commands from the user, a prompt is displayed.
@@ -1431,11 +1593,16 @@ shortest unique string with identical beginning.
      OUTCHARS, the character is deleted from the file name.
 
 'open HOST [PORT]'
+'open USER@HOST [PORT]'
      Establish a connection to the specified FTP server at HOST.  An
      optional port number may be supplied, in which case, 'ftp' will
      attempt to contact the server at that specific TCP port.  If the
      'autologin' option is on (is so by default), 'ftp' will also
      attempt to automatically log the user in to the FTP server.
+
+     The second form of invocation sets the remote user name to USER,
+     which otherwise is taken as identical to the user identity owning
+     the local session.
 
 'passive'
      Toggle passive mode.  If passive mode is turned on (default is
@@ -1617,7 +1784,7 @@ citation characters '"'.
 
 File: inetutils.info,  Node: Ftp environment,  Next: Aborting a file transfer,  Prev: Ftp commands,  Up: ftp invocation
 
-10.3 Environment variables in use
+11.3 Environment variables in use
 =================================
 
 'ftp' accesses the following environment variables.
@@ -1635,7 +1802,7 @@ File: inetutils.info,  Node: Ftp environment,  Next: Aborting a file transfer,  
 
 File: inetutils.info,  Node: Aborting a file transfer,  Next: File naming conventions,  Prev: Ftp environment,  Up: ftp invocation
 
-10.4 Aborting a file transfer
+11.4 Aborting a file transfer
 =============================
 
 To abort a file transfer, use the terminal interrupt key (usually
@@ -1658,7 +1825,7 @@ killed by hand.
 
 File: inetutils.info,  Node: File naming conventions,  Next: File transfer parameters,  Prev: Aborting a file transfer,  Up: ftp invocation
 
-10.5 File naming conventions
+11.5 File naming conventions
 ============================
 
 Files specified as arguments to 'ftp' commands are processed according
@@ -1699,7 +1866,7 @@ to the following rules.
 
 File: inetutils.info,  Node: File transfer parameters,  Next: The .netrc file,  Prev: File naming conventions,  Up: ftp invocation
 
-10.6 File transfer parameters
+11.6 File transfer parameters
 =============================
 
 The FTP specification includes many parameters which may affect a file
@@ -1720,7 +1887,7 @@ Avoid this problem by using the binary image type.
 
 File: inetutils.info,  Node: The .netrc file,  Prev: File transfer parameters,  Up: ftp invocation
 
-10.7 The '.netrc' file
+11.7 The '.netrc' file
 ======================
 
 The '.netrc' file contains login and initialization information used by
@@ -1782,7 +1949,7 @@ tabs, or new-lines:
 
 File: inetutils.info,  Node: rcp invocation,  Next: rexec invocation,  Prev: ftp invocation,  Up: Top
 
-11 'rcp': Copy files between machines
+12 'rcp': Copy files between machines
 *************************************
 
 'rcp' copies files between machines.  Each file or directory argument is
@@ -1794,7 +1961,7 @@ Synopsis:
      rcp [OPTION]... OLD-FILE NEW-FILE
      rcp [OPTION]... FILES... DIRECTORY
 
-11.1 Command line options
+12.1 Command line options
 =========================
 
 '-4'
@@ -1860,7 +2027,7 @@ of 'rcp'.
 
 File: inetutils.info,  Node: rexec invocation,  Next: rlogin invocation,  Prev: rcp invocation,  Up: Top
 
-12 'rexec': a remote execution program
+13 'rexec': a remote execution program
 **************************************
 
 'rexec' is a program that executes a program on another host.
@@ -1870,7 +2037,7 @@ Synopsis:
      rexec --user=LOGIN --password=PASS --host=HOST  \
            [OPTION] COMMAND
 
-12.1 Command line options
+13.1 Command line options
 =========================
 
 '-4'
@@ -1919,7 +2086,7 @@ Synopsis:
 
 File: inetutils.info,  Node: rlogin invocation,  Next: rsh invocation,  Prev: rexec invocation,  Up: Top
 
-13 'rlogin': Remote login
+14 'rlogin': Remote login
 *************************
 
 The 'rlogin' command starts a terminal session on the specified remote
@@ -1942,7 +2109,7 @@ direct a log in request to the remote host named HOSTNAME.
 password.  The prerequisite is a suitable specification in '~/.rhosts'.
 For details, *Note rcmd: (libc)rcmd.
 
-13.1 Command line options
+14.1 Command line options
 =========================
 
 The options are as follows :
@@ -2002,7 +2169,7 @@ compiled with support for Kerberos authentication.
      This may impact response time and CPU utilization, but provides
      increased security.
 
-13.2 Escape characters and flow control
+14.2 Escape characters and flow control
 =======================================
 
 As long as the connection stands, the client program 'rsh' is observing
@@ -2046,7 +2213,7 @@ is also handled properly.
 authenticate the connection request, unless Kerberised mode is in
 effect.  See the appropriate man pages for more information.
 
-13.3 Kerberos Authentication
+14.3 Kerberos Authentication
 ============================
 
 If 'rlogin' was compiled with kerberos support, options '-x', '-k', '-K'
@@ -2065,7 +2232,7 @@ standard Berkeley rlogin is used instead.
 
 File: inetutils.info,  Node: rsh invocation,  Next: talk invocation,  Prev: rlogin invocation,  Up: Top
 
-14 'rsh': Remote shell
+15 'rsh': Remote shell
 **********************
 
 'rsh' executes commands on a remote host and copies its local standard
@@ -2091,7 +2258,7 @@ details, *Note rcmd: (libc)rcmd.
    If no command is specified for 'rsh' ar argument following the host
 name, then you will be logged in on the remote host using 'rlogin'.
 
-14.1 Command line options
+15.1 Command line options
 =========================
 
 The options are as follows :
@@ -2153,7 +2320,7 @@ Finally, some compatibility options are present:
      Ignored during normal operation, but passed on to 'rlogin' when
      'rsh' is invoked without a command argument.
 
-14.2 Note on stream redirections
+15.2 Note on stream redirections
 ================================
 
 Beware that non-quoted shell metacharacters are interpreted on the local
@@ -2181,7 +2348,7 @@ nothing to transmit to the listening local host!.
 
 File: inetutils.info,  Node: talk invocation,  Next: telnet invocation,  Prev: rsh invocation,  Up: Top
 
-15 'talk': a communication program
+16 'talk': a communication program
 **********************************
 
 'talk' is a visual communication program which copies lines from your
@@ -2191,7 +2358,7 @@ Synopsis:
 
      talk PERSON [TTYNAME]
 
-15.1 Invoking
+16.1 Invoking
 =============
 
 The command line arguments are as follows:
@@ -2240,7 +2407,7 @@ at the outset of a terminal session.  Certain commands, in particular
 
 File: inetutils.info,  Node: telnet invocation,  Next: tftp invocation,  Prev: talk invocation,  Up: Top
 
-16 'telnet': User interface to TELNET
+17 'telnet': User interface to TELNET
 *************************************
 
 Login to a remote system HOST, optionally using a (non-standard) service
@@ -2250,7 +2417,7 @@ Synopsis:
 
      telnet [OPTION...] [HOST [PORT]]
 
-16.1 Command line options
+17.1 Command line options
 =========================
 
 '-4'
@@ -2323,7 +2490,7 @@ Synopsis:
 
 File: inetutils.info,  Node: tftp invocation,  Next: inetd invocation,  Prev: telnet invocation,  Up: Top
 
-17 'tftp': TFTP client
+18 'tftp': TFTP client
 **********************
 
 'tftp' is the user interface to the Internet TFTP, Trivial File Transfer
@@ -2335,7 +2502,7 @@ Synopsis:
 
      tftp [OPTION]... HOST
 
-17.1 Commands
+18.1 Commands
 =============
 
 Once 'tftp' is running, it issues the prompt and recognizes the
@@ -2419,7 +2586,7 @@ therefore difficult to document here.
 
 File: inetutils.info,  Node: inetd invocation,  Next: syslogd invocation,  Prev: tftp invocation,  Up: Top
 
-18 'inetd': Internet super-server
+19 'inetd': Internet super-server
 *********************************
 
 'inetd' program should be run at boot time by /etc/rc.  It then listens
@@ -2453,7 +2620,7 @@ is useful for adding locally-developed servers.
 
 File: inetutils.info,  Node: Invocation,  Next: Configuration file,  Up: inetd invocation
 
-18.1 Invocation
+19.1 Invocation
 ===============
 
 Normally, 'inetd' is invoked without any arguments.  It does, however,
@@ -2486,7 +2653,7 @@ support several command line options.  These are:
 
 File: inetutils.info,  Node: Configuration file,  Next: Built-in services,  Prev: Invocation,  Up: inetd invocation
 
-18.2 Configuration file
+19.2 Configuration file
 =======================
 
 Upon execution, inetd reads its configuration information from
@@ -2612,7 +2779,7 @@ server program arguments
 
 File: inetutils.info,  Node: Built-in services,  Next: TCPMUX,  Prev: Configuration file,  Up: inetd invocation
 
-18.3 Built-in services
+19.3 Built-in services
 ======================
 
 The 'inetd' program provides several "trivial" services internally by
@@ -2649,7 +2816,7 @@ time
 
 File: inetutils.info,  Node: TCPMUX,  Next: Inetd Environment,  Prev: Built-in services,  Up: inetd invocation
 
-18.4 TCPMUX
+19.4 TCPMUX
 ===========
 
 The TCPMUX protocol.
@@ -2686,7 +2853,7 @@ services:
 
 File: inetutils.info,  Node: Inetd Environment,  Next: Error Messages,  Prev: TCPMUX,  Up: inetd invocation
 
-18.5 Inetd Environment
+19.5 Inetd Environment
 ======================
 
 If a connection is made with a streaming protocol ('stream') and if
@@ -2720,7 +2887,7 @@ following environment variables:
 
 File: inetutils.info,  Node: Error Messages,  Prev: Inetd Environment,  Up: inetd invocation
 
-18.6 Error Messages
+19.6 Error Messages
 ===================
 
 The inetd server logs error messages using syslog.  Important error
@@ -2764,7 +2931,7 @@ messages and their explanations are:
 
 File: inetutils.info,  Node: syslogd invocation,  Next: ftpd invocation,  Prev: inetd invocation,  Up: Top
 
-19 'syslogd': system service logging faclity
+20 'syslogd': system service logging faclity
 ********************************************
 
 'syslogd' is a system service that provides error logging facility.
@@ -2870,7 +3037,7 @@ map into the priorities defined in the include file 'sys/syslog.h'.
      record the time of reception on the local system.  This circumvents
      problems caused by remote hosts with skewed clocks.
 
-19.1 Configuration file
+20.1 Configuration file
 =======================
 
 'syslogd' reads its configuration file when it starts up and whenever it
@@ -3028,7 +3195,7 @@ the level of 'err' or higher, not at the level of 'crit' or higher.
 
 File: inetutils.info,  Node: ftpd invocation,  Next: rexecd invocation,  Prev: syslogd invocation,  Up: Top
 
-20 'ftpd': FTP daemon
+21 'ftpd': FTP daemon
 *********************
 
 'ftpd' is the Internet File Transfer Protocol server process.  The
@@ -3126,7 +3293,7 @@ relevant systems.  However, the module is known to be partially broken
 since ten years back, when one compares the claims in its manual page,
 so not all claimed trickery is available!
 
-20.1 Standards
+21.1 Standards
 ==============
 
 The FTP server currently supports the following FTP requests.  The
@@ -3208,7 +3375,7 @@ used by 'csh'.  This allows users to utilize the metacharacters
 behaviour with informational content in denials can be restored using
 the option '--non-rfc2577'.
 
-20.2 Authentication
+21.2 Authentication
 ===================
 
 'ftpd' authenticates users according to four rules.
@@ -3260,7 +3427,7 @@ the 'ftp' subtree be constructed with care, following these rules:
      place files which are to be accessible via the anonymous account in
      this directory.
 
-20.3 Configuration files
+21.3 Configuration files
 ========================
 
 ''/etc/ftpchroot''
@@ -3282,7 +3449,7 @@ the 'ftp' subtree be constructed with care, following these rules:
      If present, the contents are displayed and all further access is
      refused.
 
-20.4 File format of ftpusers and ftpchroot.
+21.4 File format of ftpusers and ftpchroot.
 ===========================================
 
 The files '/etc/ftpusers' and '/etc/ftpchroot' share a common file
@@ -3315,7 +3482,7 @@ protective configuration.
 
 File: inetutils.info,  Node: rexecd invocation,  Next: rlogind invocation,  Prev: ftpd invocation,  Up: Top
 
-21 'rexecd': server for 'rexec'
+22 'rexecd': server for 'rexec'
 *******************************
 
 'rexecd' is the server for the 'rexec' routine.  The server provides
@@ -3358,7 +3525,7 @@ following protocol is initiated:
      is passed to the normal login shell of the user.  The shell
      inherits the network connections established by rexecd.
 
-21.1 Invoking
+22.1 Invoking
 =============
 
 The only option is as follows:
@@ -3371,7 +3538,7 @@ The only option is as follows:
    Should 'rexecd' have been built with PAM support, it reads any
 setting specified for a service named 'rexec'.
 
-21.2 Diagnostics
+22.2 Diagnostics
 ================
 
 Except for the last one listed below, all diagnostic messages are
@@ -3414,7 +3581,7 @@ for users with null passwords.
 
 File: inetutils.info,  Node: rlogind invocation,  Next: rshd invocation,  Prev: rexecd invocation,  Up: Top
 
-22 'rlogind': Remote login server
+23 'rlogind': Remote login server
 *********************************
 
 'rlogind' is the server for the 'rlogin' client program (*note rlogin
@@ -3436,7 +3603,7 @@ Kerberised version, at the price of a larger complexity of the
 supporting infrastructure.  Using an encrypting Kerberised service even
 avoids all clear text processing.
 
-22.1 Invoking
+23.1 Invoking
 =============
 
 The available options are as follows:
@@ -3513,7 +3680,7 @@ integrity.  Three additional options are available for an executable
 setting specified for a service named either 'rlogin' or 'krlogin', the
 latter name for clients using Kerberised authentication.
 
-22.2 Kerberos specific details
+23.2 Kerberos specific details
 ==============================
 
 The option '-k' is mandatory for Kerberised operation mode, while
@@ -3533,7 +3700,7 @@ overridden using the option '--server-principal', as follows:
    When overriding only the realm, with the option '-S', an initial
 at-sign is mandatory.
 
-22.3 Protocol details
+23.3 Protocol details
 =====================
 
 When a service request is received, in non-Kerberised mode, the
@@ -3579,7 +3746,7 @@ become unreachable.
 
    *Note ruserok: (libc)ruserok, for details.
 
-22.4 Diagnostics
+23.4 Diagnostics
 ================
 
 The exchange protocol states that a negotiation reaches a successful
@@ -3602,7 +3769,7 @@ the server side after this message.  Some common messages follow:
 
 File: inetutils.info,  Node: rshd invocation,  Next: talkd invocation,  Prev: rlogind invocation,  Up: Top
 
-23 'rshd': Remote shell server
+24 'rshd': Remote shell server
 ******************************
 
 The 'rshd' server is the server for the 'rcmd' routine and,
@@ -3670,7 +3837,7 @@ protocol is initiated:
 
    *Note ruserok: (libc)ruserok, for details.
 
-23.1 Invoking
+24.1 Invoking
 =============
 
 The options are as follows:
@@ -3711,7 +3878,7 @@ The options are as follows:
 specified for a service named either 'rsh' or 'krsh', the latter name
 for clients seeking Kerberised authentication.
 
-23.2 Diagnostics
+24.2 Diagnostics
 ================
 
 Except for the last one listed below, all diagnostic messages are
@@ -3760,7 +3927,7 @@ useful in an "open" environment.
 
 File: inetutils.info,  Node: talkd invocation,  Next: telnetd invocation,  Prev: rshd invocation,  Up: Top
 
-24 'talkd': a server for communication between users
+25 'talkd': a server for communication between users
 ****************************************************
 
 'talkd' is a server that notifies users that someone else wants to
@@ -3789,7 +3956,7 @@ invitations for a valid host name that differs from the name reported by
    The present implementation offers ACL-mechanisms for fine grained
 access control.
 
-24.1 Invoking
+25.1 Invoking
 =============
 
 The following switches and options are available.
@@ -3826,7 +3993,7 @@ The following switches and options are available.
 '--timeout=SECONDS'
      Set timeout length.
 
-24.2 Modus operandi
+25.2 Modus operandi
 ===================
 
 In normal operation, a client, the caller, initiates a rendezvous by
@@ -3847,7 +4014,7 @@ general.  For any local user, i.e., present on the server's system, a
 further user owned file '.talkrc' is parsed, if at all present, in order
 to even further fine tune access to this particular user.
 
-24.3 Access control in talkd
+25.3 Access control in talkd
 ============================
 
 The server can be run in a mode with additional access control, beyond
@@ -3924,7 +4091,7 @@ narrower selection of friends.
 
 File: inetutils.info,  Node: telnetd invocation,  Next: tftpd invocation,  Prev: talkd invocation,  Up: Top
 
-25 'telnetd': Telnet server
+26 'telnetd': Telnet server
 ***************************
 
      telnetd [OPTION]...
@@ -3988,7 +4155,7 @@ File: inetutils.info,  Node: telnetd invocation,  Next: tftpd invocation,  Prev:
      multiple times if more than one type is to be disabled.  Standard
      choices are 'null', 'kerberos_v4', and 'kerberos_v5'.
 
-25.1 Crafting an execution string.
+26.1 Crafting an execution string.
 ==================================
 
 The server 'telnetd' contains a built-in execution string which invokes
@@ -4067,7 +4234,7 @@ could possibly be empty.
 
 File: inetutils.info,  Node: tftpd invocation,  Next: uucpd invocation,  Prev: telnetd invocation,  Up: Top
 
-26 'tftpd': TFTP server
+27 'tftpd': TFTP server
 ***********************
 
 'tftpd' is intended to be invoked via 'inetd' at all times.
@@ -4103,7 +4270,7 @@ Synopsis:
      Specify the process owner for serving requests.  Only relevant
      along with the option '-s'.  The default name is 'nobody'.
 
-26.1 Directory prefixes
+27.1 Directory prefixes
 =======================
 
 In addition to options, an invocation of 'tftpd' can specify an optional
@@ -4139,7 +4306,7 @@ these criteria:
    * The resulting file must be world readable, or world writable, for a
      read request, or a write request, to succeed.
 
-26.2 Use cases
+27.2 Use cases
 ==============
 
 The standard use case is an entry in '/etc/inetd.conf' like
@@ -4181,7 +4348,7 @@ process running with the default owner set to 'nobody:nogroup'.
 
 File: inetutils.info,  Node: uucpd invocation,  Next: GNU Free Documentation License,  Prev: tftpd invocation,  Up: Top
 
-27 'uucpd': Unix to Unix Copy relay daemon.
+28 'uucpd': Unix to Unix Copy relay daemon.
 *******************************************
 
 'uucpd' is a relay daemon responsible for accepting TCP transported
@@ -4190,7 +4357,7 @@ authentication, and then hands acceptable requests over to 'uucico'.
 
      uucpd [OPTION]...
 
-27.1 Options
+28.1 Options
 ============
 
 There is a single, specific option available:
@@ -4200,7 +4367,7 @@ There is a single, specific option available:
      Replace the hard coded location of 'uucico' with the value
      specified as LOCATION.
 
-27.2 Authentication steps.
+28.2 Authentication steps.
 ==========================
 
 Invocation is expected to be conducted by a protocol described exchange
@@ -4222,7 +4389,7 @@ Appendix A GNU Free Documentation License
                      Version 1.3, 3 November 2008
 
      Copyright (C) 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
-     <http://fsf.org/>
+     <https://fsf.org/>
 
      Everyone is permitted to copy and distribute verbatim copies
      of this license document, but changing it is not allowed.
@@ -4619,7 +4786,7 @@ Appendix A GNU Free Documentation License
      the GNU Free Documentation License from time to time.  Such new
      versions will be similar in spirit to the present version, but may
      differ in detail to address new problems or concerns.  See
-     <http://www.gnu.org/copyleft/>.
+     <https://www.gnu.org/licenses/>.
 
      Each version of the License is given a distinguishing version
      number.  If the Document specifies that a particular numbered
@@ -4717,8 +4884,10 @@ Index
 * --8-bit:                               rlogin invocation.   (line  41)
 * --acl:                                 talkd invocation.    (line  39)
 * --active:                              Ftp options.         (line  19)
-* --address:                             Ping options.        (line   9)
+* --address:                             ifconfig invocation. (line  26)
+* --address <1>:                         Ping options.        (line   9)
 * --aliases:                             hostname invocation. (line  20)
+* --all:                                 ifconfig invocation. (line  21)
 * --allow-root:                          rlogind invocation.  (line  69)
 * --anonymous-only:                      ftpd invocation.     (line  22)
 * --auth:                                ftpd invocation.     (line  26)
@@ -4726,6 +4895,8 @@ Index
 * --binary:                              telnet invocation.   (line  26)
 * --binary-output:                       telnet invocation.   (line  63)
 * --bind:                                syslogd invocation.  (line  58)
+* --brdaddr:                             ifconfig invocation. (line  32)
+* --broadcast:                           ifconfig invocation. (line  32)
 * --count:                               Ping options.        (line  38)
 * --count <1>:                           ping6 invocation.    (line  32)
 * --d:                                   talkd invocation.    (line  43)
@@ -4745,6 +4916,8 @@ Index
 * --disable-auth:                        telnet invocation.   (line  79)
 * --disable-auth-type:                   telnetd invocation.  (line  63)
 * --domain:                              hostname invocation. (line  24)
+* --down:                                ifconfig invocation. (line  41)
+* --dstaddr:                             ifconfig invocation. (line  38)
 * --echo:                                Ping options.        (line  13)
 * --encrypt:                             rcp invocation.      (line  64)
 * --encrypt <1>:                         rlogin invocation.   (line  82)
@@ -4760,8 +4933,10 @@ Index
 * --file <1>:                            logger invocation.   (line  35)
 * --first-hop:                           traceroute invocation.
                                                               (line  18)
+* --flags:                               ifconfig invocation. (line  45)
 * --flood:                               Ping options.        (line  90)
 * --flood <1>:                           ping6 invocation.    (line  40)
+* --format:                              ifconfig invocation. (line  52)
 * --fqdn:                                hostname invocation. (line  29)
 * --from:                                rcp invocation.      (line  32)
 * --gateways:                            traceroute invocation.
@@ -4780,6 +4955,7 @@ Index
 * --ignore-routing-log:                  Ping options.        (line  57)
 * --ignore-routing-log <1>:              ping6 invocation.    (line  83)
 * --inet:                                syslogd invocation.  (line  51)
+* --interface:                           ifconfig invocation. (line  57)
 * --interval:                            Ping options.        (line  46)
 * --interval <1>:                        ping6 invocation.    (line  55)
 * --ip-addresses:                        hostname invocation. (line  37)
@@ -4813,6 +4989,7 @@ Index
 * --kerberos <4>:                        rshd invocation.     (line  82)
 * --linemode:                            telnetd invocation.  (line  38)
 * --linger:                              Ping options.        (line  81)
+* --list:                                ifconfig invocation. (line  61)
 * --local-domain:                        rlogind invocation.  (line  58)
 * --local-time:                          syslogd invocation.  (line 105)
 * --log-sessions:                        rshd invocation.     (line  90)
@@ -4827,6 +5004,9 @@ Index
 * --max-hop:                             traceroute invocation.
                                                               (line  39)
 * --max-timeout:                         ftpd invocation.     (line  71)
+* --metric:                              ifconfig invocation. (line  69)
+* --mtu:                                 ifconfig invocation. (line  73)
+* --netmask:                             ifconfig invocation. (line  66)
 * --netrc:                               Ftp options.         (line  40)
 * --nis:                                 hostname invocation. (line  46)
 * --no-detach:                           syslogd invocation.  (line  35)
@@ -4858,6 +5038,7 @@ Index
 * --password:                            rexec invocation.    (line  43)
 * --pattern:                             Ping options.        (line 111)
 * --pattern <1>:                         ping6 invocation.    (line  71)
+* --peer:                                ifconfig invocation. (line  38)
 * --pidfile:                             Invocation.          (line  20)
 * --pidfile <1>:                         syslogd invocation.  (line  31)
 * --pidfile <2>:                         ftpd invocation.     (line  62)
@@ -4896,6 +5077,7 @@ Index
 * --server-principal <1>:                telnetd invocation.  (line  47)
 * --servername:                          rshd invocation.     (line  98)
 * --short:                               hostname invocation. (line  41)
+* --short <1>:                           ifconfig invocation. (line  77)
 * --size:                                Ping options.        (line 128)
 * --size <1>:                            ping6 invocation.    (line  91)
 * --socket:                              syslogd invocation.  (line  43)
@@ -4924,6 +5106,7 @@ Index
 * --type <1>:                            traceroute invocation.
                                                               (line  45)
 * --umask:                               ftpd invocation.     (line  82)
+* --up:                                  ifconfig invocation. (line  81)
 * --usage:                               Common options.      (line  20)
 * --user:                                rexec invocation.    (line  57)
 * --user <1>:                            rlogin invocation.   (line  64)
@@ -4932,10 +5115,11 @@ Index
 * --user <4>:                            tftpd invocation.    (line  36)
 * --uucico:                              uucpd invocation.    (line  19)
 * --vacuous:                             rshd invocation.     (line 102)
-* --verbose:                             Ping options.        (line  73)
-* --verbose <1>:                         ping6 invocation.    (line 105)
-* --verbose <2>:                         whois invocation.    (line  86)
-* --verbose <3>:                         Ftp options.         (line  70)
+* --verbose:                             ifconfig invocation. (line  85)
+* --verbose <1>:                         Ping options.        (line  73)
+* --verbose <2>:                         ping6 invocation.    (line 105)
+* --verbose <3>:                         whois invocation.    (line  86)
+* --verbose <4>:                         Ftp options.         (line  70)
 * --verify-hostname:                     rlogind invocation.  (line  40)
 * --verify-hostname <1>:                 rshd invocation.     (line  78)
 * --version:                             Common options.      (line  24)
@@ -4965,34 +5149,39 @@ Index
 * -8:                                    rlogin invocation.   (line  41)
 * -8 <1>:                                telnet invocation.   (line  26)
 * -a:                                    hostname invocation. (line  20)
-* -a <1>:                                whois invocation.    (line  24)
-* -A:                                    Ftp options.         (line  19)
-* -a <2>:                                rexec invocation.    (line  26)
-* -a <3>:                                telnet invocation.   (line  30)
-* -A <1>:                                ftpd invocation.     (line  22)
-* -a <4>:                                ftpd invocation.     (line  26)
-* -a <5>:                                rlogind invocation.  (line  40)
-* -a <6>:                                rshd invocation.     (line  78)
-* -a <7>:                                talkd invocation.    (line  39)
-* -a <8>:                                telnetd invocation.  (line  10)
-* -b:                                    syslogd invocation.  (line  58)
+* -a <1>:                                ifconfig invocation. (line  21)
+* -A:                                    ifconfig invocation. (line  26)
+* -a <2>:                                whois invocation.    (line  24)
+* -A <1>:                                Ftp options.         (line  19)
+* -a <3>:                                rexec invocation.    (line  26)
+* -a <4>:                                telnet invocation.   (line  30)
+* -A <2>:                                ftpd invocation.     (line  22)
+* -a <5>:                                ftpd invocation.     (line  26)
+* -a <6>:                                rlogind invocation.  (line  40)
+* -a <7>:                                rshd invocation.     (line  78)
+* -a <8>:                                talkd invocation.    (line  39)
+* -a <9>:                                telnetd invocation.  (line  10)
+* -b:                                    ifconfig invocation. (line  32)
+* -B:                                    ifconfig invocation. (line  32)
+* -b <1>:                                syslogd invocation.  (line  58)
 * -c:                                    Ping options.        (line  38)
 * -c <1>:                                ping6 invocation.    (line  32)
 * -c <2>:                                telnet invocation.   (line  34)
 * -d:                                    hostname invocation. (line  24)
-* -d <1>:                                Ping options.        (line  42)
-* -d <2>:                                ping6 invocation.    (line  36)
-* -d <3>:                                Ftp options.         (line  23)
-* -d <4>:                                rcp invocation.      (line  28)
-* -d <5>:                                rlogin invocation.   (line  47)
-* -d <6>:                                rsh invocation.      (line  44)
-* -d <7>:                                telnet invocation.   (line  38)
-* -d <8>:                                Invocation.          (line   9)
+* -d <1>:                                ifconfig invocation. (line  38)
+* -d <2>:                                Ping options.        (line  42)
+* -d <3>:                                ping6 invocation.    (line  36)
+* -d <4>:                                Ftp options.         (line  23)
+* -d <5>:                                rcp invocation.      (line  28)
+* -d <6>:                                rlogin invocation.   (line  47)
+* -d <7>:                                rsh invocation.      (line  44)
+* -d <8>:                                telnet invocation.   (line  38)
+* -d <9>:                                Invocation.          (line   9)
 * -D:                                    syslogd invocation.  (line  27)
-* -d <9>:                                syslogd invocation.  (line  39)
+* -d <10>:                               syslogd invocation.  (line  39)
 * -D <1>:                                ftpd invocation.     (line  35)
-* -d <10>:                               ftpd invocation.     (line  40)
-* -d <11>:                               rlogind invocation.  (line  44)
+* -d <11>:                               ftpd invocation.     (line  40)
+* -d <12>:                               rlogind invocation.  (line  44)
 * -D <2>:                                rlogind invocation.  (line  50)
 * -D <3>:                                telnetd invocation.  (line  15)
 * -debug:                                rlogind invocation.  (line  50)
@@ -5005,12 +5194,13 @@ Index
 * -E <2>:                                telnetd invocation.  (line  30)
 * -f:                                    hostname invocation. (line  29)
 * -F:                                    hostname invocation. (line  33)
+* -F <1>:                                ifconfig invocation. (line  45)
 * -f <1>:                                logger invocation.   (line  35)
 * -f <2>:                                Ping options.        (line  90)
 * -f <3>:                                ping6 invocation.    (line  40)
 * -f <4>:                                traceroute invocation.
                                                               (line  18)
-* -F <1>:                                whois invocation.    (line  27)
+* -F <2>:                                whois invocation.    (line  27)
 * -f <5>:                                rcp invocation.      (line  32)
 * -f <6>:                                syslogd invocation.  (line  23)
 * -g:                                    traceroute invocation.
@@ -5026,15 +5216,16 @@ Index
 * -h <4>:                                syslogd invocation.  (line  88)
 * -h <5>:                                telnetd invocation.  (line  34)
 * -i:                                    hostname invocation. (line  37)
-* -i <1>:                                logger invocation.   (line  55)
-* -i <2>:                                Ping options.        (line  46)
-* -i <3>:                                ping6 invocation.    (line  55)
+* -i <1>:                                ifconfig invocation. (line  57)
+* -i <2>:                                logger invocation.   (line  55)
+* -i <3>:                                Ping options.        (line  46)
+* -i <4>:                                ping6 invocation.    (line  55)
 * -I:                                    traceroute invocation.
                                                               (line  35)
-* -i <4>:                                whois invocation.    (line  41)
-* -i <5>:                                Ftp options.         (line  36)
-* -i <6>:                                talkd invocation.    (line  47)
-* -i <7>:                                talkd invocation.    (line  51)
+* -i <5>:                                whois invocation.    (line  41)
+* -i <6>:                                Ftp options.         (line  36)
+* -i <7>:                                talkd invocation.    (line  47)
+* -i <8>:                                talkd invocation.    (line  51)
 * -k:                                    rcp invocation.      (line  36)
 * -K:                                    rcp invocation.      (line  41)
 * -k <1>:                                rlogin invocation.   (line  73)
@@ -5045,30 +5236,33 @@ Index
 * -K <3>:                                telnet invocation.   (line  55)
 * -k <4>:                                rlogind invocation.  (line  86)
 * -k <5>:                                rshd invocation.     (line  82)
-* -l:                                    Ping options.        (line 106)
-* -l <1>:                                ping6 invocation.    (line  61)
-* -l <2>:                                whois invocation.    (line  45)
+* -l:                                    ifconfig invocation. (line  61)
+* -l <1>:                                Ping options.        (line 106)
+* -l <2>:                                ping6 invocation.    (line  61)
+* -l <3>:                                whois invocation.    (line  45)
 * -L:                                    whois invocation.    (line  48)
-* -l <3>:                                rlogin invocation.   (line  64)
-* -l <4>:                                rsh invocation.      (line  49)
-* -l <5>:                                telnet invocation.   (line  59)
+* -l <4>:                                rlogin invocation.   (line  64)
+* -l <5>:                                rsh invocation.      (line  49)
+* -l <6>:                                telnet invocation.   (line  59)
 * -L <1>:                                telnet invocation.   (line  63)
-* -l <6>:                                syslogd invocation.  (line  96)
-* -l <7>:                                ftpd invocation.     (line  45)
-* -l <8>:                                rexecd invocation.   (line  53)
-* -l <9>:                                rlogind invocation.  (line  54)
+* -l <7>:                                syslogd invocation.  (line  96)
+* -l <8>:                                ftpd invocation.     (line  45)
+* -l <9>:                                rexecd invocation.   (line  53)
+* -l <10>:                               rlogind invocation.  (line  54)
 * -L <2>:                                rlogind invocation.  (line  58)
-* -l <10>:                               rshd invocation.     (line  86)
+* -l <11>:                               rshd invocation.     (line  86)
 * -L <3>:                                rshd invocation.     (line  90)
-* -l <11>:                               telnetd invocation.  (line  38)
-* -l <12>:                               tftpd invocation.    (line  20)
-* -m:                                    traceroute invocation.
+* -l <12>:                               telnetd invocation.  (line  38)
+* -l <13>:                               tftpd invocation.    (line  20)
+* -m:                                    ifconfig invocation. (line  66)
+* -M:                                    ifconfig invocation. (line  73)
+* -m <1>:                                traceroute invocation.
                                                               (line  39)
-* -M:                                    traceroute invocation.
+* -M <1>:                                traceroute invocation.
                                                               (line  45)
-* -m <1>:                                whois invocation.    (line  51)
-* -M <1>:                                whois invocation.    (line  54)
-* -m <2>:                                syslogd invocation.  (line  92)
+* -m <2>:                                whois invocation.    (line  51)
+* -M <2>:                                whois invocation.    (line  54)
+* -m <3>:                                syslogd invocation.  (line  92)
 * -n:                                    Ping options.        (line  52)
 * -n <1>:                                ping6 invocation.    (line  66)
 * -N:                                    Ftp options.         (line  40)
@@ -5082,21 +5276,22 @@ Index
 * -n <9>:                                telnetd invocation.  (line  43)
 * -n <10>:                               tftpd invocation.    (line  24)
 * -o:                                    rlogind invocation.  (line  69)
-* -p:                                    logger invocation.   (line  64)
-* -p <1>:                                Ping options.        (line 111)
-* -p <2>:                                ping6 invocation.    (line  71)
-* -p <3>:                                traceroute invocation.
+* -p:                                    ifconfig invocation. (line  38)
+* -p <1>:                                logger invocation.   (line  64)
+* -p <2>:                                Ping options.        (line 111)
+* -p <3>:                                ping6 invocation.    (line  71)
+* -p <4>:                                traceroute invocation.
                                                               (line  50)
-* -p <4>:                                whois invocation.    (line  57)
-* -p <5>:                                Ftp options.         (line  57)
-* -p <6>:                                rcp invocation.      (line  45)
-* -p <7>:                                rexec invocation.    (line  43)
+* -p <5>:                                whois invocation.    (line  57)
+* -p <6>:                                Ftp options.         (line  57)
+* -p <7>:                                rcp invocation.      (line  45)
+* -p <8>:                                rexec invocation.    (line  43)
 * -P:                                    rexec invocation.    (line  52)
-* -p <8>:                                Invocation.          (line  20)
+* -p <9>:                                Invocation.          (line  20)
 * -P <1>:                                syslogd invocation.  (line  31)
-* -p <9>:                                syslogd invocation.  (line  43)
-* -p <10>:                               ftpd invocation.     (line  62)
-* -p <11>:                               rlogind invocation.  (line  73)
+* -p <10>:                               syslogd invocation.  (line  43)
+* -p <11>:                               ftpd invocation.     (line  62)
+* -p <12>:                               rlogind invocation.  (line  73)
 * -q:                                    Ping options.        (line 118)
 * -q <1>:                                ping6 invocation.    (line  79)
 * -q <2>:                                traceroute invocation.
@@ -5115,18 +5310,19 @@ Index
 * -r <7>:                                rshd invocation.     (line 106)
 * -r <8>:                                talkd invocation.    (line  57)
 * -s:                                    hostname invocation. (line  41)
-* -s <1>:                                logger invocation.   (line  74)
+* -s <1>:                                ifconfig invocation. (line  77)
+* -s <2>:                                logger invocation.   (line  74)
 * -S:                                    logger invocation.   (line  78)
-* -s <2>:                                Ping options.        (line 128)
-* -s <3>:                                ping6 invocation.    (line  91)
-* -s <4>:                                whois invocation.    (line  70)
+* -s <3>:                                Ping options.        (line 128)
+* -s <4>:                                ping6 invocation.    (line  91)
+* -s <5>:                                whois invocation.    (line  70)
 * -S <1>:                                whois invocation.    (line  74)
-* -s <5>:                                syslogd invocation.  (line 100)
+* -s <6>:                                syslogd invocation.  (line 100)
 * -S <2>:                                rlogind invocation.  (line  90)
 * -S <3>:                                rshd invocation.     (line  98)
 * -S <4>:                                talkd invocation.    (line  61)
 * -S <5>:                                telnetd invocation.  (line  47)
-* -s <6>:                                tftpd invocation.    (line  29)
+* -s <7>:                                tftpd invocation.    (line  29)
 * -t:                                    logger invocation.   (line  85)
 * -t <1>:                                Ping options.        (line  31)
 * -T:                                    Ping options.        (line  65)
@@ -5146,11 +5342,12 @@ Index
 * -U:                                    telnetd invocation.  (line  56)
 * -u <2>:                                tftpd invocation.    (line  36)
 * -u <3>:                                uucpd invocation.    (line  19)
-* -v:                                    Ping options.        (line  73)
-* -v <1>:                                ping6 invocation.    (line 105)
+* -v:                                    ifconfig invocation. (line  85)
+* -v <1>:                                Ping options.        (line  73)
+* -v <2>:                                ping6 invocation.    (line 105)
 * -V:                                    whois invocation.    (line  86)
-* -v <2>:                                Ftp options.         (line  70)
-* -v <3>:                                rshd invocation.     (line 102)
+* -v <3>:                                Ftp options.         (line  70)
+* -v <4>:                                rshd invocation.     (line 102)
 * -w:                                    Ping options.        (line  77)
 * -W:                                    Ping options.        (line  81)
 * -w <1>:                                ping6 invocation.    (line 109)
@@ -5174,6 +5371,7 @@ Index
 * ftpd:                                  ftpd invocation.     (line   6)
 * help, online:                          Common options.      (line  16)
 * hostname:                              hostname invocation. (line   6)
+* ifconfig:                              ifconfig invocation. (line   6)
 * inetd:                                 inetd invocation.    (line   6)
 * introduction:                          Introduction.        (line   6)
 * logger:                                logger invocation.   (line   6)
@@ -5204,76 +5402,80 @@ Index
 
 
 Tag Table:
-Node: Top2717
-Node: Introduction5115
-Node: Common options6680
-Node: Exit status7754
-Node: dnsdomainname invocation8194
-Node: hostname invocation8977
-Ref: hostname options9421
-Node: logger invocation9811
-Ref: logger options10285
-Ref: logger examples13306
-Node: ping invocation13921
-Node: Ping options14763
-Ref: ping options14905
-Node: Fault isolation19033
-Node: Duplicate and damaged packets20093
-Node: Data patterns20774
-Node: TTL details22073
-Node: Further remarks23737
-Node: ping6 invocation24455
-Ref: ping6 options25475
-Node: traceroute invocation28099
-Ref: traceroute options28480
-Ref: traceroute printing30226
-Node: whois invocation31441
-Ref: whois options32300
-Ref: whois environment33840
-Node: ftp invocation34700
-Node: Ftp options35819
-Ref: ftp options35958
-Node: Ftp commands37790
-Node: Ftp environment60495
-Node: Aborting a file transfer60970
-Node: File naming conventions62121
-Node: File transfer parameters63916
-Node: The .netrc file64857
-Node: rcp invocation67607
-Ref: rcp options68144
-Node: rexec invocation69796
-Ref: rexec options70194
-Node: rlogin invocation71330
-Ref: rlogin options72394
-Node: rsh invocation76843
-Ref: rsh options78049
-Node: talk invocation80576
-Node: telnet invocation82843
-Ref: telnet options83216
-Node: tftp invocation84405
-Node: inetd invocation87776
-Node: Invocation89209
-Node: Configuration file90208
-Node: Built-in services96564
-Node: TCPMUX97940
-Node: Inetd Environment99507
-Node: Error Messages100370
-Node: syslogd invocation102202
-Node: ftpd invocation112250
-Ref: ftpd standards115621
-Ref: ftpd authentication119368
-Ref: ftpd files121563
-Ref: ftpusers file format122204
-Node: rexecd invocation123458
-Node: rlogind invocation126915
-Node: rshd invocation134073
-Node: talkd invocation139721
-Node: telnetd invocation146646
-Node: tftpd invocation151629
-Ref: tftpd validation152766
-Ref: tftpd setup cases154018
-Node: uucpd invocation155438
-Node: GNU Free Documentation License156701
-Node: Index181854
+Node: Top2831
+Node: Introduction5332
+Node: Common options6897
+Node: Exit status7971
+Node: dnsdomainname invocation8411
+Node: hostname invocation9194
+Ref: hostname options9640
+Node: ifconfig invocation10030
+Ref: ifconfig options10643
+Ref: ifconfig formats12761
+Ref: ifconfig legacy syntax13890
+Node: logger invocation14701
+Ref: logger options15175
+Ref: logger examples18196
+Node: ping invocation18811
+Node: Ping options19653
+Ref: ping options19795
+Node: Fault isolation23923
+Node: Duplicate and damaged packets24983
+Node: Data patterns25664
+Node: TTL details26963
+Node: Further remarks28627
+Node: ping6 invocation29345
+Ref: ping6 options30365
+Node: traceroute invocation32989
+Ref: traceroute options33370
+Ref: traceroute printing35116
+Node: whois invocation36331
+Ref: whois options37194
+Ref: whois environment38736
+Node: ftp invocation39596
+Node: Ftp options40851
+Ref: ftp options40990
+Node: Ftp commands42822
+Node: Ftp environment65717
+Node: Aborting a file transfer66192
+Node: File naming conventions67343
+Node: File transfer parameters69138
+Node: The .netrc file70079
+Node: rcp invocation72829
+Ref: rcp options73366
+Node: rexec invocation75018
+Ref: rexec options75416
+Node: rlogin invocation76552
+Ref: rlogin options77616
+Node: rsh invocation82065
+Ref: rsh options83271
+Node: talk invocation85798
+Node: telnet invocation88065
+Ref: telnet options88438
+Node: tftp invocation89627
+Node: inetd invocation92998
+Node: Invocation94431
+Node: Configuration file95430
+Node: Built-in services101786
+Node: TCPMUX103162
+Node: Inetd Environment104729
+Node: Error Messages105592
+Node: syslogd invocation107424
+Node: ftpd invocation117472
+Ref: ftpd standards120843
+Ref: ftpd authentication124590
+Ref: ftpd files126785
+Ref: ftpusers file format127426
+Node: rexecd invocation128680
+Node: rlogind invocation132137
+Node: rshd invocation139295
+Node: talkd invocation144943
+Node: telnetd invocation151868
+Node: tftpd invocation156851
+Ref: tftpd validation157988
+Ref: tftpd setup cases159240
+Node: uucpd invocation160660
+Node: GNU Free Documentation License161923
+Node: Index187078
 
 End Tag Table

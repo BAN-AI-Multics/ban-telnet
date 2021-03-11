@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-  Foundation, Inc.
+  Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+  2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -33,11 +33,15 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#ifdef HAVE_IDNA_H
+#if defined HAVE_IDN2_H && defined HAVE_IDN2
+# include <idn2.h>
+#elif defined HAVE_IDNA_H
 # include <idna.h>
 #endif
 
 #include "ping.h"
+
+static int useless_ident = 0;	/* Relevant at least for Linux.  */
 
 static size_t _ping_packetsize (PING * p);
 
@@ -72,8 +76,28 @@ ping_init (int type, int ident)
   if (fd < 0)
     {
       if (errno == EPERM || errno == EACCES)
-	fprintf (stderr, "ping: Lacking privilege for raw socket.\n");
-      return NULL;
+	{
+	  errno = 0;
+
+	  /* At least Linux can allow subprivileged users to send ICMP
+	   * packets formally encapsulated and built as a datagram socket,
+	   * but then the identity number is set by the kernel itself.
+	   */
+	  fd = socket (AF_INET, SOCK_DGRAM, proto->p_proto);
+	  if (fd < 0)
+	    {
+	      if (errno == EPERM || errno == EACCES || errno == EPROTONOSUPPORT)
+		fprintf (stderr, "ping: Lacking privilege for icmp socket.\n");
+	      else
+		fprintf (stderr, "ping: %s\n", strerror (errno));
+
+	      return NULL;
+	    }
+
+	  useless_ident++;	/* SOCK_DGRAM overrides our set identity.  */
+	}
+      else
+	return NULL;
     }
 
   /* Allocate PING structure and initialize it to default values */
@@ -172,7 +196,7 @@ my_echo_reply (PING * p, icmphdr_t * icmp)
   return (orig_ip->ip_dst.s_addr == p->ping_dest.ping_sockaddr.sin_addr.s_addr
 	  && orig_ip->ip_p == IPPROTO_ICMP
 	  && orig_icmp->icmp_type == ICMP_ECHO
-	  && ntohs (orig_icmp->icmp_id) == p->ping_ident);
+	  && (ntohs (orig_icmp->icmp_id) == p->ping_ident || useless_ident));
 }
 
 int
@@ -206,7 +230,7 @@ ping_recv (PING * p)
     case ICMP_ADDRESSREPLY:
       /*    case ICMP_ROUTERADV: */
 
-      if (ntohs (icmp->icmp_id) != p->ping_ident)
+      if (ntohs (icmp->icmp_id) != p->ping_ident && useless_ident == 0)
 	return -1;
 
       if (rc)
@@ -265,19 +289,20 @@ ping_set_packetsize (PING * ping, size_t size)
 }
 
 int
-ping_set_dest (PING * ping, char *host)
+ping_set_dest (PING * ping, const char *host)
 {
 #if HAVE_DECL_GETADDRINFO
   int rc;
   struct addrinfo hints, *res;
-  char *p;
+  char *rhost;
 
-# ifdef HAVE_IDN
-  rc = idna_to_ascii_lz (host, &p, 0);	/* P is allocated.  */
+# if defined HAVE_IDN || defined HAVE_IDN2
+  rc = idna_to_ascii_lz (host, &rhost, 0);	/* RHOST is allocated.  */
   if (rc)
     return 1;
-# else /* !HAVE_IDN */
-  p = host;
+  host = rhost;
+#else
+  rhost = NULL;
 # endif
 
   memset (&hints, 0, sizeof (hints));
@@ -290,20 +315,24 @@ ping_set_dest (PING * ping, char *host)
   hints.ai_flags |= AI_CANONIDN;
 # endif
 
-  rc = getaddrinfo (p, NULL, &hints, &res);
+  rc = getaddrinfo (host, NULL, &hints, &res);
 
   if (rc)
-    return 1;
+    {
+      free (rhost);
+      return 1;
+    }
 
   memcpy (&ping->ping_dest.ping_sockaddr, res->ai_addr, res->ai_addrlen);
   if (res->ai_canonname)
     ping->ping_hostname = strdup (res->ai_canonname);
   else
-    ping->ping_hostname = strdup (p);
-
-# ifdef HAVE_IDN
-  free (p);
+# if defined HAVE_IDN || defined HAVE_IDN2
+    ping->ping_hostname = host;
+#else
+    ping->ping_hostname = strdup (host);
 # endif
+
   freeaddrinfo (res);
 
   return 0;
@@ -319,16 +348,16 @@ ping_set_dest (PING * ping, char *host)
   else
     {
       struct hostent *hp;
-# ifdef HAVE_IDN
-      char *p;
+# if defined HAVE_IDN || defined HAVE_IDN2
+      char *rhost;
       int rc;
 
-      rc = idna_to_ascii_lz (host, &p, 0);
+      rc = idna_to_ascii_lz (host, &rhost, 0);
       if (rc)
 	return 1;
-      hp = gethostbyname (p);
-      free (p);
-# else /* !HAVE_IDN */
+      hp = gethostbyname (rhost);
+      free (rhost);
+# else /* !HAVE_IDN && !HAVE_IDN2 */
       hp = gethostbyname (host);
 # endif
       if (!hp)

@@ -1,7 +1,7 @@
 /*
   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-  Foundation, Inc.
+  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+  2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -266,6 +266,7 @@ main (int argc, char *argv[])
 	case 1:
 	  puts (_("This TLD has no whois server, but you can access the "
 		  "whois database at"));
+	  /* FALLTHROUGH */
 	case 2:
 	  puts (server + 1);
 	  exit (EXIT_SUCCESS);
@@ -302,29 +303,22 @@ whichwhois (const char *s)
   unsigned long ip;
   unsigned int i;
 
+  /* Step over any single glyph preamble, as it must be some
+   * kind of informed instructions for an anticipated server.
+   */
+  while ((*s != '\0') && (*(s + 1) != '\0') && (*(s + 1) == ' '))
+    s += 2;
+
   /* -v or -t has been used */
   if (*s == '\0')
     return "whois.ripe.net";
-
-  /* IPv6 address */
-  if (strchr (s, ':'))
-    {
-      if (strncasecmp (s, "2001:2", 6) == 0)	/* XXX ugly hack! */
-	return "whois.apnic.net";
-      if (strncasecmp (s, "2001:4", 6) == 0)
-	return "whois.arin.net";
-      if (strncasecmp (s, "2001:6", 6) == 0)
-	return "whois.ripe.net";
-      /* if (strncasecmp(s, "3ffe", 4) == 0) */
-      return "whois.6bone.net";
-    }
 
   /* email address */
   if (strchr (s, '@'))
     return "";
 
-  /* no dot and no hyphen means it's a NSI NIC handle or ASN (?) */
-  if (!strpbrk (s, ".-"))
+  /* no dot, no colon, and no hyphen means it's an NSI NIC handle or ASN (?) */
+  if (!strpbrk (s, ".-:"))
     {
       const char *p;
 
@@ -338,6 +332,31 @@ whichwhois (const char *s)
 	return "whois.networksolutions.com";
       else			/* it's a NSI NIC handle or something we don't know about */
 	return "";
+    }
+
+  /* IPv6 address */
+  if (strchr (s, ':'))
+    {
+      int a = 0, b = 0;
+
+      /* Only the first two double-octets are ever scanned.
+       * At least one is required.
+       */
+      if (sscanf (s, "%x:%x:", &a, &b) == 0)
+	return "";
+
+      /* Mask off any non-significant bits and generate prefix.  */
+      ip = (a & 0xffff) << 16 | (b & 0xffff);
+
+      for (i = 0; ip6_assign[i].serv; i++)
+	if ((ip & ip6_assign[i].mask) == ip6_assign[i].net)
+	  return ip6_assign[i].serv;
+
+      if (verb)
+	puts (_("Delegation server of this address is not known.\n"
+		"The fallback is ARIN, hoping for success."));
+
+      return "whois.arin.net";
     }
 
   /* smells like an IP? */
@@ -382,7 +401,7 @@ whereas (int asn, struct as_del aslist[])
 {
   int i;
 
-  if (asn > 16383)
+  if (asn > 398287)
     puts (_("Unknown AS number. Please upgrade this program."));
   for (i = 0; aslist[i].serv; i++)
     if (asn >= aslist[i].first && asn <= aslist[i].last)
@@ -442,7 +461,7 @@ queryformat (const char *server, const char *flags, const char *query)
       (strcmp (server, "whois.arin.net") == 0 ||
        strcmp (server, "whois.nic.mil") == 0) &&
       strncasecmp (query, "AS", 2) == 0 && query[2] >= '0' && query[2] <= '9')
-    sprintf (buf, "AS %s", query + 2);	/* fix query for ARIN */
+    sprintf (buf, "a %s", query + 2);	/* fix query for ARIN */
   else if (!isripe && strcmp (server, "whois.corenic.net") == 0)
     sprintf (buf, "--machine %s", query);	/* machine readable output */
   else if (!isripe && strcmp (server, "whois.ncst.ernet.in") == 0 &&
@@ -478,7 +497,7 @@ do_query (const int sock, const char *query)
 	{
 	  if (strncmp (buf, hide_strings[i + 1], strlen (hide_strings[i + 1]))
 	      == 0)
-	    hide = 2;		/* stop hiding */
+	    hide = 0;		/* go into testing mode */
 	  continue;		/* hide this line */
 	}
       if (hide == 0)
@@ -576,8 +595,13 @@ openconn (const char *server, const char *port)
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
 
+  /* The well-known service name is no longer universally acknowledged,
+   * because IANA has tampered with aliasing, making `Who' and `Is'
+   * into legal and functional aliases.
+   */
   if ((i = getaddrinfo (server, port ? port : "whois", &hints, &res)) != 0)
-    err_quit ("getaddrinfo: %s", gai_strerror (i));
+    if ((i = getaddrinfo (server, port ? port : "nicname", &hints, &res)) != 0)
+      err_quit ("getaddrinfo: %s", gai_strerror (i));
 
   for (ressave = res; res; res = res->ai_next)
     {

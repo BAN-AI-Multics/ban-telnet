@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free
+# Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -22,9 +23,10 @@
 
 set -u
 
+: ${EXEEXT:=}
+
 . ./tools.sh
 
-: ${EXEEXT:=}
 silence=
 bucket=
 
@@ -46,36 +48,40 @@ if test -n "${VERBOSE:+set}"; then
     set -x
 fi
 
+# Don't use CWD . because parallel testing may create and remove files
+# here while we work.
+LSDIR=..
+
 # IMPORTANT: Execute an initial call to $LS, just to get going.
 # In case this is a coverage run, as NixOS does, this very first
 # call will create `ls.gcda', whose creation would interfere with
 # the counting after `$LS -a1' and `$LS -A1'.
 #
-$LS -alTt >/dev/null 2>&1
+$LS -alTt $LSDIR >/dev/null 2>&1
 
 # Several runs with different switches are compared by
 # a simple count of printed lines.
 #
-REPLY_a1=`$LS -a1`
-REPLY_A1=`$LS -A1`
+REPLY_a1=`$LS -a1 $LSDIR`
+REPLY_A1=`$LS -A1 $LSDIR`
 
-REPLY_C=`$LS -C`
-REPLY_Cf=`$LS -Cf`
-REPLY_Cr=`$LS -Cr`
-REPLY_Ct=`$LS -Ct`
-REPLY_x=`$LS -x`
-REPLY_m=`$LS -m`
+REPLY_C=`$LS -C $LSDIR`
+REPLY_Cf=`$LS -Cf $LSDIR`
+REPLY_Cr=`$LS -Cr $LSDIR`
+REPLY_Ct=`$LS -Ct $LSDIR`
+REPLY_x=`$LS -x $LSDIR`
+REPLY_m=`$LS -m $LSDIR`
 
-REPLY_l=`$LS -l`
-REPLY_lT=`$LS -l`
-REPLY_n=`$LS -n`
+REPLY_l=`$LS -l $LSDIR`
+REPLY_lT=`$LS -l $LSDIR`
+REPLY_n=`$LS -n $LSDIR`
 
 # In an attempt to counteract lack of subsecond accuracy,
 # probe the parent directory where timing is known to be more
 # varied, than in the subdirectory "tests/".
 #
-REPLY_Ccts=`$LS -Ccts ..`
-REPLY_Cuts=`$LS -Cuts ..`
+REPLY_Ccts=`$LS -Ccts $LSDIR`
+REPLY_Cuts=`$LS -Cuts $LSDIR`
 
 # All the following failure causes are checked and possibly
 # brought to attention, independently of the other instances.
@@ -85,7 +91,7 @@ errno=0
 diff=`{ echo "$REPLY_a1"; echo "$REPLY_A1"; } | sort | uniq -u`
 
 test `echo "$diff" | wc -l` -eq 2 &&
-test `echo "$diff" | grep -c -v -e '^\.\{1,2\}$'` -eq 0 ||
+test `echo "$diff" | $GREP -c -v '^[.]\{1,2\}$'` -eq 0 ||
   { errno=1; echo >&2 'Failed to tell switch -a apart from -A.'
     # Attempt a diagnosis.
     if test -z "$diff"; then

@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-  2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+  Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -391,7 +392,7 @@ struct icmp_diag icmp_diag[] = {
   {ICMP_SOURCE_QUENCH, "Source Quench", print_ip_data, NULL},
   {ICMP_REDIRECT, NULL, print_icmp, "Redirect"},
   {ICMP_ECHO, "Echo Request", NULL, NULL},
-  {ICMP_ROUTERADV, "Router Advertisment", NULL, NULL},
+  {ICMP_ROUTERADV, "Router Advertisement", NULL, NULL},
   {ICMP_ROUTERDISCOVERY, "Router Discovery", NULL, NULL},
   {ICMP_TIME_EXCEEDED, NULL, print_icmp, "Time exceeded"},
   {ICMP_PARAMETERPROB, NULL, print_parameterprob, NULL},

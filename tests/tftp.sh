@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-# Foundation, Inc.
+# Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
+# 2019, 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -47,9 +47,12 @@
 #
 # The values of TARGET and TARGET6 replace the loopback addresses
 # 127.0.0.1 and ::1, whenever the variables are set.  However,
-# Setting the variable ADDRESSES to a list of addresses takes
+# setting the variable ADDRESSES to a list of addresses takes
 # precedence over all other choices.  The particular value "sense"
 # tries to find all local addresses, then go ahead with these.
+#
+# Whenever set, VERBOSE and LOGGING, this test is performed in verbose
+# mode, and lets `tftpd' do system logging, respectively.
 
 . ./tools.sh
 
@@ -158,8 +161,9 @@ if test "$ADDRESSES" = "sense"; then
 fi
 
 if test -z "$ADDRESSES"; then
-    ADDRESSES="${TARGET:-127.0.0.1}"
-    test "$TEST_IPV6" = "no" || ADDRESSES="$ADDRESSES ${TARGET6:-::1}"
+    test "$TEST_IPV4" = "no" || ADDRESSES="${TARGET:-127.0.0.1}"
+    test "$TEST_IPV6" = "no" ||
+	ADDRESSES="${ADDRESSES:+$ADDRESSES }${TARGET6:-::1}"
 fi
 
 # Work around the peculiar output of netstat(1m,solaris).
@@ -207,15 +211,24 @@ fi
 # $INETD_CONF.  Thus the dependency on file locations will be
 # identical in daemon-mode and in debug-mode.
 write_conf () {
-    cat > "$INETD_CONF" <<-EOF
-	$PORT dgram ${PROTO}4 wait $USER $TFTPD   tftpd -l $TMPDIR/tftp-test
+    : > "$INETD_CONF" 2>/dev/null
+
+    test "$TEST_IPV4" = "no" ||
+	cat >> "$INETD_CONF" <<-EOF
+	$PORT dgram ${PROTO}4 wait $USER $TFTPD   tftpd ${LOGGING+"-l"} $TMPDIR/tftp-test
 	EOF
 
     test "$TEST_IPV6" = "no" ||
 	cat >> "$INETD_CONF" <<-EOF
-	$PORT dgram ${PROTO}6 wait $USER $TFTPD   tftpd -l $TMPDIR/tftp-test
+	$PORT dgram ${PROTO}6 wait $USER $TFTPD   tftpd ${LOGGING+"-l"} $TMPDIR/tftp-test
 	EOF
 }
+
+if test "$TEST_IPV4" = "no" && test "$TEST_IPV6" = "no"
+then
+    echo >&2 "Inet socket test is switched off.  Skipping test."
+    exit 77
+fi
 
 write_conf ||
     {
@@ -347,7 +360,7 @@ $silence echo "Looking into '`echo $ADDRESSES | tr "\n" ' '`'."
 for addr in $ADDRESSES; do
     $silence echo "trying address '$addr'..." >&2
 
-    for name in $FILELIST; do
+    for name in $FILELIST missing-file; do
 	test -n "$name" || continue
 	EFFORTS=`expr $EFFORTS + 1`
 	rm -f "$name"
@@ -356,8 +369,15 @@ for addr in $ADDRESSES; do
 get $name" | \
 	eval "$TFTP" ${VERBOSE:+-v} "$addr" $PORT $bucket
 
-	cmp "$TMPDIR/tftp-test/$name" "$name" 2>/dev/null
-	result=$?
+	if test "$name" != "missing-file"; then
+	   cmp "$TMPDIR/tftp-test/$name" "$name" 2>/dev/null
+	   result=$?
+	else
+	   # No data should have arrived, but traditionally an empty
+	   # file was created.
+	   result=0
+	   test ! -s "$name" || result=1
+	fi
 
 	if [ "$result" -ne 0 ]; then
 	    # Failure.
@@ -367,7 +387,42 @@ get $name" | \
 	    SUCCESSES=`expr $SUCCESSES + 1`
 	    test -z "$VERBOSE" || echo "Successful comparison for $addr/$name." >&2
 	fi
-   done
+    done
+
+    # Do a compound test with multiple requests.
+    # Issue one request for locally renamed file.
+    rm -f file-small _file-small_ missing-file
+    EFFORTS=`expr $EFFORTS + 1`
+
+    cat <<-EOT |
+	binary
+	get file-small
+	get missing-file
+	get file-small _file-small_
+	quit
+	EOT
+    eval $TFTP ${VERBOSE:+-v} "$addr" $PORT $bucket
+
+    if cmp "$TMPDIR/tftp-test/file-small" file-small 2>/dev/null \
+	&& test ! -s missing-file \
+	&& cmp "$TMPDIR/tftp-test/file-small" _file-small_ 2>/dev/null
+    then
+	SUCCESSES=`expr $SUCCESSES + 1`
+	test -z "$VERBOSE" || echo "Successful compound test." >&2
+    else
+	echo "Failure during compound test." >&2
+
+	# Investigate probable causes.
+	test -s _file-small_ ||
+	    echo "Third get request failed after file known to be missing." >&2
+	{ test ! -f missing-file || test -s missing-file ; } &&
+	    echo "The missing file did not appear as empty." >&1
+	test -s file-small ||
+	    echo "Not even the first request succeeded." >&2
+	RESULT=1
+    fi
+
+    rm -f file-small _file-small_ missing-file
 done
 
 # Test the ability of inetd to reload configuration:
@@ -422,56 +477,68 @@ if $do_secure_setting; then
     # Allow an underprivileged process owner to read files.
     chmod g=rx,o=rx $TMPDIR
 
-    cat > "$INETD_CONF" <<-EOF
-	$PORT dgram ${PROTO}4 wait $USER $TFTPD   tftpd -l -s $TMPDIR /tftp-test
+    : > "$INETD_CONF"
+
+    test "$TEST_IPV4" = "no" ||
+	cat >> "$INETD_CONF" <<-EOF
+	$PORT dgram ${PROTO}4 wait $USER $TFTPD   tftpd ${LOGGING+"-l"} -s $TMPDIR /tftp-test
 	EOF
 
     test "$TEST_IPV6" = "no" ||
 	cat >> "$INETD_CONF" <<-EOF
-	$PORT dgram ${PROTO}6 wait $USER $TFTPD   tftpd -l -s $TMPDIR /tftp-test
+	$PORT dgram ${PROTO}6 wait $USER $TFTPD   tftpd ${LOGGING+"-l"} -s $TMPDIR /tftp-test
 	EOF
 
     # Let inetd reload configuration.
     kill -HUP $inetd_pid
 
-    # Test two files: file-small and asciifile.txt
+    # Test two files for each address: file-small and asciifile.txt
     #
-    addr=`echo "$ADDRESSES" | $SED 's/ .*//'`
-    name=`echo "$FILELIST" | $SED 's/ .*//'`
-    rm -f "$name" "$ASCIIFILE"
-    EFFORTS=`expr $EFFORTS + 2`
+    name=`echo $FILELIST | $SED 's/ .*//'`
 
-    echo "binary
-get $name
-ascii
-get /tftp-test/$ASCIIFILE" | \
-    eval "$TFTP" ${VERBOSE:+-v} "$addr" $PORT $bucket
+    for addr in $ADDRESSES; do
+	rm -f "$name" "$ASCIIFILE"
+	EFFORTS=`expr $EFFORTS + 2`
 
-    cmp "$TMPDIR/tftp-test/$name" "$name" 2>/dev/null
-    result=$?
-    if test $? -ne 0; then
-	$silence echo >&2 "Failed chrooted access to $name."
-	RESULT=$result
-    else
-	$silence echo >&2 "Success with chrooted access to $name."
-	SUCCESSES=`expr $SUCCESSES + 1`
-    fi
-    cmp "$TMPDIR/tftp-test/$ASCIIFILE" "$ASCIIFILE" 2>/dev/null
-    result=$?
-    if test $? -ne 0; then
-	$silence echo >&2 "Failed chrooted access to /tftp-test/$ASCIIFILE."
-	RESULT=$result
-    else
-	$silence echo >&2 "Success with chrooted /tftp-test/$ASCIIFILE."
-	SUCCESSES=`expr $SUCCESSES + 1`
-    fi
+	cat <<-EOT |
+		binary
+		get $name
+		ascii
+		get /tftp-test/$ASCIIFILE
+	EOT
+	eval "$TFTP" ${VERBOSE:+-v} "$addr" $PORT $bucket
+
+	cmp "$TMPDIR/tftp-test/$name" "$name" 2>/dev/null
+	result=$?
+
+	if test $? -ne 0; then
+	    $silence echo >&2 "Failed chrooted access to $addr:$name."
+	    RESULT=$result
+	else
+	    $silence echo >&2 "Success with chrooted access to $addr:$name."
+	    SUCCESSES=`expr $SUCCESSES + 1`
+	fi
+
+	cmp "$TMPDIR/tftp-test/$ASCIIFILE" "$ASCIIFILE" 2>/dev/null
+	result=$?
+
+	if test $? -ne 0; then
+	    $silence echo >&2 \
+		"Failed chrooted access to $addr:/tftp-test/$ASCIIFILE."
+	    RESULT=$result
+	else
+	    $silence echo >&2 \
+	    "Success with chrooted $addr:/tftp-test/$ASCIIFILE."
+	    SUCCESSES=`expr $SUCCESSES + 1`
+	fi
+    done # addr in ADDRESSES
 else
     $silence echo >&2 'Informational: Inhibiting chroot test.'
 fi
 
 # Minimal clean up. Main work in posttesting().
 $silence echo
-test $RESULT -eq 0 && $silence false \
+test $RESULT -eq 0 && test $SUCCESSES -eq $EFFORTS && $silence false \
     || echo Test had $SUCCESSES successes out of $EFFORTS cases.
 
 exit $RESULT

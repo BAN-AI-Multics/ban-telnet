@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -77,7 +78,9 @@
 # include <termcap.h>
 #elif defined HAVE_CURSES_TGETENT
 # include <curses.h>
-# include <term.h>
+# ifndef _XOPEN_CURSES
+#  include <term.h>
+# endif
 #endif
 
 #ifdef AUTHENTICATION
@@ -859,10 +862,13 @@ suboption (void)
 #endif /* defined(TN3270) */
 	  name = gettermname ();
 	  len = strlen (name) + 4 + 2;
-	  if (len < NETROOM ())
+
+	  if ((len < NETROOM ()) && (len <= (int) sizeof (temp)))
 	    {
-	      sprintf ((char *) temp, "%c%c%c%c%s%c%c", IAC, SB, TELOPT_TTYPE,
-		       TELQUAL_IS, name, IAC, SE);
+	      snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%s%c%c",
+			IAC, SB, TELOPT_TTYPE, TELQUAL_IS,
+			name,
+			IAC, SE);
 	      ring_supply_data (&netoring, temp, len);
 	      printsub ('>', &temp[2], len - 2);
 	    }
@@ -880,13 +886,15 @@ suboption (void)
       if (SB_GET () == TELQUAL_SEND)
 	{
 	  long ospeed, ispeed;
-	  unsigned char temp[50];
+	  unsigned char temp[50];	/* Two six-digit integers plus 7.  */
 	  int len;
 
 	  TerminalSpeeds (&ispeed, &ospeed);
 
-	  sprintf ((char *) temp, "%c%c%c%c%d,%d%c%c", IAC, SB, TELOPT_TSPEED,
-		   TELQUAL_IS, (int) ospeed, (int) ispeed, IAC, SE);
+	  snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%d,%d%c%c",
+		    IAC, SB, TELOPT_TSPEED, TELQUAL_IS,
+		    (int) ospeed, (int) ispeed,
+		    IAC, SE);
 	  len = strlen ((char *) temp + 4) + 4;	/* temp[3] is 0 ... */
 
 	  if (len < NETROOM ())
@@ -999,8 +1007,23 @@ suboption (void)
 	      send_wont (TELOPT_XDISPLOC, 1);
 	      break;
 	    }
-	  sprintf ((char *) temp, "%c%c%c%c%s%c%c", IAC, SB, TELOPT_XDISPLOC,
-		   TELQUAL_IS, dp, IAC, SE);
+
+	  /* Remote host, and display server must not be corrupted
+	   * by truncation.  In addition, every character of telnet
+	   * protocol must remain unsevered.  Check that DP fits in
+	   * full within TEMP.  Otherwise report buffer error.
+	   */
+	  if (strlen ((char *) dp) >= sizeof (temp) - 4 - 2)
+	    {
+	      printf ("lm_will: not enough room in buffer\n");
+	      break;
+	    }
+
+	  /* Go ahead safely.  */
+	  snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%s%c%c",
+		    IAC, SB, TELOPT_XDISPLOC, TELQUAL_IS,
+		    dp,
+		    IAC, SE);
 	  len = strlen ((char *) temp + 4) + 4;	/* temp[3] is 0 ... */
 
 	  if (len < NETROOM ())
@@ -2223,7 +2246,7 @@ telsnd (void)
 	  if ((sc == '\n') || (sc == '\r'))
 	    bol = 1;
 	}
-      else if (sc == escape)
+      else if (escape != _POSIX_VDISABLE && sc == escape)
 	{
 	  /*
 	   * Double escape is a pass through of a single escape character.

@@ -1,5 +1,5 @@
 /* Hierarchical argument parsing help output
-   Copyright (C) 1995-2005, 2007, 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Miles Bader <miles@gnu.ai.mit.edu>.
 
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _GNU_SOURCE
 # define _GNU_SOURCE    1
@@ -26,6 +26,7 @@
 
 #include <alloca.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +35,8 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <limits.h>
-#ifdef USE_IN_LIBIO
+#ifdef _LIBC
+# include <../libio/libioP.h>
 # include <wchar.h>
 #endif
 
@@ -42,7 +44,7 @@
 # include <libintl.h>
 # undef dgettext
 # define dgettext(domain, msgid) \
-   INTUSE(__dcgettext) (domain, msgid, LC_MESSAGES)
+   __dcgettext (domain, msgid, LC_MESSAGES)
 #else
 # include "gettext.h"
 #endif
@@ -55,6 +57,8 @@
 # define SIZE_MAX ((size_t) -1)
 #endif
 
+/* ========================================================================== */
+
 /* User-selectable (using an environment variable) formatting parameters.
 
    These may be specified in an environment variable called 'ARGP_HELP_FMT',
@@ -104,39 +108,38 @@ struct uparams
 static struct uparams uparams = {
   DUP_ARGS, DUP_ARGS_NOTE,
   SHORT_OPT_COL, LONG_OPT_COL, DOC_OPT_COL, OPT_DOC_COL, HEADER_COL,
-  USAGE_INDENT, RMARGIN,
-  0
+  USAGE_INDENT, RMARGIN
 };
 
 /* A particular uparam, and what the user name is.  */
 struct uparam_name
 {
-  const char *name;             /* User name.  */
-  int is_bool;                  /* Whether it's 'boolean'.  */
-  size_t uparams_offs;          /* Location of the (int) field in UPARAMS.  */
+  const char name[14];          /* User name.  */
+  bool is_bool;                 /* Whether it's 'boolean'.  */
+  unsigned char uparams_offs;   /* Location of the (int) field in UPARAMS.  */
 };
 
 /* The name-field mappings we know about.  */
 static const struct uparam_name uparam_names[] =
 {
-  { "dup-args",       1, offsetof (struct uparams, dup_args) },
-  { "dup-args-note",  1, offsetof (struct uparams, dup_args_note) },
-  { "short-opt-col",  0, offsetof (struct uparams, short_opt_col) },
-  { "long-opt-col",   0, offsetof (struct uparams, long_opt_col) },
-  { "doc-opt-col",    0, offsetof (struct uparams, doc_opt_col) },
-  { "opt-doc-col",    0, offsetof (struct uparams, opt_doc_col) },
-  { "header-col",     0, offsetof (struct uparams, header_col) },
-  { "usage-indent",   0, offsetof (struct uparams, usage_indent) },
-  { "rmargin",        0, offsetof (struct uparams, rmargin) },
-  { 0 }
+  { "dup-args",       true, offsetof (struct uparams, dup_args) },
+  { "dup-args-note",  true, offsetof (struct uparams, dup_args_note) },
+  { "short-opt-col",  false, offsetof (struct uparams, short_opt_col) },
+  { "long-opt-col",   false, offsetof (struct uparams, long_opt_col) },
+  { "doc-opt-col",    false, offsetof (struct uparams, doc_opt_col) },
+  { "opt-doc-col",    false, offsetof (struct uparams, opt_doc_col) },
+  { "header-col",     false, offsetof (struct uparams, header_col) },
+  { "usage-indent",   false, offsetof (struct uparams, usage_indent) },
+  { "rmargin",        false, offsetof (struct uparams, rmargin) }
 };
+#define nuparam_names (sizeof (uparam_names) / sizeof (uparam_names[0]))
 
 static void
 validate_uparams (const struct argp_state *state, struct uparams *upptr)
 {
   const struct uparam_name *up;
 
-  for (up = uparam_names; up->name; up++)
+  for (up = uparam_names; up < uparam_names + nuparam_names; up++)
     {
       if (up->is_bool
           || up->uparams_offs == offsetof (struct uparams, rmargin))
@@ -155,7 +158,7 @@ ARGP_HELP_FMT: %s value is less than or equal to %s"),
   uparams.valid = 1;
 }
 
-/* Read user options from the environment, and fill in UPARAMS appropriately. */
+/* Read user options from the environment, and fill in UPARAMS appropriately.  */
 static void
 fill_in_uparams (const struct argp_state *state)
 {
@@ -211,29 +214,27 @@ fill_in_uparams (const struct argp_state *state)
                   SKIPWS (arg);
                 }
 
-              for (un = uparam_names; un->name; un++)
+              for (un = uparam_names;
+                   un < uparam_names + nuparam_names;
+                   un++)
                 if (strlen (un->name) == var_len
                     && strncmp (var, un->name, var_len) == 0)
                   {
                     if (unspec && !un->is_bool)
                       __argp_failure (state, 0, 0,
-                                      dgettext (state->root_argp->argp_domain,
+                                      dgettext (state == NULL ? NULL
+                                                : state->root_argp->argp_domain,
                                                 "\
 %.*s: ARGP_HELP_FMT parameter requires a value"),
-                                      (int) var_len, var);
-                    else if (val < 0)
-                      __argp_failure (state, 0, 0,
-                                      dgettext (state->root_argp->argp_domain,
-                                                "\
-%.*s: ARGP_HELP_FMT parameter must be positive"),
                                       (int) var_len, var);
                     else
                       *(int *)((char *)&new_params + un->uparams_offs) = val;
                     break;
                   }
-              if (! un->name)
+              if (un == uparam_names + nuparam_names)
                 __argp_failure (state, 0, 0,
-                                dgettext (state->root_argp->argp_domain, "\
+                                dgettext (state == NULL ? NULL
+                                          : state->root_argp->argp_domain, "\
 %.*s: Unknown ARGP_HELP_FMT parameter"),
                                 (int) var_len, var);
 
@@ -244,7 +245,8 @@ fill_in_uparams (const struct argp_state *state)
           else if (*var)
             {
               __argp_failure (state, 0, 0,
-                              dgettext (state->root_argp->argp_domain,
+                              dgettext (state == NULL ? NULL
+                                        : state->root_argp->argp_domain,
                                         "Garbage in ARGP_HELP_FMT: %s"), var);
               break;
             }
@@ -253,6 +255,8 @@ fill_in_uparams (const struct argp_state *state)
     }
 }
 
+/* ========================================================================== */
+
 /* Returns true if OPT hasn't been marked invisible.  Visibility only affects
    whether OPT is displayed or used in sorting, not option shadowing.  */
 #define ovisible(opt) (! ((opt)->flags & OPTION_HIDDEN))
@@ -348,6 +352,9 @@ find_char (char ch, char *beg, char *end)
   return 0;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Data structure: HOL = Help Option List                                     */
+
 struct hol_cluster;             /* fwd decl */
 
 struct hol_entry
@@ -366,11 +373,11 @@ struct hol_entry
   char *short_options;
 
   /* Entries are sorted by their group first, in the order:
-       1, 2, ..., n, 0, -m, ..., -2, -1
+       0, 1, 2, ..., n, -m, ..., -2, -1
      and then alphabetically within each group.  The default is 0.  */
   int group;
 
-  /* The cluster of options this entry belongs to, or 0 if none.  */
+  /* The cluster of options this entry belongs to, or NULL if none.  */
   struct hol_cluster *cluster;
 
   /* The argp from which this option came.  */
@@ -395,7 +402,7 @@ struct hol_cluster
      same depth (clusters always follow options in the same group).  */
   int group;
 
-  /* The cluster to which this cluster belongs, or 0 if it's at the base
+  /* The cluster to which this cluster belongs, or NULL if it's at the base
      level.  */
   struct hol_cluster *parent;
 
@@ -428,7 +435,7 @@ struct hol
 };
 
 /* Create a struct hol from the options in ARGP.  CLUSTER is the
-   hol_cluster in which these entries occur, or 0, if at the root.  */
+   hol_cluster in which these entries occur, or NULL if at the root.  */
 static struct hol *
 make_hol (const struct argp *argp, struct hol_cluster *cluster)
 {
@@ -545,6 +552,9 @@ hol_free (struct hol *hol)
   free (hol);
 }
 
+/* Iterate across the short_options of the given ENTRY.  Call FUNC for each.
+   Stop when such a call returns a non-zero value, and return this value.
+   If all FUNC invocations returned 0, return 0.  */
 static int
 hol_entry_short_iterate (const struct hol_entry *entry,
                          int (*func)(const struct argp_option *opt,
@@ -570,8 +580,11 @@ hol_entry_short_iterate (const struct hol_entry *entry,
   return val;
 }
 
+/* Iterate across the long options of the given ENTRY.  Call FUNC for each.
+   Stop when such a call returns a non-zero value, and return this value.
+   If all FUNC invocations returned 0, return 0.  */
 static inline int
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || (__clang_major__ >= 4)
 __attribute__ ((always_inline))
 #endif
 hol_entry_long_iterate (const struct hol_entry *entry,
@@ -596,7 +609,7 @@ hol_entry_long_iterate (const struct hol_entry *entry,
   return val;
 }
 
-/* Iterator that returns true for the first short option.  */
+/* A filter that returns true for the first short option of a given ENTRY.  */
 static int
 until_short (const struct argp_option *opt, const struct argp_option *real,
              const char *domain, void *cookie)
@@ -612,7 +625,7 @@ hol_entry_first_short (const struct hol_entry *entry)
                                   entry->argp->argp_domain, 0);
 }
 
-/* Returns the first valid long option in ENTRY, or 0 if there is none.  */
+/* Returns the first valid long option in ENTRY, or NULL if there is none.  */
 static const char *
 hol_entry_first_long (const struct hol_entry *entry)
 {
@@ -624,7 +637,7 @@ hol_entry_first_long (const struct hol_entry *entry)
   return 0;
 }
 
-/* Returns the entry in HOL with the long option name NAME, or 0 if there is
+/* Returns the entry in HOL with the long option name NAME, or NULL if there is
    none.  */
 static struct hol_entry *
 hol_find_entry (struct hol *hol, const char *name)
@@ -659,39 +672,93 @@ hol_set_group (struct hol *hol, const char *name, int group)
     entry->group = group;
 }
 
-/* Order by group:  0, 1, 2, ..., n, -m, ..., -2, -1.
-   EQ is what to return if GROUP1 and GROUP2 are the same.  */
+/* -------------------------------------------------------------------------- */
+/* Sorting the entries in a HOL.                                              */
+
+/* Order by group:  0, 1, 2, ..., n, -m, ..., -2, -1.  */
 static int
-group_cmp (int group1, int group2, int eq)
+group_cmp (int group1, int group2)
 {
-  if (group1 == group2)
-    return eq;
-  else if ((group1 < 0 && group2 < 0) || (group1 >= 0 && group2 >= 0))
+  if ((group1 < 0 && group2 < 0) || (group1 >= 0 && group2 >= 0))
     return group1 - group2;
   else
+    /* Return > 0 if group1 < 0 <= group2.
+       Return < 0 if group2 < 0 <= group1.  */
     return group2 - group1;
 }
 
-/* Compare clusters CL1 & CL2 by the order that they should appear in
+/* Compare clusters CL1 and CL2 by the order that they should appear in
+   output.  Assume CL1 and CL2 have the same parent.  */
+static int
+hol_sibling_cluster_cmp (const struct hol_cluster *cl1,
+                         const struct hol_cluster *cl2)
+{
+  /* Compare by group first.  */
+  int cmp = group_cmp (cl1->group, cl2->group);
+  if (cmp != 0)
+    return cmp;
+
+  /* Within a group, compare by index within the group.  */
+  return cl2->index - cl1->index;
+}
+
+/* Compare clusters CL1 and CL2 by the order that they should appear in
+   output.  Assume CL1 and CL2 are at the same depth.  */
+static int
+hol_cousin_cluster_cmp (const struct hol_cluster *cl1,
+                        const struct hol_cluster *cl2)
+{
+  if (cl1->parent == cl2->parent)
+    return hol_sibling_cluster_cmp (cl1, cl2);
+  else
+    {
+      /* Compare the parent clusters first.  */
+      int cmp = hol_cousin_cluster_cmp (cl1->parent, cl2->parent);
+      if (cmp != 0)
+        return cmp;
+
+      /* Next, compare by group.  */
+      cmp = group_cmp (cl1->group, cl2->group);
+      if (cmp != 0)
+        return cmp;
+
+      /* Next, within a group, compare by index within the group.  */
+      return cl2->index - cl1->index;
+    }
+}
+
+/* Compare clusters CL1 and CL2 by the order that they should appear in
    output.  */
 static int
 hol_cluster_cmp (const struct hol_cluster *cl1, const struct hol_cluster *cl2)
 {
   /* If one cluster is deeper than the other, use its ancestor at the same
-     level, so that finding the common ancestor is straightforward.
+     level.  Then, go by the rule that entries that are not in a sub-cluster
+     come before entries in a sub-cluster.  */
+  if (cl1->depth > cl2->depth)
+    {
+      do
+        cl1 = cl1->parent;
+      while (cl1->depth > cl2->depth);
+      int cmp = hol_cousin_cluster_cmp (cl1, cl2);
+      if (cmp != 0)
+        return cmp;
 
-     clN->depth > 0 means that clN->parent != NULL (see hol_add_cluster) */
-  while (cl1->depth > cl2->depth)
-    cl1 = cl1->parent;
-  while (cl2->depth > cl1->depth)
-    cl2 = cl2->parent;
+      return 1;
+    }
+  else if (cl1->depth < cl2->depth)
+    {
+      do
+        cl2 = cl2->parent;
+      while (cl1->depth < cl2->depth);
+      int cmp = hol_cousin_cluster_cmp (cl1, cl2);
+      if (cmp != 0)
+        return cmp;
 
-  /* Now reduce both clusters to their ancestors at the point where both have
-     a common parent; these can be directly compared.  */
-  while (cl1->parent != cl2->parent)
-    cl1 = cl1->parent, cl2 = cl2->parent;
-
-  return group_cmp (cl1->group, cl2->group, cl2->index - cl1->index);
+      return -1;
+    }
+  else
+    return hol_cousin_cluster_cmp (cl1, cl2);
 }
 
 /* Return the ancestor of CL that's just below the root (i.e., has a parent
@@ -704,121 +771,137 @@ hol_cluster_base (struct hol_cluster *cl)
   return cl;
 }
 
-/* Return true if CL1 is a child of CL2.  */
-static int
-hol_cluster_is_child (const struct hol_cluster *cl1,
-                      const struct hol_cluster *cl2)
-{
-  while (cl1 && cl1 != cl2)
-    cl1 = cl1->parent;
-  return cl1 == cl2;
-}
-
-/* Given the name of an OPTION_DOC option, modifies NAME to start at the tail
+/* Given the name of an OPTION_DOC option, modifies *NAME to start at the tail
    that should be used for comparisons, and returns true iff it should be
    treated as a non-option.  */
 static int
 canon_doc_option (const char **name)
 {
   int non_opt;
-
-  if (!*name)
-    non_opt = 1;
-  else
-    {
-      /* Skip initial whitespace.  */
-      while (isspace ((unsigned char) **name))
-        (*name)++;
-      /* Decide whether this looks like an option (leading '-') or not.  */
-      non_opt = (**name != '-');
-      /* Skip until part of name used for sorting.  */
-      while (**name && !isalnum ((unsigned char) **name))
-        (*name)++;
-    }
+  /* Skip initial whitespace.  */
+  while (isspace ((unsigned char) **name))
+    (*name)++;
+  /* Decide whether this looks like an option (leading '-') or not.  */
+  non_opt = (**name != '-');
+  /* Skip until part of name used for sorting.  */
+  while (**name && !isalnum ((unsigned char) **name))
+    (*name)++;
   return non_opt;
 }
 
-#define HOL_ENTRY_PTRCMP(a,b) ((a)->ord < (b)->ord ? -1 : 1)
-
-/* Order ENTRY1 & ENTRY2 by the order which they should appear in a help
-   listing.  */
+/* Order ENTRY1 and ENTRY2 by the order which they should appear in a help
+   listing.
+   This function implements a total order, that is:
+     - if cmp (entry1, entry2) < 0 and cmp (entry2, entry3) < 0,
+       then cmp (entry1, entry3) < 0.
+     - if cmp (entry1, entry2) < 0 and cmp (entry2, entry3) == 0,
+       then cmp (entry1, entry3) < 0.
+     - if cmp (entry1, entry2) == 0 and cmp (entry2, entry3) < 0,
+       then cmp (entry1, entry3) < 0.
+     - if cmp (entry1, entry2) == 0 and cmp (entry2, entry3) == 0,
+       then cmp (entry1, entry3) == 0.  */
 static int
 hol_entry_cmp (const struct hol_entry *entry1,
                const struct hol_entry *entry2)
 {
-  /* The group numbers by which the entries should be ordered; if either is
-     in a cluster, then this is just the group within the cluster.  */
-  int group1 = entry1->group, group2 = entry2->group;
-  int rc;
+  /* First, compare the group numbers.  For entries within a cluster, what
+     matters is the group number of the base cluster in which the entry
+     resides.  */
+  int group1 = (entry1->cluster
+                ? hol_cluster_base (entry1->cluster)->group
+                : entry1->group);
+  int group2 = (entry2->cluster
+                ? hol_cluster_base (entry2->cluster)->group
+                : entry2->group);
+  int cmp = group_cmp (group1, group2);
+  if (cmp != 0)
+    return cmp;
 
-  if (entry1->cluster != entry2->cluster)
+  /* The group numbers are the same.  */
+
+  /* Entries that are not in a cluster come before entries in a cluster.  */
+  cmp = (entry1->cluster != NULL) - (entry2->cluster != NULL);
+  if (cmp != 0)
+    return cmp;
+
+  /* Compare the clusters.  */
+  if (entry1->cluster != NULL)
     {
-      /* The entries are not within the same cluster, so we can't compare them
-         directly, we have to use the appropriate clustering level too.  */
-      if (! entry1->cluster)
-        /* ENTRY1 is at the "base level", not in a cluster, so we have to
-           compare it's group number with that of the base cluster in which
-           ENTRY2 resides.  Note that if they're in the same group, the
-           clustered option always comes laster.  */
-        return group_cmp (group1, hol_cluster_base (entry2->cluster)->group, -1);
-      else if (! entry2->cluster)
-        /* Likewise, but ENTRY2's not in a cluster.  */
-        return group_cmp (hol_cluster_base (entry1->cluster)->group, group2, 1);
-      else
-        /* Both entries are in clusters, we can just compare the clusters.  */
-        return (rc = hol_cluster_cmp (entry1->cluster, entry2->cluster)) ?
-               rc : HOL_ENTRY_PTRCMP (entry1, entry2);
+      cmp = hol_cluster_cmp (entry1->cluster, entry2->cluster);
+      if (cmp != 0)
+        return cmp;
     }
-  else if (group1 == group2)
-    /* The entries are both in the same cluster and group, so compare them
-       alphabetically.  */
+
+  /* For entries in the same cluster, compare also the group numbers
+     within the cluster.  */
+  cmp = group_cmp (entry1->group, entry2->group);
+  if (cmp != 0)
+    return cmp;
+
+  /* The entries are both in the same group and the same cluster.  */
+
+  /* 'documentation' options always follow normal options (or documentation
+     options that *look* like normal options).  */
+  const char *long1 = hol_entry_first_long (entry1);
+  const char *long2 = hol_entry_first_long (entry2);
+  int doc1 =
+    (odoc (entry1->opt) ? long1 != NULL && canon_doc_option (&long1) : 0);
+  int doc2 =
+    (odoc (entry2->opt) ? long2 != NULL && canon_doc_option (&long2) : 0);
+  cmp = doc1 - doc2;
+  if (cmp != 0)
+    return cmp;
+
+  /* Compare the entries alphabetically.  */
+
+  /* First, compare the first character of the options.
+     Put entries without *any* valid options (such as options with
+     OPTION_HIDDEN set) first.  But as they're not displayed, it doesn't
+     matter where they are.  */
+  int short1 = hol_entry_first_short (entry1);
+  int short2 = hol_entry_first_short (entry2);
+  unsigned char first1 = short1 ? short1 : long1 != NULL ? *long1 : 0;
+  unsigned char first2 = short2 ? short2 : long2 != NULL ? *long2 : 0;
+  /* Compare ignoring case.  */
+  /* Use tolower, not _tolower, since the latter has undefined behaviour
+     for characters that are not uppercase letters.  */
+  cmp = tolower (first1) - tolower (first2);
+  if (cmp != 0)
+    return cmp;
+  /* When the options start with the same letter (ignoring case), lower-case
+     comes first.  */
+  cmp = first2 - first1;
+  if (cmp != 0)
+    return cmp;
+
+  /* The first character of the options agree.  */
+
+  /* Put entries with a short option before entries without a short option.  */
+  cmp = (short1 != 0) - (short2 != 0);
+  if (cmp != 0)
+    return cmp;
+
+  /* Compare entries without a short option by comparing the long option.  */
+  if (short1 == 0)
     {
-      int short1 = hol_entry_first_short (entry1);
-      int short2 = hol_entry_first_short (entry2);
-      int doc1 = odoc (entry1->opt);
-      int doc2 = odoc (entry2->opt);
-      const char *long1 = hol_entry_first_long (entry1);
-      const char *long2 = hol_entry_first_long (entry2);
+      cmp = (long1 != NULL) - (long2 != NULL);
+      if (cmp != 0)
+        return cmp;
 
-      if (doc1)
-        doc1 = canon_doc_option (&long1);
-      if (doc2)
-        doc2 = canon_doc_option (&long2);
-
-      if (doc1 != doc2)
-        /* "documentation" options always follow normal options (or
-           documentation options that *look* like normal options).  */
-        return doc1 - doc2;
-      else if (!short1 && !short2 && long1 && long2)
-        /* Only long options.  */
-        return (rc = __strcasecmp (long1, long2)) ?
-               rc : HOL_ENTRY_PTRCMP (entry1, entry2);
-      else
-        /* Compare short/short, long/short, short/long, using the first
-           character of long options.  Entries without *any* valid
-           options (such as options with OPTION_HIDDEN set) will be put
-           first, but as they're not displayed, it doesn't matter where
-           they are.  */
+      if (long1 != NULL)
         {
-          unsigned char first1 = short1 ? short1 : long1 ? *long1 : 0;
-          unsigned char first2 = short2 ? short2 : long2 ? *long2 : 0;
-          /* Use tolower, not _tolower, since only the former is
-             guaranteed to work on something already lower case.  */
-          int lower_cmp = tolower (first1) - tolower (first2);
-          /* Compare ignoring case, except when the options are both the
-             same letter, in which case lower-case always comes first.  */
-          return lower_cmp ? lower_cmp :
-                 (rc = first2 - first1) ?
-                 rc : HOL_ENTRY_PTRCMP (entry1, entry2);
+          cmp = __strcasecmp (long1, long2);
+          if (cmp != 0)
+            return cmp;
         }
     }
-  else
-    /* Within the same cluster, but not the same group, so just compare
-       groups.  */
-    return group_cmp (group1, group2, HOL_ENTRY_PTRCMP (entry1, entry2));
+
+  /* We're out of comparison criteria.  At this point, if ENTRY1 != ENTRY2,
+     the order of these entries will be unpredictable.  */
+  return 0;
 }
 
-/* Version of hol_entry_cmp with correct signature for qsort.  */
+/* Variant of hol_entry_cmp with correct signature for qsort.  */
 static int
 hol_entry_qcmp (const void *entry1_v, const void *entry2_v)
 {
@@ -837,11 +920,15 @@ hol_sort (struct hol *hol)
       struct hol_entry *e;
       for (i = 0, e = hol->entries; i < hol->num_entries; i++, e++)
         e->ord = i;
+
       qsort (hol->entries, hol->num_entries, sizeof (struct hol_entry),
              hol_entry_qcmp);
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Constructing the HOL.                                                      */
+
 /* Append MORE to HOL, destroying MORE in the process.  Options in HOL shadow
    any in MORE with the same name.  */
 static void
@@ -892,8 +979,8 @@ hol_append (struct hol *hol, struct hol *more)
 
           /* Fix up the short options pointers from HOL.  */
           for (e = entries, left = hol->num_entries; left > 0; e++, left--)
-            e->short_options =
-              short_options + (e->short_options - hol->short_options);
+            e->short_options
+              = short_options + (e->short_options - hol->short_options);
 
           /* Now add the short options from MORE, fixing up its entries
              too.  */
@@ -936,6 +1023,32 @@ hol_append (struct hol *hol, struct hol *more)
   hol_free (more);
 }
 
+/* Make a HOL containing all levels of options in ARGP.  CLUSTER is the
+   cluster in which ARGP's entries should be clustered, or NULL.  */
+static struct hol *
+argp_hol (const struct argp *argp, struct hol_cluster *cluster)
+{
+  const struct argp_child *child = argp->children;
+  struct hol *hol = make_hol (argp, cluster);
+  if (child)
+    while (child->argp)
+      {
+        struct hol_cluster *child_cluster =
+          ((child->group || child->header)
+           /* Put CHILD->argp within its own cluster.  */
+           ? hol_add_cluster (hol, child->group, child->header,
+                              child - argp->children, cluster, argp)
+           /* Just merge it into the parent's cluster.  */
+           : cluster);
+        hol_append (hol, argp_hol (child->argp, child_cluster)) ;
+        child++;
+      }
+  return hol;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Printing the HOL.                                                          */
+
 /* Inserts enough spaces to make sure STREAM is at column COL.  */
 static void
 indent_to (argp_fmtstream_t stream, unsigned col)
@@ -980,7 +1093,7 @@ arg (const struct argp_option *real, const char *req_fmt, const char *opt_fmt,
 /* State used during the execution of hol_help.  */
 struct hol_help_state
 {
-  /* PREV_ENTRY should contain the previous entry printed, or 0.  */
+  /* PREV_ENTRY should contain the previous entry printed, or NULL.  */
   struct hol_entry *prev_entry;
 
   /* If an entry is in a different group from the previous one, and SEP_GROUPS
@@ -1013,7 +1126,7 @@ static const char *
 filter_doc (const char *doc, int key, const struct argp *argp,
             const struct argp_state *state)
 {
-  if (argp->help_filter)
+  if (argp && argp->help_filter)
     /* We must apply a user filter to this output.  */
     {
       void *input = __argp_input (argp, state);
@@ -1033,7 +1146,7 @@ static void
 print_header (const char *str, const struct argp *argp,
               struct pentry_state *pest)
 {
-  const char *tstr = dgettext (argp->argp_domain, str);
+  const char *tstr = str ? dgettext (argp->argp_domain, str) : NULL;
   const char *fstr = filter_doc (tstr, ARGP_KEY_HELP_HEADER, argp, pest->state);
 
   if (fstr)
@@ -1058,6 +1171,16 @@ print_header (const char *str, const struct argp *argp,
     free ((char *) fstr);
 }
 
+/* Return true if CL1 is a child of CL2.  */
+static int
+hol_cluster_is_child (const struct hol_cluster *cl1,
+                      const struct hol_cluster *cl2)
+{
+  while (cl1 && cl1 != cl2)
+    cl1 = cl1->parent;
+  return cl1 == cl2;
+}
+
 /* Inserts a comma if this isn't the first item on the line, and then makes
    sure we're at least to column COL.  If this *is* the first item on a line,
    prints any pending whitespace/headers that should precede this line. Also
@@ -1109,13 +1232,7 @@ hol_entry_help (struct hol_entry *entry, const struct argp_state *state,
   int old_wm = __argp_fmtstream_wmargin (stream);
   /* PEST is a state block holding some of our variables that we'd like to
      share with helper functions.  */
-  struct pentry_state pest;
-
-  pest.entry = entry;
-  pest.stream = stream;
-  pest.hhstate = hhstate;
-  pest.first = 1;
-  pest.state = state;
+  struct pentry_state pest = { entry, stream, hhstate, 1, state };
 
   if (! odoc (real))
     for (opt = real, num = entry->num; num > 0; opt++, num--)
@@ -1137,7 +1254,9 @@ hol_entry_help (struct hol_entry *entry, const struct argp_state *state,
             __argp_fmtstream_putc (stream, '-');
             __argp_fmtstream_putc (stream, *so);
             if (!have_long_opt || uparams.dup_args)
-              arg (real, " %s", "[%s]", state->root_argp->argp_domain, stream);
+              arg (real, " %s", "[%s]",
+                   state == NULL ? NULL : state->root_argp->argp_domain,
+                   stream);
             else if (real->arg)
               hhstate->suppressed_dup_arg = 1;
           }
@@ -1150,35 +1269,29 @@ hol_entry_help (struct hol_entry *entry, const struct argp_state *state,
     {
       __argp_fmtstream_set_wmargin (stream, uparams.doc_opt_col);
       for (opt = real, num = entry->num; num > 0; opt++, num--)
-        if (opt->name && *opt->name && ovisible (opt))
+        if (opt->name && ovisible (opt))
           {
             comma (uparams.doc_opt_col, &pest);
             /* Calling dgettext here isn't quite right, since sorting will
                have been done on the original; but documentation options
                should be pretty rare anyway...  */
             __argp_fmtstream_puts (stream,
-                                   onotrans (opt) ?
-                                             opt->name :
-                                   dgettext (state->root_argp->argp_domain,
+                                   dgettext (state == NULL ? NULL
+                                             : state->root_argp->argp_domain,
                                              opt->name));
           }
     }
   else
     /* A real long option.  */
     {
-      int first_long_opt = 1;
-
       __argp_fmtstream_set_wmargin (stream, uparams.long_opt_col);
       for (opt = real, num = entry->num; num > 0; opt++, num--)
         if (opt->name && ovisible (opt))
           {
             comma (uparams.long_opt_col, &pest);
             __argp_fmtstream_printf (stream, "--%s", opt->name);
-            if (first_long_opt || uparams.dup_args)
-              arg (real, "=%s", "[=%s]", state->root_argp->argp_domain,
-                   stream);
-            else if (real->arg)
-              hhstate->suppressed_dup_arg = 1;
+            arg (real, "=%s", "[=%s]",
+                 state == NULL ? NULL : state->root_argp->argp_domain, stream);
           }
     }
 
@@ -1197,7 +1310,8 @@ hol_entry_help (struct hol_entry *entry, const struct argp_state *state,
     }
   else
     {
-      const char *tstr = real->doc ? dgettext (state->root_argp->argp_domain,
+      const char *tstr = real->doc ? dgettext (state == NULL ? NULL
+                                               : state->root_argp->argp_domain,
                                                real->doc) : 0;
       const char *fstr = filter_doc (tstr, real->key, entry->argp, state);
       if (fstr && *fstr)
@@ -1245,7 +1359,8 @@ hol_help (struct hol *hol, const struct argp_state *state,
 
   if (hhstate.suppressed_dup_arg && uparams.dup_args_note)
     {
-      const char *tstr = dgettext (state->root_argp->argp_domain, "\
+      const char *tstr = dgettext (state == NULL ? NULL
+                                   : state->root_argp->argp_domain, "\
 Mandatory or optional arguments to long options are also mandatory or \
 optional for any corresponding short options.");
       const char *fstr = filter_doc (tstr, ARGP_KEY_HELP_DUP_ARGS_NOTE,
@@ -1323,7 +1438,7 @@ usage_long_opt (const struct argp_option *opt,
   if (! arg)
     arg = real->arg;
 
-  if (! (flags & OPTION_NO_USAGE) && !odoc (opt))
+  if (! (flags & OPTION_NO_USAGE))
     {
       if (arg)
         {
@@ -1379,29 +1494,6 @@ hol_usage (struct hol *hol, argp_fmtstream_t stream)
     }
 }
 
-/* Make a HOL containing all levels of options in ARGP.  CLUSTER is the
-   cluster in which ARGP's entries should be clustered, or 0.  */
-static struct hol *
-argp_hol (const struct argp *argp, struct hol_cluster *cluster)
-{
-  const struct argp_child *child = argp->children;
-  struct hol *hol = make_hol (argp, cluster);
-  if (child)
-    while (child->argp)
-      {
-        struct hol_cluster *child_cluster =
-          ((child->group || child->header)
-           /* Put CHILD->argp within its own cluster.  */
-           ? hol_add_cluster (hol, child->group, child->header,
-                              child - argp->children, cluster, argp)
-           /* Just merge it into the parent's cluster.  */
-           : cluster);
-        hol_append (hol, argp_hol (child->argp, child_cluster)) ;
-        child++;
-      }
-  return hol;
-}
-
 /* Calculate how many different levels with alternative args strings exist in
    ARGP.  */
 static size_t
@@ -1432,15 +1524,17 @@ argp_args_usage (const struct argp *argp, const struct argp_state *state,
   char *our_level = *levels;
   int multiple = 0;
   const struct argp_child *child = argp->children;
-  const char *tdoc = dgettext (argp->argp_domain, argp->args_doc), *nl = 0;
+  const char *tdoc =
+    argp->args_doc ? dgettext (argp->argp_domain, argp->args_doc) : NULL;
   const char *fdoc = filter_doc (tdoc, ARGP_KEY_HELP_ARGS_DOC, argp, state);
+  const char *nl = NULL;
 
   if (fdoc)
     {
       const char *cp = fdoc;
       nl = __strchrnul (cp, '\n');
       if (*nl != '\0')
-        /* This is a "multi-level" args doc; advance to the correct position
+        /* This is a 'multi-level' args doc; advance to the correct position
            as determined by our state in LEVELS, and update LEVELS.  */
         {
           int i;
@@ -1494,55 +1588,46 @@ argp_doc (const struct argp *argp, const struct argp_state *state,
 {
   const char *text;
   const char *inp_text;
-  size_t inp_text_len = 0;
-  const char *trans_text;
   void *input = 0;
   int anything = 0;
+  size_t inp_text_limit = 0;
+  const char *doc = argp->doc ? dgettext (argp->argp_domain, argp->doc) : NULL;
   const struct argp_child *child = argp->children;
 
-  if (argp->doc)
+  if (doc)
     {
-      char *vt = strchr (argp->doc, '\v');
-      if (vt)
-        {
-          if (post)
-            {
-              inp_text = vt + 1;
-              if (! *inp_text)
-                inp_text = 0;
-            }
-          else
-            {
-              inp_text_len = vt - argp->doc;
-              inp_text = inp_text_len ? __strndup (argp->doc, inp_text_len) : 0;
-            }
-        }
-      else
-        inp_text = post ? 0 : argp->doc;
-      trans_text = inp_text ? dgettext (argp->argp_domain, inp_text) : NULL;
+      char *vt = strchr (doc, '\v');
+      inp_text = post ? (vt ? vt + 1 : 0) : doc;
+      inp_text_limit = (!post && vt) ? (vt - doc) : 0;
     }
   else
-    trans_text = inp_text = 0;
+    inp_text = 0;
 
   if (argp->help_filter)
     /* We have to filter the doc strings.  */
     {
+      if (inp_text_limit)
+        /* Copy INP_TEXT so that it's nul-terminated.  */
+        inp_text = __strndup (inp_text, inp_text_limit);
       input = __argp_input (argp, state);
       text =
         (*argp->help_filter) (post
                               ? ARGP_KEY_HELP_POST_DOC
                               : ARGP_KEY_HELP_PRE_DOC,
-                              trans_text, input);
+                              inp_text, input);
     }
   else
-    text = (const char *) trans_text;
+    text = (const char *) inp_text;
 
   if (text)
     {
       if (pre_blank)
         __argp_fmtstream_putc (stream, '\n');
 
-      __argp_fmtstream_puts (stream, text);
+      if (text == inp_text && inp_text_limit)
+        __argp_fmtstream_write (stream, inp_text, inp_text_limit);
+      else
+        __argp_fmtstream_puts (stream, text);
 
       if (__argp_fmtstream_point (stream) > __argp_fmtstream_lmargin (stream))
         __argp_fmtstream_putc (stream, '\n');
@@ -1550,14 +1635,13 @@ argp_doc (const struct argp *argp, const struct argp_state *state,
       anything = 1;
     }
 
-  if (text && text != trans_text)
+  if (text && text != inp_text)
     free ((char *) text);       /* Free TEXT returned from the help filter.  */
-
-  if (inp_text && inp_text_len)
+  if (inp_text && inp_text_limit && argp->help_filter)
     free ((char *) inp_text);   /* We copied INP_TEXT, so free it now.  */
 
   if (post && argp->help_filter)
-    /* Now see if we have to output an ARGP_KEY_HELP_EXTRA text.  */
+    /* Now see if we have to output a ARGP_KEY_HELP_EXTRA text.  */
     {
       text = (*argp->help_filter) (ARGP_KEY_HELP_EXTRA, 0, input);
       if (text)
@@ -1585,7 +1669,7 @@ argp_doc (const struct argp *argp, const struct argp_state *state,
 
 /* Output a usage message for ARGP to STREAM.  If called from
    argp_state_help, STATE is the relevant parsing state.  FLAGS are from the
-   set ARGP_HELP_*.  NAME is what to use wherever a "program name" is
+   set ARGP_HELP_*.  NAME is what to use wherever a 'program name' is
    needed. */
 static void
 _help (const struct argp *argp, const struct argp_state *state, FILE *stream,
@@ -1729,14 +1813,11 @@ Try '%s --help' or '%s --usage' for more information.\n"),
 }
 
 /* Output a usage message for ARGP to STREAM.  FLAGS are from the set
-   ARGP_HELP_*.  NAME is what to use wherever a "program name" is needed. */
+   ARGP_HELP_*.  NAME is what to use wherever a 'program name' is needed. */
 void __argp_help (const struct argp *argp, FILE *stream,
                   unsigned flags, char *name)
 {
-  struct argp_state state;
-  memset (&state, 0, sizeof state);
-  state.root_argp = argp;
-  _help (argp, &state, stream, flags, name);
+  _help (argp, 0, stream, flags, name);
 }
 #ifdef weak_alias
 weak_alias (__argp_help, argp_help)
@@ -1747,12 +1828,13 @@ char *
 __argp_short_program_name (void)
 {
 # if HAVE_DECL_PROGRAM_INVOCATION_NAME
-  return __argp_base_name (program_invocation_name);
+  char *name = strrchr (program_invocation_name, '/');
+  return name ? name + 1 : program_invocation_name;
 # else
   /* FIXME: What now? Miles suggests that it is better to use NULL,
      but currently the value is passed on directly to fputs_unlocked,
      so that requires more changes. */
-# if __GNUC__
+# if __GNUC__ || (__clang_major__ >= 4)
 #  warning No reasonable value to return
 # endif /* __GNUC__ */
   return "";
@@ -1806,33 +1888,26 @@ __argp_error (const struct argp_state *state, const char *fmt, ...)
 
           va_start (ap, fmt);
 
-#ifdef USE_IN_LIBIO
-          if (_IO_fwide (stream, 0) > 0)
-            {
-              char *buf;
+#ifdef _LIBC
+          char *buf;
 
-              if (__asprintf (&buf, fmt, ap) < 0)
-                buf = NULL;
+          if (_IO_vasprintf (&buf, fmt, ap) < 0)
+            buf = NULL;
 
-              __fwprintf (stream, L"%s: %s\n",
-                          state ? state->name : __argp_short_program_name (),
-                          buf);
+          __fxprintf (stream, "%s: %s\n",
+                      state ? state->name : __argp_short_program_name (), buf);
 
-              free (buf);
-            }
-          else
+          free (buf);
+#else
+          fputs_unlocked (state ? state->name : __argp_short_program_name (),
+                          stream);
+          putc_unlocked (':', stream);
+          putc_unlocked (' ', stream);
+
+          vfprintf (stream, fmt, ap);
+
+          putc_unlocked ('\n', stream);
 #endif
-            {
-              fputs_unlocked (state
-                              ? state->name : __argp_short_program_name (),
-                              stream);
-              putc_unlocked (':', stream);
-              putc_unlocked (' ', stream);
-
-              vfprintf (stream, fmt, ap);
-
-              putc_unlocked ('\n', stream);
-            }
 
           __argp_state_help (state, stream, ARGP_HELP_STD_ERR);
 
@@ -1870,41 +1945,34 @@ __argp_failure (const struct argp_state *state, int status, int errnum,
           __flockfile (stream);
 #endif
 
-#ifdef USE_IN_LIBIO
-          if (_IO_fwide (stream, 0) > 0)
-            __fwprintf (stream, L"%s",
-                        state ? state->name : __argp_short_program_name ());
-          else
+#ifdef _LIBC
+          __fxprintf (stream, "%s",
+                      state ? state->name : __argp_short_program_name ());
+#else
+          fputs_unlocked (state ? state->name : __argp_short_program_name (),
+                          stream);
 #endif
-            fputs_unlocked (state
-                            ? state->name : __argp_short_program_name (),
-                            stream);
 
           if (fmt)
             {
               va_list ap;
 
               va_start (ap, fmt);
-#ifdef USE_IN_LIBIO
-              if (_IO_fwide (stream, 0) > 0)
-                {
-                  char *buf;
+#ifdef _LIBC
+              char *buf;
 
-                  if (__asprintf (&buf, fmt, ap) < 0)
-                    buf = NULL;
+              if (_IO_vasprintf (&buf, fmt, ap) < 0)
+                buf = NULL;
 
-                  __fwprintf (stream, L": %s", buf);
+              __fxprintf (stream, ": %s", buf);
 
-                  free (buf);
-                }
-              else
+              free (buf);
+#else
+              putc_unlocked (':', stream);
+              putc_unlocked (' ', stream);
+
+              vfprintf (stream, fmt, ap);
 #endif
-                {
-                  putc_unlocked (':', stream);
-                  putc_unlocked (' ', stream);
-
-                  vfprintf (stream, fmt, ap);
-                }
 
               va_end (ap);
             }
@@ -1913,32 +1981,29 @@ __argp_failure (const struct argp_state *state, int status, int errnum,
             {
               char buf[200];
 
-#ifdef USE_IN_LIBIO
-              if (_IO_fwide (stream, 0) > 0)
-                __fwprintf (stream, L": %s",
-                            __strerror_r (errnum, buf, sizeof (buf)));
-              else
+#ifdef _LIBC
+              __fxprintf (stream, ": %s",
+                          __strerror_r (errnum, buf, sizeof (buf)));
+#else
+              char const *s = NULL;
+              putc_unlocked (':', stream);
+              putc_unlocked (' ', stream);
+# if GNULIB_STRERROR_R_POSIX || HAVE_DECL_STRERROR_R
+#  if !GNULIB_STRERROR_R_POSIX && STRERROR_R_CHAR_P
+              s = __strerror_r (errnum, buf, sizeof buf);
+#  else
+              if (__strerror_r (errnum, buf, sizeof buf) == 0)
+                s = buf;
+#  endif
+# endif
+              if (! s && ! (s = strerror (errnum)))
+                s = dgettext (state->root_argp->argp_domain,
+                              "Unknown system error");
+              fputs_unlocked (s, stream);
 #endif
-                {
-                  char const *s = NULL;
-                  putc_unlocked (':', stream);
-                  putc_unlocked (' ', stream);
-#if _LIBC || (HAVE_DECL_STRERROR_R && STRERROR_R_CHAR_P && !defined strerror_r)
-                  s = __strerror_r (errnum, buf, sizeof buf);
-#elif HAVE_DECL_STRERROR_R
-                  if (__strerror_r (errnum, buf, sizeof buf) == 0)
-                    s = buf;
-#endif
-#if !_LIBC
-                  if (! s && ! (s = strerror (errnum)))
-                    s = dgettext (state->root_argp->argp_domain,
-                                  "Unknown system error");
-#endif
-                  fputs (s, stream);
-                }
             }
 
-#ifdef USE_IN_LIBIO
+#if _LIBC
           if (_IO_fwide (stream, 0) > 0)
             putwc_unlocked (L'\n', stream);
           else

@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-  2015 Free Software Foundation, Inc.
+  2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation,
+  Inc.
 
   This file is part of GNU Inetutils.
 
@@ -1037,7 +1038,7 @@ remglob (char **argv, int doswitch)
 	args = argv;
       if ((cp = *++args) == NULL)
 	args = NULL;
-      return cp ? 0 : strdup (cp);
+      return cp ? strdup (cp) : NULL;
     }
   if (ftemp == NULL)
     {
@@ -1242,10 +1243,12 @@ sethash (int argc _GL_UNUSED_PARAMETER, char **argv)
 	{
 	case 'g':
 	case 'G':
-	  hashbytes *= 1024;	/* Cascaded multiplication!  */
+	  hashbytes *= 1024 * 1024 * 1024;
+	  break;
 	case 'm':
 	case 'M':
-	  hashbytes *= 1024;
+	  hashbytes *= 1024 * 1024;
+	  break;
 	case 'k':
 	case 'K':
 	  hashbytes *= 1024;
@@ -1721,6 +1724,9 @@ shell (int argc, char **argv _GL_UNUSED_PARAMETER)
 void
 user (int argc, char **argv)
 {
+#if !HAVE_DECL_GETPASS
+  extern char *getpass ();
+#endif
   char acct[80];
   int n, aflag = 0;
 
@@ -2070,6 +2076,9 @@ globulize (char *cp)
 void
 account (int argc, char **argv)
 {
+#if !HAVE_DECL_GETPASS
+  extern char *getpass ();
+#endif
   char acct[50], *ap;
 
   if (argc > 1)
@@ -2394,6 +2403,7 @@ domap (char *name)
 	      break;
 	    }
 	  /* Fall through, as '$' must be used verbatim.  */
+	  /* FALLTHROUGH */
 	default:
 	  if (*cp2 != *cp1)
 	    {

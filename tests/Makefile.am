@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015
-# Free Software Foundation, Inc.
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+# 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -22,9 +22,9 @@ AM_CPPFLAGS = $(iu_INCLUDES)
 LDADD = $(iu_LIBRARIES)
 
 noinst_PROGRAMS = identify
-identify_LDADD =
+identify_LDADD = $(top_builddir)/lib/libgnu.a $(LIBUTIL) $(PTY_LIB)
 
-check_PROGRAMS = localhost readutmp waitdaemon
+check_PROGRAMS = localhost readutmp runtime-ipv6 test-snprintf waitdaemon
 
 dist_check_SCRIPTS = utmp.sh
 
@@ -87,7 +87,7 @@ if ENABLE_ifconfig
 dist_check_SCRIPTS += ifconfig.sh
 endif
 
-TESTS = localhost waitdaemon $(dist_check_SCRIPTS)
+TESTS = localhost test-snprintf waitdaemon $(dist_check_SCRIPTS)
 
 TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT)
 
@@ -98,12 +98,15 @@ BUILT_SOURCES = tools.sh
 CLEANFILES = tools.sh
 
 tools_subst = sed -e 's,[@]GREP[@],$(GREP),g' \
+	      -e 's,[@]EGREP[@],$(EGREP),g' \
+	      -e 's,[@]FGREP[@],$(FGREP),g' \
 	      -e 's,[@]SED[@],$(SED),g' \
 	      -e 's,[@]DD[@],$(DD),g' \
 	      -e 's,[@]MKTEMP[@],$(MKTEMP),g' \
-	      -e 's,[@]NETSTAT[@],$(NETSTAT),g'\
-	      -e 's,[@]TARGET[@],$(TARGET),g'\
-	      -e 's,[@]TARGET6[@],$(TARGET6),g'\
+	      -e 's,[@]NETSTAT[@],$(NETSTAT),g' \
+	      -e 's,[@]TARGET[@],$(TARGET),g' \
+	      -e 's,[@]TARGET6[@],$(TARGET6),g' \
+	      -e 's,[@]TEST_IPV4[@],$(TEST_IPV4),g' \
 	      -e 's,[@]TEST_IPV6[@],$(TEST_IPV6),g'
 
 tools.sh: tools.sh.in Makefile

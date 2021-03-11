@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-  Foundation, Inc.
+  Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+  2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -91,7 +91,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'F':
-      set_name_action = sethostname;
+      set_name_action = (void *) sethostname;
       args->hostname_file = arg;
       break;
 
@@ -116,7 +116,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case ARGP_KEY_ARG:
-      set_name_action = sethostname;
+      set_name_action = (void *) sethostname;
       args->hostname_new = strdup (arg);
       if (args->hostname_new == NULL)
         error (EXIT_FAILURE, errno, "strdup");
@@ -160,7 +160,7 @@ main (int argc, char *argv[])
 
   if (get_name_action == xgetdomainname || get_name_action == xgethostname)
     get_name (&args);
-  else if (set_name_action == sethostname)
+  else if ((void *) set_name_action == (void *) sethostname)
     set_name (&args);
 
   return 0;
@@ -232,7 +232,7 @@ set_name (const hostname_arguments *const args)
   else
     hostname_new = args->hostname_new;
 
-  size = strlen (hostname_new);
+  size = hostname_new ? strlen (hostname_new) : 0;
   if (!size)
     error (EXIT_FAILURE, 0, "Empty hostname");
 
@@ -337,7 +337,10 @@ get_ip_addresses (const char *const host_name)
             }
 
           strcat (addresses, address);
-          strcat (addresses, " ");
+
+	  /* Insert a separating space character.  */
+	  if (ht->h_addr_list[i+1] != NULL)
+	    strcat (addresses, " ");
         }
     }
 
@@ -407,9 +410,11 @@ parse_file (const char *const file_name)
 
       if (buffer[0] != '#')
         {
-	  name = (char *) xmalloc (sizeof (char) * nread);
-	  if (sscanf (buffer, "%s", name)  == 1)
+	  name = (char *) xmalloc (sizeof (char) * (nread + 1));
+	  if (sscanf (buffer, "%s", name) == 1)
 	    break;
+	  free (name);
+	  name = NULL;
         }
     }
   while (feof (file) == 0);

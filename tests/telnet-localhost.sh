@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+# 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -98,6 +99,11 @@ if test ! -x $ADDRPEEK; then
     exit 77
 fi
 
+if test "$TEST_IPV4" = "no" && test "$TEST_IPV6" = "no"; then
+    echo >&2 "Inet socket testing is disabled.  Skipping test."
+    exit 77
+fi
+
 # Portability fix for SVR4
 PWD="${PWD:-`pwd`}"
 
@@ -132,13 +138,19 @@ trap posttesting EXIT HUP INT QUIT TERM
 
 PORT=`expr 4973 + ${RANDOM:-$$} % 973`
 
-cat > "$INETD_CONF" <<-EOF ||
-	$TARGET:$PORT stream tcp4 nowait $USER $ADDRPEEK addrpeek addr
-EOF
+# Create an empty configuration file for inetd.
+: > "$INETD_CONF" 2>/dev/null ||
     {
 	echo 'Could not create configuration file for Inetd.  Aborting.' >&2
 	exit 1
     }
+
+# This target is used for plain IPv4 and for IPv4-mapped addressing.
+if test "$TEST_IPV4" != "no"; then
+    cat >> "$INETD_CONF" <<-EOF
+	$TARGET:$PORT stream tcp4 nowait $USER $ADDRPEEK addrpeek addr
+EOF
+fi
 
 if test "$TEST_IPV6" != "no"; then
     cat >> "$INETD_CONF" <<-EOF
@@ -180,14 +192,14 @@ telnet_opts="--no-rc --no-escape --no-login"
 
 errno=0
 
-if test -n "$TARGET"; then
+if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
     output=`$TELNET $telnet_opts $TARGET $PORT 2>/dev/null`
     echo "$output" | eval "$GREP 'Your address is $TARGET.' $display"
     if test $? -ne 0; then
 	errno=1
 	echo "Failed at '$TARGET'." >&2
     fi
-fi
+fi # TEST_IPV4 && TARGET
 
 if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
     output=`$TELNET $telnet_opts $TARGET6 $PORT 2>/dev/null`
@@ -196,14 +208,15 @@ if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
 	errno=1
 	echo "Failed at '$TARGET6'." >&2
     fi
-fi
+fi # TEST_IPV6 && TARGET6
 
-if test "$TEST_IPV6" != "no" && test -n "$TARGET46"; then
+if test "$TEST_IPV4" != "no" && test "$TEST_IPV6" != "no" \
+   && test -n "$TARGET46"; then
     output=`$TELNET $telnet_opts $TARGET46 $PORT 2>/dev/null`
     echo "$output" | eval "$GREP 'Your address is .*$TARGET.' $display"
     if test $? -ne 0; then
 	echo "Informational: Unsuccessful with mapped address '$TARGET46'." >&2
     fi
-fi
+fi # TEST_IPV4 && TEST_IPV6 && TARGET46
 
 exit $errno

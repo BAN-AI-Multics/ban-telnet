@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-  2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+  2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -138,7 +139,7 @@ printlong (DISPLAY *dp)
       if (f_flags)
 	printf ("%-*s ", dp->s_flags, np->flags);
       if (S_ISCHR (sp->st_mode) || S_ISBLK (sp->st_mode))
-	printf ("%3d, %3d ", major (sp->st_rdev), minor (sp->st_rdev));
+	printf ("%3d, %3d ", (int) major (sp->st_rdev), (int) minor (sp->st_rdev));
       else if (dp->bcfile)
 	printf ("%*s%*llu ",
 		8 - dp->s_size, "", dp->s_size, (long long) sp->st_size);

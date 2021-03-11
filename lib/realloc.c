@@ -1,6 +1,6 @@
 /* realloc() function that is glibc compatible.
 
-   Copyright (C) 1997, 2003-2004, 2006-2007, 2009-2015 Free Software
+   Copyright (C) 1997, 2003-2004, 2006-2007, 2009-2021 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* written by Jim Meyering and Bruno Haible */
 
@@ -37,7 +37,11 @@
 
 #include <stdlib.h>
 
-#include <errno.h>
+/* A function definition is only needed if NEED_REALLOC_GNU is defined above
+   or if the module 'realloc-posix' requests it.  */
+#if NEED_REALLOC_GNU || (GNULIB_REALLOC_POSIX && !HAVE_REALLOC_POSIX)
+
+# include <errno.h>
 
 /* Change the size of an allocated block of memory P to N bytes,
    with error checking.  If N is zero, change it to 1.  If P is NULL,
@@ -48,7 +52,7 @@ rpl_realloc (void *p, size_t n)
 {
   void *result;
 
-#if NEED_REALLOC_GNU
+# if NEED_REALLOC_GNU
   if (n == 0)
     {
       n = 1;
@@ -57,23 +61,25 @@ rpl_realloc (void *p, size_t n)
       free (p);
       p = NULL;
     }
-#endif
+# endif
 
   if (p == NULL)
     {
-#if GNULIB_REALLOC_GNU && !NEED_REALLOC_GNU && !SYSTEM_MALLOC_GLIBC_COMPATIBLE
+# if GNULIB_REALLOC_GNU && !NEED_REALLOC_GNU && !SYSTEM_MALLOC_GLIBC_COMPATIBLE
       if (n == 0)
         n = 1;
-#endif
+# endif
       result = malloc (n);
     }
   else
     result = realloc (p, n);
 
-#if !HAVE_REALLOC_POSIX
+# if !HAVE_REALLOC_POSIX
   if (result == NULL)
     errno = ENOMEM;
-#endif
+# endif
 
   return result;
 }
+
+#endif

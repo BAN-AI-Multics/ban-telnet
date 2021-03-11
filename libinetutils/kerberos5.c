@@ -1,5 +1,6 @@
-/* shishi.c -- functions to use Heimdal's and MIT's Kerberos V
-  Copyright (C) 2014, 2015 Free Software Foundation, Inc.
+/* kerberos5.c -- functions to use Heimdal's and MIT's Kerberos V
+  Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free
+  Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 

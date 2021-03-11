@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-  2013, 2014, 2015 Free Software Foundation, Inc.
+  2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software
+  Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -504,6 +505,14 @@ telnetd_setup (int fd)
 
   io_setup ();
 
+  /* Before doing anything related to the identity of the client,
+   * scrub the environment variable USER, since it may be set with
+   * an irrelevant user name at this point.  OpenBSD has been known
+   * to offend at this point with their own inetd.  Any demand for
+   * autologin will get attention in getterminaltype().
+   */
+  unsetenv ("USER");
+
   /* get terminal type. */
   uname[0] = 0;
   level = getterminaltype (uname, sizeof (uname));
@@ -662,7 +671,13 @@ telnetd_run (void)
       if (FD_ISSET (pty, &ibits))
 	{
 	  /* Something to read from the pty... */
-	  if (pty_read () <= 0)
+
+	  /* Observe that pty_read() is masking a few select
+	   * read errors with the return value 0.  Let them
+	   * pass for further manipulation.  Issue reported in
+	   * http://lists.gnu.org/archive/html/bug-inetutils/2015-07/msg00006.html
+	   */
+	  if (pty_read () < 0)
 	    break;
 
 	  /* The first byte is now TIOCPKT data.  Peek at it.  */
@@ -692,9 +707,15 @@ telnetd_run (void)
 	      int newflow = (c & TIOCPKT_DOSTOP) ? 1 : 0;
 	      if (newflow != flowmode)
 		{
-		  net_output_data ("%c%c%c%c%c%c",
-				   IAC, SB, TELOPT_LFLOW,
-				   flowmode ? LFLOW_ON : LFLOW_OFF, IAC, SE);
+		  char data[7];
+
+		  sprintf (data, "%c%c%c%c%c%c",
+			   IAC, SB, TELOPT_LFLOW,
+			   flowmode ? LFLOW_ON : LFLOW_OFF,
+			   IAC, SE);
+		  net_output_datalen (data, sizeof (data));
+		  DEBUG (debug_options, 1,
+			 printsub ('>', data + 2, sizeof (data) - 2));
 		}
 	    }
 

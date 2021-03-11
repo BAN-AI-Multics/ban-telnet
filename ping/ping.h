@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-  Foundation, Inc.
+  Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+  2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -25,7 +25,7 @@ PING *ping_init (int type, int ident);
 void ping_reset (PING * p);
 void ping_set_type (PING * p, int type);
 void ping_set_packetsize (PING * ping, size_t size);
-int ping_set_dest (PING * ping, char *host);
+int ping_set_dest (PING * ping, const char *host);
 int ping_set_pattern (PING * p, int len, unsigned char * pat);
 void ping_set_event_handler (PING * ping, ping_efp fp, void *closure);
 int ping_recv (PING * p);

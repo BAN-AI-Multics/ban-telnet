@@ -1,6 +1,7 @@
 /* bsd.c -- BSD specific code for ifconfig
   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-  2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+  Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -198,7 +199,87 @@ struct ifmediareq ifm;
   if (!ifp) \
     getifaddrs (&ifp);
 
+void
+system_fh_ifstat_query (format_data_t form, int argc, char *argv[])
+{
+  /* Flush an existing interface list, thus renewing statistics.  */
+  if (ifp)
+    {
+      freeifaddrs (ifp);
+      ifp = NULL;
+    }
+
+  select_arg (form, argc, argv, getifaddrs (&ifp) ? 1 : 0);
+}
+
 struct if_nameindex* (*system_if_nameindex) (void) = if_nameindex;
+
+static void
+print_hwaddr_ether (format_data_t form, unsigned char *data)
+{
+  put_string (form, ether_ntoa ((struct ether_addr *) data));
+  had_output = 1;
+}
+
+struct ift_symbol
+{
+  const char *name;
+  const char *title;
+  int value;
+  void (*print_hwaddr) (format_data_t form, unsigned char *data);
+} ift_symbols[] =
+  {
+#ifdef IFT_ETHER		/* Ethernet CSMA/CD */
+# ifdef ETHERNAME
+    { "ETHER", ETHERNAME, IFT_ETHER, print_hwaddr_ether},
+# else
+    { "ETHER", "ether", IFT_ETHER, print_hwaddr_ether},
+# endif /* !ETHERNAME */
+#endif /* IFT_ETHER */
+#ifdef IFT_GIF			/* Generic tunnel (gif) */
+    { "IPGIF", "IPIP tunnel", IFT_GIF, NULL},
+#endif
+#ifdef IFT_FAITH		/* IPv6-to-IPv4 TCP relay capture */
+    { "FAITH", "TCP relay capture", IFT_FAITH, NULL},
+#endif
+#ifdef IFT_LOOP			/* Local loopback */
+    { "LOOPBACK", "Local loopback", IFT_LOOP, NULL},
+#endif
+#ifdef IFT_PFLOG		/* Packet filter logging */
+    { "PFLOG", "Packet filter logger", IFT_PFLOG, NULL},
+#endif
+#ifdef IFT_PFSYNC		/* Packet filter state synching */
+    { "PFSYNC", "Packet filter state synching", IFT_PFSYNC, NULL},
+#endif
+#ifdef IFT_PPP			/* Point-to-Point serial protocol */
+    { "PPP", "Point-to-Point over serial", IFT_PPP, NULL},
+#endif
+#ifdef IFT_SLIP			/* IP over generic TTY */
+    { "SLIP", "Serial line IP", IFT_SLIP, NULL},
+#endif
+#ifdef IFT_TUNNEL		/* Encapsulation (gre) */
+    { "IPGRE", "GRE over IP", IFT_TUNNEL, NULL},
+#endif
+    { NULL, NULL, 0, NULL}
+  };
+
+static struct ift_symbol *
+ift_findvalue (int value)
+{
+  struct ift_symbol *ift = ift_symbols;
+
+  while (ift->name != NULL)
+    {
+      if (ift->value == value)
+	break;
+      ift++;
+    }
+
+  if (ift->name)
+    return ift;
+  else
+    return NULL;
+}
 
 void
 system_fh_brdaddr_query (format_data_t form, int argc, char *argv[])
@@ -217,7 +298,7 @@ system_fh_brdaddr_query (format_data_t form, int argc, char *argv[])
 	      strcmp (fp->ifa_name, form->ifr->ifr_name))
 	    continue;
 
-	  if (fp->ifa_netmask)
+	  if ((fp->ifa_flags & IFF_BROADCAST) && fp->ifa_broadaddr)
 	    missing = 0;
 	  break;
 	}
@@ -242,7 +323,7 @@ system_fh_brdaddr (format_data_t form, int argc, char *argv[])
 	      strcmp (fp->ifa_name, form->ifr->ifr_name))
 	    continue;
 
-	  if (fp->ifa_broadaddr)
+	  if ((fp->ifa_flags & IFF_BROADCAST) && fp->ifa_broadaddr)
 	    {
 	      missing = 0;
 	      put_addr (form, argc, argv, fp->ifa_broadaddr);
@@ -274,11 +355,16 @@ system_fh_hwaddr_query (format_data_t form, int argc, char *argv[])
 	    continue;
 
 	  dl = (struct sockaddr_dl *) fp->ifa_addr;
-	  if (dl && (dl->sdl_len > 0) &&
-	      dl->sdl_type == IFT_ETHER)	/* XXX: More cases?  */
-	    missing = 0;
+	  if (dl && (dl->sdl_len > 0))
+	    {
+	      struct ift_symbol *ift = ift_findvalue (dl->sdl_type);
+
+	      if (ift && ift->print_hwaddr)
+		missing = 0;
+	    }
 	  break;
 	}
+
       select_arg (form, argc, argv, missing);
     }
 }
@@ -304,11 +390,16 @@ system_fh_hwaddr (format_data_t form, int argc _GL_UNUSED_PARAMETER,
 	    continue;
 
 	  dl = (struct sockaddr_dl *) fp->ifa_addr;
-	  if (dl && (dl->sdl_len > 0) &&
-	      dl->sdl_type == IFT_ETHER)	/* XXX: More cases?  */
+	  if (dl && (dl->sdl_len > 0))
 	    {
-	      missing = 0;
-	      put_string (form, ether_ntoa ((struct ether_addr *) LLADDR (dl)));
+	      struct ift_symbol *ift = ift_findvalue (dl->sdl_type);
+
+	      if (ift && ift->print_hwaddr)
+		{
+		  missing = 0;
+		  ift->print_hwaddr (form,
+				     (unsigned char *) LLADDR (dl));
+		}
 	    }
 	  break;
 	}
@@ -320,19 +411,11 @@ system_fh_hwaddr (format_data_t form, int argc _GL_UNUSED_PARAMETER,
 void
 system_fh_hwtype_query (format_data_t form, int argc, char *argv[])
 {
-  system_fh_hwaddr_query (form, argc, argv);
-}
+  int missing = 1;
 
-void
-system_fh_hwtype (format_data_t form, int argc _GL_UNUSED_PARAMETER,
-		  char *argv[] _GL_UNUSED_PARAMETER)
-{
   ESTABLISH_IFADDRS
-  if (!ifp)
-    put_string (form, "(hwtype unknown)");
-  else
+  if (ifp)
     {
-      int found = 0;
       struct ifaddrs *fp;
       struct sockaddr_dl *dl = NULL;
 
@@ -343,17 +426,55 @@ system_fh_hwtype (format_data_t form, int argc _GL_UNUSED_PARAMETER,
 	    continue;
 
 	  dl = (struct sockaddr_dl *) fp->ifa_addr;
-	  if (dl && (dl->sdl_len > 0) &&
-	      dl->sdl_type == IFT_ETHER)	/* XXX: More cases?  */
+	  if (dl && (dl->sdl_len > 0))
 	    {
-	      found = 1;
-	      put_string (form, ETHERNAME);
+	      struct ift_symbol *ift = ift_findvalue (dl->sdl_type);
+
+	      if (ift && ift->title)
+		missing = 0;
 	    }
 	  break;
 	}
-      if (!found)
-	put_string (form, "(unknown hwtype)");
     }
+
+  select_arg (form, argc, argv, missing);
+}
+
+void
+system_fh_hwtype (format_data_t form, int argc _GL_UNUSED_PARAMETER,
+		  char *argv[] _GL_UNUSED_PARAMETER)
+{
+  int found = 0;
+
+  ESTABLISH_IFADDRS
+  if (ifp)
+    {
+      struct ifaddrs *fp;
+      struct sockaddr_dl *dl = NULL;
+
+      for (fp = ifp; fp; fp = fp->ifa_next)
+	{
+	  if (fp->ifa_addr->sa_family != AF_LINK ||
+	      strcmp (fp->ifa_name, form->ifr->ifr_name))
+	    continue;
+
+	  dl = (struct sockaddr_dl *) fp->ifa_addr;
+	  if (dl && (dl->sdl_len > 0))
+	    {
+	      struct ift_symbol *ift = ift_findvalue (dl->sdl_type);
+
+	      if (ift && ift->title)
+		{
+		  found = 1;
+		  put_string (form, ift->title);
+		}
+	    }
+	  break;
+	}
+    }
+
+  if (!found)
+    put_string (form, "(unknown hwtype)");
 }
 
 /* Lookup structures provided by the system, each decoding
@@ -587,4 +708,106 @@ system_fh_status (format_data_t form, int argc, char *argv[])
   else
 #endif /* SIOCGIFMEDIA */
     put_string (form, "(not known)");
+}
+
+void
+system_fh_tunnel_query (format_data_t form, int argc, char *argv[])
+{
+#if defined SIOCGIFPSRCADDR && defined SIOCGIFPDSTADDR
+  if (ioctl (form->sfd, SIOCGIFPSRCADDR, form->ifr) >= 0)
+    select_arg (form, argc, argv, 0);
+  else
+#endif /* SIOCGIFPSRCADDR && SIOCGIFPDSTADDR */
+  select_arg (form, argc, argv, 1);
+}
+
+void
+system_fh_tundst (format_data_t form, int argc, char *argv[])
+{
+#ifdef SIOCGIFPDSTADDR
+  if (ioctl (form->sfd, SIOCGIFPDSTADDR, form->ifr) >= 0)
+    put_addr (form, argc, argv, &form->ifr->ifr_addr);
+  else
+    put_string (form, "(no phydst)");
+#endif /* SIOCGIFPDSTADDR */
+}
+
+void
+system_fh_tunsrc (format_data_t form, int argc, char *argv[])
+{
+#ifdef SIOCGIFPSRCADDR
+  if (ioctl (form->sfd, SIOCGIFPSRCADDR, form->ifr) >= 0)
+    put_addr (form, argc, argv, &form->ifr->ifr_addr);
+  else
+    put_string (form, "(no physrc)");
+#endif /* SIOCGIFPSRCADDR */
+}
+
+static struct if_data *
+get_if_data_by_name (format_data_t form)
+{
+  struct ifaddrs *fp;
+  struct if_data *data = NULL;
+
+  ESTABLISH_IFADDRS
+  if (!ifp)
+    return NULL;
+
+  for (fp = ifp; fp; fp = fp->ifa_next)
+    {
+      /* The choice of AF_LINK is the only portable alternative.
+       * Then IP, ARP etcera are included in all counters.
+       */
+      if (fp->ifa_addr->sa_family != AF_LINK ||
+	  strcmp (fp->ifa_name, form->ifr->ifr_name))
+	continue;
+
+      data = (struct if_data *) fp->ifa_data;
+      break;
+    }
+
+  return data;
+}
+
+void
+system_fh_missing_stat (format_data_t form, int argc, char *argv[])
+{
+  /* FIXME: Would a dash be a better answer?  */
+  put_ulong (form, argc, argv, 0);
+}
+
+#define _IU_DECLARE2(fld, udata)	\
+void					\
+_IU_CAT2 (system_fh_, fld) (format_data_t form, int argc, char *argv[])	\
+{				\
+  struct if_data *data = get_if_data_by_name (form);	\
+  if (data)			\
+    put_ulong (form, argc, argv, data->_IU_CAT2(ifi_, udata));	\
+  else				\
+    put_string (form, "(" #fld " unknown)");		\
+}
+
+_IU_DECLARE2 (rx_bytes, ibytes)
+_IU_DECLARE2 (rx_dropped, iqdrops)
+_IU_DECLARE2 (rx_errors, ierrors)
+_IU_DECLARE2 (rx_packets, ipackets)
+_IU_DECLARE2 (tx_bytes, obytes)
+_IU_DECLARE2 (tx_errors, oerrors)
+_IU_DECLARE2 (tx_packets, opackets)
+_IU_DECLARE2 (collisions, collisions)
+
+void
+system_fh_tx_dropped (format_data_t form, int argc, char *argv[])
+{
+#ifdef _IFI_OQDROPS
+  struct if_data *data = get_if_data_by_name (form);
+
+  if (data)
+    put_ulong (form, argc, argv, data->ifi_oqdrops);
+  else
+    put_string (form, "(txerrors unknown)");
+#else /* !_IFI_OQDROPS */
+  /* FIXME: Would a dash be a better answer?  */
+  put_ulong (form, argc, argv, 0);
+#endif
 }

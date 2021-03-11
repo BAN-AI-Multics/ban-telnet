@@ -1,7 +1,7 @@
 /*
   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software
-  Foundation, Inc.
+  2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+  2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -79,8 +79,6 @@ int (*ping_type) (char *hostname) = ping_echo;
 int (*decode_type (const char *arg)) (char *hostname);
 static int decode_ip_timestamp (char *arg);
 static int send_echo (PING * ping);
-
-#define MIN_USER_INTERVAL (200000/PING_PRECISION)
 
 const char args_doc[] = "HOST ...";
 const char doc[] = "Send ICMP ECHO_REQUEST packets to network hosts."
@@ -168,7 +166,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         argp_error (state, "invalid value (`%s' near `%s')", arg, endptr);
       options |= OPT_INTERVAL;
       interval = v * PING_PRECISION;
-      if (!is_root && interval < MIN_USER_INTERVAL)
+      if (!is_root && interval < PING_MIN_USER_INTERVAL)
         error (EXIT_FAILURE, 0, "option value too small: %s", arg);
       break;
 
@@ -255,6 +253,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing host operand");
 
+      /* FALLTHROUGH */
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -293,7 +292,8 @@ main (int argc, char **argv)
   ping_set_sockopt (ping, SO_BROADCAST, (char *) &one, sizeof (one));
 
   /* Reset root privileges */
-  setuid (getuid ());
+  if (setuid (getuid ()) != 0)
+    error (EXIT_FAILURE, errno, "setuid");
 
   /* Force line buffering regardless of output device.  */
   setvbuf (stdout, NULL, _IOLBF, 0);
@@ -335,7 +335,7 @@ main (int argc, char **argv)
 
 int (*decode_type (const char *arg)) (char *hostname)
 {
-  int (*ping_type) (char *hostname);
+  int (*ping_type) (char *hostname) = NULL;
 
   if (strcasecmp (arg, "echo") == 0)
     ping_type = ping_echo;

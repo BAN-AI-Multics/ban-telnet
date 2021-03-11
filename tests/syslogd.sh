@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Copyright (C) 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+# 2020, 2021 Free Software Foundation, Inc.
 #
 # This file is part of GNU Inetutils.
 #
@@ -132,8 +133,8 @@ if [ ! -d "$IU_TESTDIR" ]; then
 	    echo 'Failed at creating test directory.  Aborting.' >&2
 	    exit 77
 	}
-elif expr X"$IU_TESTDIR" : X'\.\{1,2\}/\{0,1\}$' >/dev/null; then
-    # Eliminating directories: . ./ .. ../
+elif expr X"$IU_TESTDIR" : X'[./]\{1,\}$' >/dev/null; then
+    # Eliminating directories: all mixtures of . and / only.
     echo 'Dangerous input for test directory.  Aborting.' >&2
     exit 77
 fi
@@ -433,28 +434,46 @@ if $do_socket_length; then
 fi
 
 if $do_inet_socket; then
-    TESTCASES=`expr $TESTCASES + 1`
-    $LOGGER -4 -h "$TARGET:$PORT" -p user.info -t "$TAG" \
-	"Sending IPv4 message. (pid $$)"
-    if test "$TEST_IPV6" != "no"; then
+    if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+	TESTCASES=`expr $TESTCASES + 1`
+	$LOGGER -4 -h "$TARGET:$PORT" -p user.info -t "$TAG" \
+	    "Sending IPv4 message. (pid $$)"
+    fi # TEST_IPV4 && TARGET
+
+    if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
 	TESTCASES=`expr $TESTCASES + 1`
 	$LOGGER -6 -h "[$TARGET6]:$PORT" -p user.info -t "$TAG" \
 	    "Sending IPv6 message. (pid $$)"
-    fi
-fi
+    fi # TEST_IPV6 && TARGET6
+fi # do_inet_socket
 
-# Send message of priority notice, either via local socket or IPv4,
-# but not both.  The presence is checked in $OUT and in $OUT_NOTICE,
-# so merit value is 2.
+# Send message of priority notice, via local socket, IPv4, or IPv6,
+# whatever is there.  The presence is checked in $OUT and in $OUT_NOTICE,
+# so merit value is 2 for each placed message.
+COUNT_WRAP=0
+
 if $do_unix_socket; then
     TESTCASES=`expr $TESTCASES + 2`
+    COUNT_WRAP=`expr $COUNT_WRAP + 1`
     $LOGGER -h "$SOCKET" -p daemon.notice -t "$TAG" \
-	"Attemping to locate wrapped configuration. (pid $$)"
-elif $do_inet_socket; then
-    TESTCASES=`expr $TESTCASES + 2`
-    $LOGGER -4 -h "$TARGET:$PORT" -p daemon.notice -t "$TAG" \
-	"Attemping to locate wrapped configuration. (pid $$)"
-fi
+	"Attempting to locate wrapped unix configuration. (pid $$)"
+fi # do_unix_socket
+
+if $do_inet_socket; then
+    if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+	TESTCASES=`expr $TESTCASES + 2`
+	COUNT_WRAP=`expr $COUNT_WRAP + 1`
+	$LOGGER -4 -h "$TARGET:$PORT" -p daemon.notice -t "$TAG" \
+	    "Attempting to locate wrapped IPv4 configuration. (pid $$)"
+    fi # TEST_IPV4 && TARGET
+
+    if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
+	TESTCASES=`expr $TESTCASES + 2`
+	COUNT_WRAP=`expr $COUNT_WRAP + 1`
+	$LOGGER -6 -h "[$TARGET6]:$PORT" -p daemon.notice -t "$TAG" \
+	    "Attempting to locate wrapped IPv6 configuration. (pid $$)"
+    fi # TEST_IPV6 && TARGET6
+fi # do_inet_socket
 
 # Generate a more elaborate message routing, aimed at confirming
 # discrimination of severity and facility.  This is made active
@@ -533,17 +552,27 @@ if $do_unix_socket; then
     TESTCASES=`expr $TESTCASES + 2`
     $LOGGER -h "$SOCKET" -p 512.info -t "$TAG2" \
 	"Illegal facility in BSD message. (pid $$)"
-fi
+fi # do_unix_socket
 
 if $do_inet_socket; then
     # Two messages of weight 2, ensuring that missing
     # and misplaced messages are not yielding negatives.
-    TESTCASES=`expr $TESTCASES + 4`
-    $LOGGER -4 -h "$TARGET:$PORT" -p user.info -t "$TAG2" \
-	"user.info as IPv4 message. (pid $$)"
-    $LOGGER -4 -h "$TARGET:$PORT" -p user.debug -t "$TAG2" \
-	"user.debug as IPv4 message. (pid $$)"
-fi
+    if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+	TESTCASES=`expr $TESTCASES + 4`
+	$LOGGER -4 -h "$TARGET:$PORT" -p user.info -t "$TAG2" \
+	    "user.info as IPv4 message. (pid $$)"
+	$LOGGER -4 -h "$TARGET:$PORT" -p user.debug -t "$TAG2" \
+	    "user.debug as IPv4 message. (pid $$)"
+    fi # TEST_IPV4 && TARGET
+
+    if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
+	TESTCASES=`expr $TESTCASES + 4`
+	$LOGGER -6 -h "[$TARGET6]:$PORT" -p user.info -t "$TAG2" \
+	    "user.info as IPv6 message. (pid $$)"
+	$LOGGER -6 -h "[$TARGET6]:$PORT" -p user.debug -t "$TAG2" \
+	    "user.debug as IPv6 message. (pid $$)"
+    fi # TEST_IPV6 && TARGET6
+fi # do_inet_socket
 
 # Remove previous SYSLOG daemon.
 test -r "$PID" && kill -0 "`cat "$PID"`" >/dev/null 2>&1 &&
@@ -569,16 +598,18 @@ if $do_standard_port; then
 	--inet --ipany $OPTIONS
     sleep 1
 
-    TESTCASES=`expr $TESTCASES + 1`
-    $LOGGER -4 -h "$TARGET" -p user.info -t "$TAG" \
-	"IPv4 to standard port. (pid $$)"
+    if test "$TEST_IPV4" != "no" && test -n "$TARGET"; then
+	TESTCASES=`expr $TESTCASES + 1`
+	$LOGGER -4 -h "$TARGET" -p user.info -t "$TAG" \
+	    "IPv4 to standard port. (pid $$)"
+    fi # TEST_IPV4 && TARGET
 
-    if test "$TEST_IPV6" != "no"; then
+    if test "$TEST_IPV6" != "no" && test -n "$TARGET6"; then
 	TESTCASES=`expr $TESTCASES + 1`
 	$LOGGER -6 -h "[$TARGET6]" -p user.info -t "$TAG" \
 	    "IPv6 to standard port. (pid $$)"
-    fi
-fi
+    fi # TEST_IPV6 && TARGET6
+fi # do_standard_port
 
 # Delay detection due to observed race condition.
 sleep 3
@@ -591,19 +622,18 @@ COUNT=`$GREP -c "$TAG" "$OUT"`
 # All notices in $OUT_NOTICE should be present also in $OUT.
 # Assign value 1 to full outcome.
 COUNT_NOTICE=`$SED -n '$=' "$OUT_NOTICE"`
-wrapped=`$GREP -c -f "$OUT_NOTICE" "$OUT"`
+wrapped=`$FGREP -c -f "$OUT_NOTICE" "$OUT"`
 
-COUNT_WRAP=0
+# Provoke a later total miscount, if message counts do not match now.
 if $do_unix_socket || $do_inet_socket; then
-    test $COUNT_NOTICE -ne $wrapped || COUNT_WRAP=1
+    test $COUNT_NOTICE -eq $wrapped ||
+	COUNT_WRAP=`expr $COUNT_WRAP - $COUNT_NOTICE + $wrapped`
 fi
 
 # Second set-up after SIGHUP.
 COUNT2=`$GREP -c "$TAG2" "$OUT_USER"`
 COUNT3=`$GREP -c "$TAG2" "$OUT_DEBUG"`
-COUNT4=`$GREP -c -e "$TAG2.*Default facility" \
-		 -e "$TAG2.*Fake kern facility" \
-		 -e "$TAG2.*Illegal facility" \
+COUNT4=`$EGREP -c "$TAG2.*(Default|Fake kern|Illegal) facility" \
 	"$OUT_UNOTICE"`
 COUNT5=`$GREP -c "$TAG2" "$OUT_LOCAL0"`
 
@@ -614,7 +644,7 @@ COUNT2_debug=`$GREP -c "$TAG2.*user.debug" "$OUT_USER"`
 COUNT3_info=`$GREP -c "$TAG2.*user.info" "$OUT_DEBUG"`
 
 # No info or debug message should enter with selector 'user.=notice'.
-COUNT4_notice=`$GREP -c -e "$TAG2.*user.info" -e "$TAG2.*user.debug" \
+COUNT4_notice=`$EGREP -c "$TAG2.*user.(info|debug)" \
 		"$OUT_UNOTICE"`
 # Undefined facility should overwrite also the priority.
 COUNT4_illegal=`$GREP -c "$TAG2.*Illegal facility" "$OUT_USER"`
@@ -670,12 +700,12 @@ else
 
     # local socket transport
     if $do_unix_socket; then
-	if grep "$TAG2.*info.*BSD" "$OUT_USER" >/dev/null 2>&1; then
+	if $GREP "$TAG2.*info.*BSD" "$OUT_USER" >/dev/null 2>&1; then
 	    :
 	else
 	    echo >&2 '** UDP socket did not convey info msg after HUP.'
 	fi
-	if grep "$TAG2.*debug.*BSD" "$OUT_DEBUG" >/dev/null 2>&1; then
+	if $GREP "$TAG2.*debug.*BSD" "$OUT_DEBUG" >/dev/null 2>&1; then
 	    :
 	else
 	    echo >&2 '** UDP socket did not convey debug msg after HUP.'
@@ -684,12 +714,12 @@ else
 
     # UDP transport
     if $do_inet_socket; then
-	if grep "$TAG2.*info.*IPv" "$OUT_USER" >/dev/null 2>&1; then
+	if $GREP "$TAG2.*info.*IPv" "$OUT_USER" >/dev/null 2>&1; then
 	    :
 	else
 	    echo >&2 '** IP socket did not convey info msg after HUP.'
 	fi
-	if grep "$TAG2.*debug.*IPv" "$OUT_DEBUG" >/dev/null 2>&1; then
+	if $GREP "$TAG2.*debug.*IPv" "$OUT_DEBUG" >/dev/null 2>&1; then
 	    :
 	else
 	    echo >&2 '** IP socket did not convey debug msg after HUP.'

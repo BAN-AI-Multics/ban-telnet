@@ -1,6 +1,6 @@
 /* xgetcwd.c -- return current directory with unlimited length
 
-   Copyright (C) 2001, 2003-2004, 2006-2007, 2009-2015 Free Software
+   Copyright (C) 2001, 2003-2004, 2006-2007, 2009-2021 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Jim Meyering.  */
 
@@ -29,7 +29,7 @@
 
 /* Return the current directory, newly allocated.
    Upon an out-of-memory error, call xalloc_die.
-   Upon any other type of error, return NULL.  */
+   Upon any other type of error, return NULL with errno set.  */
 
 char *
 xgetcwd (void)

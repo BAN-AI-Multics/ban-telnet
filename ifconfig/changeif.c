@@ -1,6 +1,7 @@
 /* changeif.c -- change the configuration of a network interface
   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-  2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
+  Free Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -30,6 +31,9 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#ifdef HAVE_NETINET_ETHER_H
+# include <netinet/ether.h>
+#endif
 #include <arpa/inet.h>
 #include <netdb.h>
 #include "ifconfig.h"
@@ -160,13 +164,65 @@ set_dstaddr (int sfd, struct ifreq *ifr, char *dstaddr)
   error (0, 0,
          "don't know how to set an interface peer address on this system");
   return -1;
-#else
-  SIOCSIF (DSTADDR, dstaddr)
+#else /* !SIOCSIFDSTADDR */
+# if HAVE_DECL_GETADDRINFO
+  int rc;
+  char addr[INET_ADDRSTRLEN];
+  struct addrinfo hints, *ai, *res;
+
+  memset (&hints, 0, sizeof (hints));
+  hints.ai_family = AF_INET;
+
+  rc = getaddrinfo (dstaddr, NULL, &hints, &res);
+  if (rc)
+    {
+      error (0, 0, "cannot resolve `%s': %s", dstaddr, gai_strerror (rc));
+      return -1;
+    }
+  for (ai = res; ai; ai = ai->ai_next)
+    if (ai->ai_family == AF_INET)
+      break;
+
+  if (ai == NULL)
+    {
+      error (0, 0, "`%s' refers to an unknown address type", dstaddr);
+      freeaddrinfo (res);
+      return -1;
+    }
+
+  rc = getnameinfo (ai->ai_addr, ai->ai_addrlen,
+		    addr, sizeof (addr), NULL, 0,
+		    NI_NUMERICHOST);
+  freeaddrinfo (res);
+  if (rc)
+    {
+      error (0, 0, "cannot resolve `%s': %s", dstaddr, gai_strerror (rc));
+      return -1;
+    }
+# else /* !HAVE_DECL_GETADDRINFO */
+  char *addr;
+  struct hostent *host = gethostbyname (dstaddr);
+
+  if (!host)
+    {
+      error (0, 0, "cannot resolve `%s': %s", dstaddr, hstrerror (h_errno));
+      return -1;
+    }
+  if (host->h_addrtype != AF_INET)
+    {
+      error (0, 0, "`%s' refers to an unknown address type", dstaddr);
+      return -1;
+    }
+
+  addr = inet_ntoa (*((struct in_addr *) host->h_addr));
+# endif /* !HAVE_DECL_GETADDRINFO */
+
+  SIOCSIF (DSTADDR, addr)
   if (verbose)
     printf ("Set interface peer address of `%s' to %s.\n",
 	    ifr->ifr_name, inet_ntoa (sin->sin_addr));
   return 0;
-#endif
+#endif /* SIOCSIFDSTADDR */
 }
 
 int
@@ -183,6 +239,58 @@ set_brdaddr (int sfd, struct ifreq *ifr, char *brdaddr)
 	    ifr->ifr_name, inet_ntoa (sin->sin_addr));
   return 0;
 #endif
+}
+
+int
+set_hwaddr (int sfd, struct ifreq *ifr, char *hwaddr)
+{
+#ifndef SIOCSIFHWADDR
+  error (0, 0,
+         "don't know how to set a hardware address on this system");
+  return -1;
+#else
+# ifndef ifr_hwaddr
+#  ifdef ifr_enaddr
+#   define ifr_hwaddr ifr_enaddr
+#  endif /* ifr_en_addr */
+# endif /* ifr_hwaddr */
+  int err;
+  struct ether_addr *ether;
+  struct sockaddr *sa = (struct sockaddr *) &ifr->ifr_hwaddr;
+
+  ether = ether_aton (hwaddr);
+  if (!ether)
+    {
+      struct ether_addr addr;
+
+      err = ether_hostton (hwaddr, &addr);
+      if (err)
+	{
+	  error (0, 0, "`%s' is not a valid hardware address", hwaddr);
+	  return -1;
+	}
+
+	ether = &addr;
+    }
+
+  /* Reading the present hardware address is a simple
+   * way of initializing the structure!
+   */
+  (void) ioctl (sfd, SIOCGIFHWADDR, ifr);
+
+  memcpy (&sa->sa_data, ether, sizeof (*ether));
+  err = ioctl (sfd, SIOCSIFHWADDR, ifr);
+  if (err < 0)
+    {
+      error (0, errno, "%s failed", "SIOCSIFHWADDR");
+      return -1;
+    }
+
+  if (verbose)
+    printf ("Set interface hardware address of `%s' to %s.\n",
+	    ifr->ifr_name, ether_ntoa (ether));
+  return 0;
+#endif /* SIOCSIFHWADDR */
 }
 
 int
@@ -260,6 +368,30 @@ set_flags (int sfd, struct ifreq *ifr, int setflags, int clrflags)
       error (0, errno, "SIOCSIFFLAGS failed");
       return -1;
     }
+
+  if (verbose)
+    {
+      printf ("Setting %sflags", setflags ? "" : "no ");
+
+      if (setflags)
+	{
+	  printf (" `");
+	  print_if_flags (setflags, NULL, ',');
+	  putchar ('\'');
+	}
+
+      printf (" of `%s'", ifr->ifr_name);
+
+      if (clrflags)
+	{
+	  printf (", clearing `");
+	  print_if_flags (clrflags, NULL, ',');
+	  putchar ('\'');
+	}
+
+      printf (".\n");
+    }
+
   return 0;
 #endif
 }
@@ -282,6 +414,8 @@ configure_if (int sfd, struct ifconfig *ifp)
     err = set_dstaddr (sfd, &ifr, ifp->dstaddr);
   if (!err && ifp->valid & IF_VALID_BRDADDR)
     err = set_brdaddr (sfd, &ifr, ifp->brdaddr);
+  if (!err && ifp->valid & IF_VALID_HWADDR)
+    err = set_hwaddr (sfd, &ifr, ifp->hwaddr);
   if (!err && ifp->valid & IF_VALID_MTU)
     err = set_mtu (sfd, &ifr, ifp->mtu);
   if (!err && ifp->valid & IF_VALID_METRIC)

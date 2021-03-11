@@ -1,6 +1,6 @@
 /* Assign a given terminal as controlling terminal and as standard input,
    standard output, standard error of the current process.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -55,7 +55,7 @@ login_tty (int slave_fd)
     slave_name = ttyname (slave_fd);
     if (slave_name == NULL)
       return -1;
-    dummy_fd = open (slave_name, O_RDWR);
+    dummy_fd = open (slave_name, O_RDWR | O_CLOEXEC);
     if (dummy_fd < 0)
       return -1;
     close (dummy_fd);

@@ -1,7 +1,7 @@
 dnl
 dnl Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-dnl 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015
-dnl Free Software Foundation, Inc.
+dnl 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+dnl 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GNU Inetutils.
 dnl
@@ -24,7 +24,7 @@ AC_DEFUN([IU_ENABLE_FOO],
  [AC_ARG_ENABLE($1, AS_HELP_STRING([--disable-$1], [don't compile $1]), ,
                 [enable_]$1[=$enable_]$2)
 [if test "$enable_$1" = yes; then
-   $1_BUILD=$1
+   $1_BUILD=$1$EXEEXT
    $1_INSTALL_HOOK="install-$1-hook"
 else
    $1_BUILD=''

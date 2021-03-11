@@ -1,7 +1,8 @@
 /*
   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-  2013, 2014, 2015 Free Software Foundation, Inc.
+  2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software
+  Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -41,7 +42,9 @@
 # include <termcap.h>
 #elif defined HAVE_CURSES_TGETENT
 # include <curses.h>
-# include <term.h>
+# ifndef _XOPEN_CURSES
+#  include <term.h>
+# endif
 #endif
 
 #if defined HAVE_STREAMSPTY && defined HAVE_GETMSG	\
@@ -63,7 +66,7 @@ static int ncc;
 static char ptyibuf[BUFSIZ], *ptyip;
 static int pcc;
 
-int not42;
+extern int not42;
 
 static int
 readstream (int p, char *ibuf, int bufsize)
@@ -372,6 +375,14 @@ pty_input_putback (const char *str, size_t len)
   return 0;
 }
 
+/* pty_read()
+ *
+ * Read errors EWOULDBLOCK, EAGAIN, and EIO are
+ * tweeked into reporting zero bytes input.
+ * In particular, EIO is known to appear when
+ * reading off the master side, before having
+ * an active slave side.
+ */
 int
 pty_read (void)
 {
@@ -476,10 +487,14 @@ stilloob (int s)
  * character.
  */
 char *
-nextitem (char *current)
+nextitem (char *current, const char *endp)
 {
+  if (current >= endp)
+    return NULL;
   if ((*current & 0xff) != IAC)
     return current + 1;
+  if (current + 1 >= endp)
+    return NULL;
 
   switch (*(current + 1) & 0xff)
     {
@@ -487,19 +502,20 @@ nextitem (char *current)
     case DONT:
     case WILL:
     case WONT:
-      return current + 3;
+      return current + 3 <= endp ? current + 3 : NULL;
 
     case SB:			/* loop forever looking for the SE */
       {
 	char *look = current + 2;
 
-	for (;;)
-	  if ((*look++ & 0xff) == IAC && (*look++ & 0xff) == SE)
+	while (look < endp)
+	  if ((*look++ & 0xff) == IAC && look < endp && (*look++ & 0xff) == SE)
 	    return look;
 
-      default:
-	return current + 2;
+	return NULL;
       }
+    default:
+      return current + 2 <= endp ? current + 2 : NULL;
     }
 }				/* end of nextitem */
 
@@ -521,8 +537,9 @@ nextitem (char *current)
  * us in any case.
  */
 #define wewant(p)					\
-  ((nfrontp > p) && ((*p&0xff) == IAC) &&		\
-   ((*(p+1)&0xff) != EC) && ((*(p+1)&0xff) != EL))
+  ((nfrontp > p) && ((*p & 0xff) == IAC) &&		\
+   (nfrontp > p + 1 && (((*(p + 1) & 0xff) != EC) &&	\
+                        ((*(p + 1) & 0xff) != EL))))
 
 
 void
@@ -537,7 +554,7 @@ netclear (void)
   thisitem = netobuf;
 #endif /* ENCRYPTION */
 
-  while ((next = nextitem (thisitem)) <= nbackp)
+  while ((next = nextitem (thisitem, nbackp)) != NULL && next <= nbackp)
     thisitem = next;
 
   /* Now, thisitem is first before/at boundary. */
@@ -548,15 +565,18 @@ netclear (void)
   good = netobuf;		/* where the good bytes go */
 #endif /* ENCRYPTION */
 
-  while (nfrontp > thisitem)
+  while (thisitem != NULL && nfrontp > thisitem)
     {
       if (wewant (thisitem))
 	{
 	  int length;
 
-	  for (next = thisitem; wewant (next) && nfrontp > next;
-	       next = nextitem (next))
+	  for (next = thisitem;
+	       next != NULL && wewant (next) && nfrontp > next;
+	       next = nextitem (next, nfrontp))
 	    ;
+	  if (next == NULL)
+	    next = nfrontp;
 
 	  length = next - thisitem;
 	  memmove (good, thisitem, length);
@@ -565,7 +585,7 @@ netclear (void)
 	}
       else
 	{
-	  thisitem = nextitem (thisitem);
+	  thisitem = nextitem (thisitem, nfrontp);
 	}
     }
 
@@ -725,6 +745,7 @@ getterminaltype (char *uname, size_t len)
     }
 #else /* !AUTHENTICATION */
   (void) uname;	/* Silence warning.  */
+  (void) len;	/* Silence warning.  */
 #endif
 
 #ifdef	ENCRYPTION
@@ -1188,9 +1209,21 @@ printsub (int direction, unsigned char *pointer, int length)
 		debug_output_data ("(0x%x)", pointer[i + SLC_FLAGS]);
 	      debug_output_data (" %d;", pointer[i + SLC_VALUE]);
 
+	      /* Protocol enforced duplication of IAC depends on pre
+	       * and post modification of data, hence differs between
+	       * in, out, and no direction, i.e., recursive mode.
+	       * Some systems assign _POSIX_VDISABLE and IAC the same
+	       * value!  Heuristic experiments led to the following.
+	       * Recursive mode needs both steps as written here.
+	       */
 	      if ((pointer[i + SLC_VALUE] == IAC) &&
-		  (pointer[i + SLC_VALUE + 1] == IAC))
+		  (pointer[i + SLC_VALUE + 1] == IAC) &&
+		  (direction != '<'))
 		i++;
+	      if ((pointer[i + SLC_VALUE] == IAC) &&
+		  (pointer[i + SLC_VALUE + 1] == IAC) &&
+		  !direction)
+		i += 2;
 	    }
 
 	  for (; i < length; i++)
@@ -1205,14 +1238,15 @@ printsub (int direction, unsigned char *pointer, int length)
 	      break;
 	    }
 	  {
-	    char tbuf[32];
+	    char tbuf[sizeof ("|EDIT|TRAPSIG|SOFT_TAB|LIT_ECHO|ACK")];
+
 	    snprintf (tbuf, sizeof (tbuf), "%s%s%s%s%s",
 		      pointer[2] & MODE_EDIT ? "|EDIT" : "",
 		      pointer[2] & MODE_TRAPSIG ? "|TRAPSIG" : "",
 		      pointer[2] & MODE_SOFT_TAB ? "|SOFT_TAB" : "",
 		      pointer[2] & MODE_LIT_ECHO ? "|LIT_ECHO" : "",
 		      pointer[2] & MODE_ACK ? "|ACK" : "");
-	    debug_output_data ("%s", tbuf[1] ? &tbuf[1] : "0");
+	    debug_output_data ("%s", tbuf[0] ? &tbuf[1] : "0");
 	  }
 
 	  if (pointer[2] & ~(MODE_EDIT | MODE_TRAPSIG | MODE_ACK))
@@ -1564,7 +1598,12 @@ printsub (int direction, unsigned char *pointer, int length)
 	debug_output_data (" %d", pointer[i]);
       break;
     }
-  debug_output_data ("\r\n");
+
+  /* Without direction, we are doing a recursive suboption printing.
+   * Suppress NL, which would otherwise misplace the SE marker.
+   */
+  if (direction)
+    debug_output_data ("\r\n");
 }
 
 /*

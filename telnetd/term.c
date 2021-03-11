@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-  2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+  2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free
+  Software Foundation, Inc.
 
   This file is part of GNU Inetutils.
 
@@ -20,6 +21,8 @@
 #include <config.h>
 
 #include <telnetd.h>
+
+#include <fcntl.h>
 
 typedef struct termios TERMDESC;
 #define _term_getattr tcgetattr
@@ -213,7 +216,7 @@ tty_iscrnl ()
   return termbuf.sg.sg_flags & CRMOD;
 }
 
-#else
+#else /* !IOCTL_INTERFACE */
 
 # define termdesc_eofc    c_cc[VEOF]
 # define termdesc_erase   c_cc[VERASE]
@@ -496,12 +499,35 @@ tty_iscrnl (void)
   return termbuf.c_iflag & ICRNL;
 }
 
-#endif
+#endif /* !IOCTL_INTERFACE */
 
 void
 init_termbuf (void)
 {
+#if !defined SOLARIS10 && !defined SOLARIS
   _term_getattr (pty, &termbuf);
+#else /* SOLARIS || SOLARIS10 */
+  /* On Solaris the master PTY is not able to report terminal
+   * settings about the slave TTY, since it is only the slave
+   * that is working with an designated line discipline.
+   * Therefore we must determine the slave descriptor, which
+   * exists only if ptsname() returns a non-empty string.
+   * This happens for the parent process.  The child process
+   * sees an empty name, so undergoes minimal processing.
+   */
+  int tty = pty;
+  char *name = ptsname (pty);
+
+  if (name)
+    /* Minimal access means read only!  */
+    tty = open (name, O_RDONLY | O_NONBLOCK);
+
+  _term_getattr (tty, &termbuf);
+
+  if (name)
+    close (tty);
+#endif /* SOLARIS || SOLARIS10 */
+
   termbuf2 = termbuf;
 }
 
@@ -529,7 +555,23 @@ void
 set_termbuf (void)
 {
   if (memcmp (&termbuf, &termbuf2, sizeof (termbuf)))
+#if !defined SOLARIS10 && !defined SOLARIS
     _term_setattr (pty, &termbuf);
+#else /* SOLARIS || SOLARIS10 */
+    {
+      /* Same reason as with _term_getattr.  */
+      int tty = pty;
+      char *name = ptsname (pty);
+
+      if (name)
+	tty = open (name, O_RDWR | O_NONBLOCK | O_NOCTTY);
+
+      _term_setattr (tty, &termbuf);
+
+      if (name)
+	close (tty);
+    }
+#endif /* SOLARIS || SOLARIS10 */
 }
 
 /* spcset(func, valp, valpp)
