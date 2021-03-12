@@ -464,7 +464,7 @@ TerminalNewMode (register int f)
       while (old < 0 || old > 1);
     }
 
-  old = prevmode;
+//  old = prevmode;
   prevmode = f & ~MODE_FORCE;
 #ifndef USE_TERMIO
   sb = nttyb;

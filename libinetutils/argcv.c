@@ -156,8 +156,8 @@ argcv_string (int argc, char **argv, char **pstring)
     {
       len += strlen (argv[i]) + 2;
       buffer = realloc (buffer, len);
-      if (buffer == NULL) {
-	return 1; }
+//      if (buffer == NULL) {
+//	return 1; }
       if (i != 0)
 	strcat (buffer, " ");
       strcat (buffer, argv[i]);

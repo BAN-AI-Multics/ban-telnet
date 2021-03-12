@@ -748,10 +748,12 @@ mklist (char *buf, char *name)
 	    *avt = *(avt + 1);
 	}
     }
-  if (*argv)
+  if (*argv) {
     return (argv);
-  else
-    return (unknown);
+  }
+  else {
+	  free(avt);
+    return (unknown); }
 }
 
 /* Claimed to be ignored by contemporary implementations,
@@ -814,6 +816,7 @@ gettermname (void)
 	}
       next = tnamep;
     }
+  if (next == NULL) return '\0';
   if (*next == 0)
     next = tnamep;
   return (*next++);
@@ -1798,6 +1801,7 @@ env_opt_end (register int emptyok)
   len = opt_replyp - opt_reply + 2;
   if (emptyok || len > 6)
     {
+		if (opt_replyp == NULL) return;
       *opt_replyp++ = IAC;
       *opt_replyp++ = SE;
       if (NETROOM () > len)
