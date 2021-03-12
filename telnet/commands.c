@@ -1535,6 +1535,7 @@ togcrmod (void)
   return 1;
 }
 
+#if 0
 int
 suspend (void)
 {
@@ -1564,8 +1565,9 @@ suspend (void)
 #endif
   return 1;
 }
+#endif /* 0 */
 
-#if !defined TN3270
+#if 0
 int
 shell (int argc, char *argv[] _GL_UNUSED_PARAMETER)
 {
@@ -1617,9 +1619,8 @@ shell (int argc, char *argv[] _GL_UNUSED_PARAMETER)
     }
   return 1;
 }
-#else /* !defined(TN3270) */
 extern int shell ();
-#endif /* !defined(TN3270) */
+#endif /* 0 */
 
 
 /* int  argc;	 Number of arguments */
@@ -2840,24 +2841,24 @@ static char
   sethelp[] = "set operating parameters ('set ?' for more)",
   unsethelp[] = "unset operating parameters ('unset ?' for more)",
   togglestring[] = "toggle operating parameters ('toggle ?' for more)",
-  slchelp[] = "change state of special characters ('slc ?' for more)",
-  displayhelp[] = "display operating parameters",
-#if defined TN3270 && (defined unix || defined __unix || defined __unix__)
-  transcomhelp[] = "specify Unix command for transparent mode pipe",
-#endif /* TN3270 && (unix || __unix || __unix__) */
-#if defined AUTHENTICATION
-  authhelp[] = "turn on (off) authentication ('auth ?' for more)",
-#endif
-#ifdef	ENCRYPTION
-  encrypthelp[] = "turn on (off) encryption ('encrypt ?' for more)",
-#endif
+//  slchelp[] = "change state of special characters ('slc ?' for more)",
+  displayhelp[] = "display operating parameters";
+//#if defined TN3270 && (defined unix || defined __unix || defined __unix__)
+//  transcomhelp[] = "specify Unix command for transparent mode pipe",
+//#endif /* TN3270 && (unix || __unix || __unix__) */
+//#if defined AUTHENTICATION
+//  authhelp[] = "turn on (off) authentication ('auth ?' for more)",
+//#endif
+//#ifdef	ENCRYPTION
+//  encrypthelp[] = "turn on (off) encryption ('encrypt ?' for more)",
+//#endif
   /* ENCRYPTION */
-#if defined unix || defined __unix || defined __unix__
-  zhelp[] = "suspend telnet",
-#endif /* unix || __unix || __unix__ */
-  shellhelp[] = "invoke a subshell",
+//#if defined unix || defined __unix || defined __unix__
+//  zhelp[] = "suspend telnet",
+//#endif /* unix || __unix || __unix__ */
+//  shellhelp[] = "invoke a subshell",
 //  envhelp[] = "change environment variables ('environ ?' for more)",
-  modestring[] = "try to enter line or character mode ('mode ?' for more)";
+//  modestring[] = "try to enter line or character mode ('mode ?' for more)";
 
 static int help (int argc, char **argv);
 
@@ -2873,7 +2874,7 @@ static Command cmdtab[] = {
   {"unset", unsethelp, unsetcmd, 0},
   {"status", statushelp, status, 0},
   {"toggle", togglestring, toggle, 0},
-  {"slc", slchelp, slccmd, 0},
+//  {"slc", slchelp, slccmd, 0},
 #if defined TN3270 && (defined unix || defined __unix || defined __unix__)
   {"transcom", transcomhelp, settranscom, 0},
 #endif /* TN3270 && (unix || __unix || __unix__) */
@@ -2884,13 +2885,13 @@ static Command cmdtab[] = {
   {"encrypt", encrypthelp, encrypt_cmd, 0},
 #endif /* ENCRYPTION */
 #if defined unix || defined __unix || defined __unix__
-  {"z", zhelp, suspend, 0},
+//  {"z", zhelp, suspend, 0},
 #endif /* unix || __unix || __unix__ */
-#if defined TN3270
-  {"!", shellhelp, shell, 1},
-#else
-  {"!", shellhelp, shell, 0},
-#endif
+//#if defined TN3270
+//  {"!", shellhelp, shell, 1},
+//#else
+//  {"!", shellhelp, shell, 0},
+//#endif
 //  {"environ", envhelp, env_cmd, 0},
   {"?", helphelp, help, 0},
   {NULL, NULL, NULL, 0}

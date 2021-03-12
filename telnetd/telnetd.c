@@ -113,11 +113,11 @@ static struct argp_option argp_options[] = {
 #define GRID 10
   { "debug", 'D', "LEVEL", OPTION_ARG_OPTIONAL,
     "set debugging level", GRID },
-  { "no-keepalive", 'n', NULL, 0,
-    "disable TCP keep-alives", GRID },
-  { "reverse-lookup", 'U', NULL, 0,
-    "refuse connections from addresses that "
-    "cannot be mapped back into a symbolic name", GRID },
+//  { "no-keepalive", 'n', NULL, 0,
+//    "disable TCP keep-alives", GRID },
+//  { "reverse-lookup", 'U', NULL, 0,
+//    "refuse connections from addresses that "
+//    "cannot be mapped back into a symbolic name", GRID },
 #undef GRID
 
 #ifdef AUTHENTICATION

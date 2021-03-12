@@ -129,9 +129,9 @@ static struct argp_option argp_options[] = {
     "use only IPv4", GRID+1 },
   { "ipv6", '6', NULL, 0,
     "use only IPv6", GRID+1 },
-  /* FIXME: Called "8bit" in r* utils */
-  { "binary", '8', NULL, 0,
-    "use an 8-bit data transmission", GRID+1 },
+//  /* FIXME: Called "8bit" in r* utils */
+//  { "binary", '8', NULL, 0,
+//    "use an 8-bit data transmission", GRID+1 },
 //  { "login", 'a', NULL, 0,
 //    "attempt automatic login", GRID+1 },
   { "no-rc", 'c', NULL, 0,
@@ -146,8 +146,8 @@ static struct argp_option argp_options[] = {
 //    "do not automatically login to the remote system", GRID+1 },
 //  { "user", 'l', "USER", 0,
 //    "attempt automatic login as USER", GRID+1 },
-  { "binary-output", 'L', NULL, 0, /* FIXME: Why L?? */
-    "use an 8-bit data transmission for output only", GRID+1 },
+//  { "binary-output", 'L', NULL, 0, /* FIXME: Why L?? */
+//    "use an 8-bit data transmission for output only", GRID+1 },
   { "trace", 'n', "FILE", 0,
     "record trace information into FILE", GRID+1 },
 //  { "rlogin", 'r', NULL, 0,
@@ -211,9 +211,9 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
       family = 6;
       break;
 
-    case '8':
-      eight = 3;		/* binary output and input */
-      break;
+//    case '8':
+//      eight = 3;		/* binary output and input */
+//      break;
 
     case 'E':
       rlogin = escape = _POSIX_VDISABLE;
@@ -225,9 +225,9 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
 #endif
       break;
 
-    case 'L':
-      eight |= 2;		/* binary output only */
-      break;
+//    case 'L':
+//      eight |= 2;		/* binary output only */
+//      break;
 
 #ifdef	AUTHENTICATION
     case 'X':
@@ -235,9 +235,9 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
       break;
 #endif
 
-    case 'a':
-      autologin = 1;
-      break;
+//    case 'a':
+//      autologin = 1;
+//    break;
 
     case 'c':
       skiprc = 1;
@@ -273,10 +273,10 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
       break;
 #endif
 
-    case 'l':
-      autologin = 1;
-      user = arg;
-      break;
+//    case 'l':
+//      autologin = 1;
+//      user = arg;
+//      break;
 
     case 'n':
       SetNetTrace (arg);
