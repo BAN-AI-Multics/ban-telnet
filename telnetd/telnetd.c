@@ -52,14 +52,14 @@ char *login_invocation =
    *       `-u' takes the Kerberos principal name
    *       of the authenticating, remote user.
    */
-  PATH_LOGIN " -p -h %h %?T{-t %T} -d %L %?u{-u %u}{%U}"
+  PATH_LOGIN ""
 
 #elif defined SOLARIS
   /* At least for SunOS 5.8.  */
-  PATH_LOGIN " -h %h %?T{%T} %?u{-- %u}{%U}"
+  PATH_LOGIN ""
 
 #else /* !SOLARIS */
-  PATH_LOGIN " -p -h %h %?u{-f %u}{%U}"
+  PATH_LOGIN ""
 #endif
   ;
 
@@ -113,10 +113,6 @@ static struct argp_option argp_options[] = {
 #define GRID 10
   { "debug", 'D', "LEVEL", OPTION_ARG_OPTIONAL,
     "set debugging level", GRID },
-  { "exec-login", 'E', "STRING", 0,
-    "set program to be executed instead of " PATH_LOGIN, GRID },
-  { "linemode", 'l', "MODE", OPTION_ARG_OPTIONAL,
-    "set line mode", GRID },
   { "no-keepalive", 'n', NULL, 0,
     "disable TCP keep-alives", GRID },
   { "reverse-lookup", 'U', NULL, 0,
@@ -156,10 +152,6 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
 
     case 'E':
       login_invocation = arg;
-      break;
-
-    case 'l':
-      parse_linemode (arg);
       break;
 
     case 'n':

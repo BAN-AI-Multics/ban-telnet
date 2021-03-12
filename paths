@@ -92,11 +92,9 @@ PATH_LOG	<syslog.h> /dev/log
 PATH_KLOG	<syslog.h> /dev/klog no
 PATH_LOGCONF	$(sysconfdir)/syslog.conf
 PATH_LOGCONFD	$(sysconfdir)/syslog.d
-PATH_LOGIN	x $(bindir)/login search:login
+PATH_LOGIN	x $(bindir)/mlogin
 PATH_LOGPID	$(localstatedir)/run/syslog.pid
 PATH_NOLOGIN	/etc/nologin
-PATH_RLOGIN	x $(bindir)/rlogin
-PATH_RSH	x $(bindir)/rsh
 PATH_TMP	d /tmp/
 PATH_TTY	c /dev/tty
 PATH_UUCICO	x $(libexecdir)/uucp/uucico search:uucp/uucico:/usr/libexec:/usr/lib:/usr/etc:/etc
