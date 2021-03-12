@@ -66,8 +66,6 @@
 #  poll \
 #  progname \
 #  read-file \
-#  readline \
-#  readme-release \
 #  readutmp \
 #  realloc-gnu \
 #  regex \
@@ -83,6 +81,7 @@
 #  strerror \
 #  strndup \
 #  strnlen \
+#  sys_types
 #  sysexits \
 #  termios \
 #  unistd-safer \
