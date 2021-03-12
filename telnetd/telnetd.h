@@ -234,7 +234,7 @@ extern int alwayslinemode;	/* command line option */
 extern int lmodetype;		/* Client support for linemode */
 extern int flowmode;		/* current flow control state */
 extern int restartany;		/* restart output on any character state */
-extern int diagnostic;		/* telnet diagnostic capabilities */
+extern int diagnostic;		/* TELNET diagnostic capabilities */
 #if defined AUTHENTICATION
 extern int auth_level;
 extern int autologin;

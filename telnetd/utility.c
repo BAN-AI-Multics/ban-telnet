@@ -407,7 +407,7 @@ pty_read (void)
  *
  *
  *	A small subroutine to flush the network output buffer, get some data
- * from the network, and pass it through the telnet state machine.  We
+ * from the network, and pass it through the TELNET state machine.  We
  * also flush the pty input buffer (by dropping its data) if it becomes
  * too full.
  */
@@ -939,7 +939,7 @@ debug_output_data (const char *fmt, ...)
 }
 
 /*
- * Print telnet options and commands in plain text, if possible.
+ * Print TELNET options and commands in plain text, if possible.
  */
 void
 printoption (char *fmt, int option)

@@ -367,7 +367,7 @@ telrcv (void)
 	      break;
 
 	      /*
-	       * Handle RFC 10xx Telnet linemode option additions
+	       * Handle RFC 10xx TELNET linemode option additions
 	       * to command stream (EOF, SUSP, ABORT).
 	       */
 	    case xEOF:
@@ -466,7 +466,7 @@ telrcv (void)
 
 /*
  * The will/wont/do/dont state machines are based on Dave Borman's
- * Telnet option processing state machine.
+ * TELNET option processing state machine.
  *
  * These correspond to the following states:
  *      my_state = the last negotiated state

@@ -95,7 +95,7 @@ int alwayslinemode;		/* command line option */
 int lmodetype;			/* Client support for linemode */
 int flowmode;			/* current flow control state */
 int restartany;			/* restart output on any character state */
-int diagnostic;			/* telnet diagnostic capabilities */
+int diagnostic;			/* TELNET diagnostic capabilities */
 #if defined AUTHENTICATION
 int auth_level = 0;		/* Authentication level */
 int autologin;
@@ -108,7 +108,7 @@ char *terminaltype;
 int SYNCHing;			/* we are in TELNET SYNCH mode */
 struct telnetd_clocks clocks;
 
-
+
 static struct argp_option argp_options[] = {
 #define GRID 10
   { "debug", 'D', "LEVEL", OPTION_ARG_OPTIONAL,
@@ -186,11 +186,11 @@ static struct argp argp =
     argp_options,
     parse_opt,
     NULL,
-    "DARPA telnet protocol server",
+    "DARPA TELNET protocol server",
     NULL, NULL, NULL
   };
 
-
+
 
 int
 main (int argc, char **argv)
