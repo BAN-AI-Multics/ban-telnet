@@ -172,8 +172,6 @@ IU_CHECK_LIBIDN([$with_libidn_prefix], [$with_idn])
 
 ### Checks for header files.
 
-AC_HEADER_STDC
-AC_HEADER_TIME
 AC_HEADER_DIRENT
 
 AC_CHECK_HEADERS([arpa/nameser.h arpa/tftp.h errno.h fcntl.h features.h \
@@ -184,7 +182,7 @@ AC_CHECK_HEADERS([arpa/nameser.h arpa/tftp.h errno.h fcntl.h features.h \
 		  sys/utsname.h sys/ptyvar.h sys/msgbuf.h sys/filio.h \
 		  sys/ioctl_compat.h sys/cdefs.h sys/stream.h sys/mkdev.h \
 		  sys/sockio.h sys/sysmacros.h sys/param.h sys/file.h \
-		  sys/proc.h sys/select.h sys/time.h sys/wait.h \
+		  sys/proc.h sys/select.h sys/wait.h \
                   sys/resource.h \
 		  stropts.h tcpd.h utmp.h utmpx.h unistd.h \
                   vis.h], [], [], [
@@ -305,7 +303,6 @@ AC_C_CONST
 
 ### Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
-AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_FORK
 AC_FUNC_STRCOLL
 AC_FUNC_MMAP
@@ -431,8 +428,6 @@ AC_COMPILE_IFELSE(
 AC_MSG_RESULT([$ac_iu_const_enctype_names])
 
 ## Checks for function declarations.
-
-AC_DECL_SYS_SIGLIST
 
 # EWOULDBLOCK is more or less the BSD version of posix EAGAIN.
 IU_CHECK_MACRO(EWOULDBLOCK, [#include <errno.h>], , ,
