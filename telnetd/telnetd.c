@@ -42,7 +42,6 @@ static void parse_linemode (char *str);
 static void parse_debug_level (char *str);
 static void telnetd_setup (int fd);
 static int telnetd_run (void);
-static void print_hostinfo (void);
 static void chld_is_done (int sig);
 
 /* Template command line for invoking login program.  */
@@ -69,8 +68,6 @@ int reverse_lookup = 0;		/* Reject connects from hosts which IP numbers
 				   cannot be reverse mapped to their hostnames */
 int alwayslinemode;		/* Always set the linemode (1) */
 int lmodetype;			/* Type of linemode (2) */
-int hostinfo = 1;		/* Print the host-specific information before
-				   login */
 
 int debug_level[debug_max_mode];	/* Debugging levels */
 int debug_tcp = 0;		/* Should the SO_DEBUG be set? */
@@ -118,8 +115,6 @@ static struct argp_option argp_options[] = {
     "set debugging level", GRID },
   { "exec-login", 'E', "STRING", 0,
     "set program to be executed instead of " PATH_LOGIN, GRID },
-  { "no-hostinfo", 'h', NULL, 0,
-    "do not print host information before login has been completed", GRID },
   { "linemode", 'l', "MODE", OPTION_ARG_OPTIONAL,
     "set line mode", GRID },
   { "no-keepalive", 'n', NULL, 0,
@@ -161,10 +156,6 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
 
     case 'E':
       login_invocation = arg;
-      break;
-
-    case 'h':
-      hostinfo = 0;
       break;
 
     case 'l':
@@ -612,9 +603,6 @@ telnetd_run (void)
   /* Pick up anything received during the negotiations */
   telrcv ();
 
-  if (hostinfo)
-    print_hostinfo ();
-
   init_termbuf ();
   localstat ();
 
@@ -764,35 +752,6 @@ telnetd_run (void)
   /* NOT REACHED */
 
   return 0;
-}
-
-void
-print_hostinfo (void)
-{
-  char *im = NULL;
-  char *str;
-#ifdef HAVE_UNAME
-  struct utsname u;
-
-  if (uname (&u) >= 0)
-    {
-      im = malloc (strlen (UNAME_IM_PREFIX)
-		   + strlen (u.sysname)
-		   + 1 + strlen (u.release) + strlen (UNAME_IM_SUFFIX) + 1);
-      if (im)
-	sprintf (im, "%s%s %s%s",
-		 UNAME_IM_PREFIX, u.sysname, u.release, UNAME_IM_SUFFIX);
-    }
-#endif /* HAVE_UNAME */
-  if (!im)
-    im = xstrdup ("\r\n\r\nUNIX (%l) (%t)\r\n\r\n");
-
-  str = expand_line (im);
-  free (im);
-
-  DEBUG (debug_pty_data, 1, debug_output_data ("sending %s", str));
-  pty_input_putback (str, strlen (str));
-  free (str);
 }
 
 static void
