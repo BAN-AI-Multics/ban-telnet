@@ -246,9 +246,8 @@ libinetutils_a_AR = $(AR) $(ARFLAGS)
 libinetutils_a_LIBADD =
 am_libinetutils_a_OBJECTS = argcv.$(OBJEXT) cleansess.$(OBJEXT) \
 	daemon.$(OBJEXT) defauthors.$(OBJEXT) if_index.$(OBJEXT) \
-	kcmd.$(OBJEXT) kerberos5.$(OBJEXT) krcmd.$(OBJEXT) \
 	localhost.$(OBJEXT) logwtmpko.$(OBJEXT) setsig.$(OBJEXT) \
-	shishi.$(OBJEXT) tftpsubs.$(OBJEXT) ttymsg.$(OBJEXT) \
+	tftpsubs.$(OBJEXT) ttymsg.$(OBJEXT) \
 	utmp_init.$(OBJEXT) utmp_logout.$(OBJEXT)
 libinetutils_a_OBJECTS = $(am_libinetutils_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -268,10 +267,9 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/argcv.Po ./$(DEPDIR)/cleansess.Po \
 	./$(DEPDIR)/daemon.Po ./$(DEPDIR)/defauthors.Po \
-	./$(DEPDIR)/if_index.Po ./$(DEPDIR)/kcmd.Po \
-	./$(DEPDIR)/kerberos5.Po ./$(DEPDIR)/krcmd.Po \
+	./$(DEPDIR)/if_index.Po \
 	./$(DEPDIR)/localhost.Po ./$(DEPDIR)/logwtmpko.Po \
-	./$(DEPDIR)/setsig.Po ./$(DEPDIR)/shishi.Po \
+	./$(DEPDIR)/setsig.Po \
 	./$(DEPDIR)/tftpsubs.Po ./$(DEPDIR)/ttymsg.Po \
 	./$(DEPDIR)/utmp_init.Po ./$(DEPDIR)/utmp_logout.Po
 am__mv = mv -f
@@ -1490,8 +1488,7 @@ AM_CPPFLAGS = \
 	$(PATHDEF_HEQUIV)
 
 noinst_LIBRARIES = libinetutils.a
-noinst_HEADERS = argcv.h libinetutils.h tftpsubs.h \
-		 kerberos5_def.h shishi_def.h
+noinst_HEADERS = argcv.h libinetutils.h tftpsubs.h
 
 EXTRA_DIST = logwtmp.c
 libinetutils_a_SOURCES = \
@@ -1500,13 +1497,9 @@ libinetutils_a_SOURCES = \
  daemon.c\
  defauthors.c\
  if_index.c \
- kcmd.c\
- kerberos5.c \
- krcmd.c\
  localhost.c\
  logwtmpko.c\
  setsig.c\
- shishi.c\
  tftpsubs.c\
  ttymsg.c\
  utmp_init.c\
@@ -1565,13 +1558,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/defauthors.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/if_index.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kcmd.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kerberos5.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/krcmd.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/localhost.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logwtmpko.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/setsig.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shishi.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tftpsubs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ttymsg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utmp_init.Po@am__quote@ # am--include-marker
@@ -1726,13 +1715,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/daemon.Po
 	-rm -f ./$(DEPDIR)/defauthors.Po
 	-rm -f ./$(DEPDIR)/if_index.Po
-	-rm -f ./$(DEPDIR)/kcmd.Po
-	-rm -f ./$(DEPDIR)/kerberos5.Po
-	-rm -f ./$(DEPDIR)/krcmd.Po
 	-rm -f ./$(DEPDIR)/localhost.Po
 	-rm -f ./$(DEPDIR)/logwtmpko.Po
 	-rm -f ./$(DEPDIR)/setsig.Po
-	-rm -f ./$(DEPDIR)/shishi.Po
 	-rm -f ./$(DEPDIR)/tftpsubs.Po
 	-rm -f ./$(DEPDIR)/ttymsg.Po
 	-rm -f ./$(DEPDIR)/utmp_init.Po
@@ -1787,13 +1772,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/daemon.Po
 	-rm -f ./$(DEPDIR)/defauthors.Po
 	-rm -f ./$(DEPDIR)/if_index.Po
-	-rm -f ./$(DEPDIR)/kcmd.Po
-	-rm -f ./$(DEPDIR)/kerberos5.Po
-	-rm -f ./$(DEPDIR)/krcmd.Po
 	-rm -f ./$(DEPDIR)/localhost.Po
 	-rm -f ./$(DEPDIR)/logwtmpko.Po
 	-rm -f ./$(DEPDIR)/setsig.Po
-	-rm -f ./$(DEPDIR)/shishi.Po
 	-rm -f ./$(DEPDIR)/tftpsubs.Po
 	-rm -f ./$(DEPDIR)/ttymsg.Po
 	-rm -f ./$(DEPDIR)/utmp_init.Po

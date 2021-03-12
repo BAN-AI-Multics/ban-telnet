@@ -27,8 +27,7 @@ AM_CPPFLAGS = \
 
 noinst_LIBRARIES = libinetutils.a
 
-noinst_HEADERS = argcv.h libinetutils.h tftpsubs.h \
-		 kerberos5_def.h shishi_def.h
+noinst_HEADERS = argcv.h libinetutils.h tftpsubs.h
 
 EXTRA_DIST = logwtmp.c
 
@@ -38,13 +37,9 @@ libinetutils_a_SOURCES = \
  daemon.c\
  defauthors.c\
  if_index.c \
- kcmd.c\
- kerberos5.c \
- krcmd.c\
  localhost.c\
  logwtmpko.c\
  setsig.c\
- shishi.c\
  tftpsubs.c\
  ttymsg.c\
  utmp_init.c\
