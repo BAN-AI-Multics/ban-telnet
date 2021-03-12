@@ -132,8 +132,8 @@ static struct argp_option argp_options[] = {
   /* FIXME: Called "8bit" in r* utils */
   { "binary", '8', NULL, 0,
     "use an 8-bit data transmission", GRID+1 },
-  { "login", 'a', NULL, 0,
-    "attempt automatic login", GRID+1 },
+//  { "login", 'a', NULL, 0,
+//    "attempt automatic login", GRID+1 },
   { "no-rc", 'c', NULL, 0,
     "do not read the user's .telnetrc file", GRID+1 },
   { "debug", 'd', NULL, 0,
@@ -142,16 +142,16 @@ static struct argp_option argp_options[] = {
     "use CHAR as an escape character", GRID+1 },
   { "no-escape", 'E', NULL, 0,
     "use no escape character", GRID+1 },
-  { "no-login", 'K', NULL, 0,
-    "do not automatically login to the remote system", GRID+1 },
-  { "user", 'l', "USER", 0,
-    "attempt automatic login as USER", GRID+1 },
+//  { "no-login", 'K', NULL, 0,
+//    "do not automatically login to the remote system", GRID+1 },
+//  { "user", 'l', "USER", 0,
+//    "attempt automatic login as USER", GRID+1 },
   { "binary-output", 'L', NULL, 0, /* FIXME: Why L?? */
     "use an 8-bit data transmission for output only", GRID+1 },
   { "trace", 'n', "FILE", 0,
     "record trace information into FILE", GRID+1 },
-  { "rlogin", 'r', NULL, 0,
-    "use a user-interface similar to rlogin", GRID+1 },
+//  { "rlogin", 'r', NULL, 0,
+//    "use a user-interface similar to rlogin", GRID+1 },
 #undef GRID
 
 #ifdef ENCRYPTION

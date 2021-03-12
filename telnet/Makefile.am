@@ -21,7 +21,7 @@
 @PATHDEFS_MAKE@
 
 AM_CPPFLAGS = \
-	-DTERMCAP -DLINEMODE -DKLUDGELINEMODE -DENV_HACK \
+	-DTERMCAP -DENV_HACK \
 	$(PATHDEF_BSHELL) \
 	$(iu_INCLUDES) \
 	-I$(top_srcdir) \
@@ -30,13 +30,13 @@ AM_CPPFLAGS = \
 LDADD = \
 	$(top_builddir)/libtelnet/libtelnet.a \
 	$(iu_LIBRARIES) \
-	$(LIBTERMCAP) $(LIBCRYPT) $(LIBAUTH) $(LIBIDN)
+	$(LIBTERMCAP) $(LIBIDN)
 
 bin_PROGRAMS = $(telnet_BUILD)
 
 EXTRA_PROGRAMS = telnet
 
-telnet_SOURCES = authenc.c commands.c main.c network.c ring.c sys_bsd.c \
-	telnet.c terminal.c tn3270.c utilities.c
+telnet_SOURCES = commands.c main.c network.c ring.c sys_bsd.c \
+	telnet.c terminal.c utilities.c
 
 noinst_HEADERS = defines.h externs.h general.h ring.h types.h

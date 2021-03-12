@@ -335,7 +335,7 @@ extern struct sgttyb nttyb;
 
 # define termEofChar		ntc.t_eofc
 # define termEraseChar		nttyb.sg_erase
-# define termFlushChar		nltc.t_flushc
+//# define termFlushChar		nltc.t_flushc
 # define termIntChar		ntc.t_intrc
 # define termKillChar		nttyb.sg_kill
 # define termLiteralNextChar	nltc.t_lnextc
@@ -351,7 +351,7 @@ extern cc_t termAytChar;
 
 # define termEofCharp		(cc_t *)&ntc.t_eofc
 # define termEraseCharp		(cc_t *)&nttyb.sg_erase
-# define termFlushCharp		(cc_t *)&nltc.t_flushc
+//# define termFlushCharp		(cc_t *)&nltc.t_flushc
 # define termIntCharp		(cc_t *)&ntc.t_intrc
 # define termKillCharp		(cc_t *)&nttyb.sg_kill
 # define termLiteralNextCharp	(cc_t *)&nltc.t_lnextc
@@ -384,9 +384,9 @@ extern cc_t termSuspChar;
 #  define VDISCARD VFLUSHO
 # endif
 # ifndef VDISCARD
-extern cc_t termFlushChar;
+//extern cc_t termFlushChar;
 # else
-#  define termFlushChar		new_tc.c_cc[VDISCARD]
+//#  define termFlushChar		new_tc.c_cc[VDISCARD]
 # endif
 # ifndef VWERASE
 extern cc_t termWerasChar;
@@ -436,7 +436,7 @@ extern cc_t termAytChar;
 #  define termKillCharp		&termKillChar
 #  define termQuitCharp		&termQuitChar
 #  define termSuspCharp		&termSuspChar
-#  define termFlushCharp	&termFlushChar
+//#  define termFlushCharp	&termFlushChar
 #  define termWerasCharp	&termWerasChar
 #  define termRprntCharp	&termRprntChar
 #  define termLiteralNextCharp	&termLiteralNextChar

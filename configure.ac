@@ -1,9 +1,11 @@
-# configure.ac - Configuration for inetutils
+# configure.ac - Configuration for BAN telnet
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 # 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
 # 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
 #
-# This file is part of GNU Inetutils.
+# This is BAN telnet, based on GNU Inetutils.
+#
+# The following applies to BAN telnet as well as GNU Inetutils:
 #
 # GNU Inetutils is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,11 +22,10 @@
 
 AC_PREREQ(2.64)
 
-AC_INIT([GNU inetutils],
+AC_INIT([BAN telnet],
  m4_esyscmd([build-aux/git-version-gen .tarball-version]),
- [bug-inetutils@gnu.org])
+ [trnsz@pobox.com])
 
-AC_CONFIG_SRCDIR([src/inetd.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h:config.hin])
 AC_CANONICAL_HOST
@@ -36,56 +37,6 @@ AM_INIT_AUTOMAKE([1.11.1 dist-xz -Wall -Werror])
 inetdaemondir='$(libexecdir)'
 AC_SUBST(inetdaemondir)
 
-AC_ARG_WITH([krb4],
-            AS_HELP_STRING([--with-krb4[[=PATH]]],
-                           [Compile with Kerberos IV]),
-            [KERBEROS_VERSION=krb4
-             KERBEROS_DIR=$withval])
-AC_ARG_WITH([krb5],
-            AS_HELP_STRING([--with-krb5[[=PATH]]],
-                           [Compile with Kerberos V]),
-            [KERBEROS_VERSION=krb5
-             KERBEROS_DIR=$withval])
-AC_ARG_WITH([shishi],
-            AS_HELP_STRING([--with-shishi[[=PATH]]],
-		           [Compile with Shishi (Kerberos 5)]),
-            [KERBEROS_VERSION=Shishi
-             KERBEROS_DIR=$withval])
-
-AC_ARG_ENABLE([servers],
-              AS_HELP_STRING([--disable-servers],
-                             [Do not compile servers]),
-	      , [enable_servers=yes])
-AC_ARG_ENABLE([clients],
-              AS_HELP_STRING([--disable-clients],
-                             [Do not compile clients]),
-	      , [enable_clients=yes])
-AC_ARG_ENABLE([libls],
-              AS_HELP_STRING([--disable-libls],
-                             [Disable support for libls ]),
-              , [enable_libls=yes])
-AC_ARG_ENABLE([encryption],
-              AS_HELP_STRING([--enable-encryption],
-                             [Enable encryption]),
-              [test -z "$KERBEROS_VERSION" && AC_MSG_ERROR([--enable-encryption is given, but a Kerberos version is not provided])],
-              [test -z "$KERBEROS_VERSION" && enable_encryption=no])
-AC_ARG_ENABLE([authentication],
-              AS_HELP_STRING([--enable-authentication],
-                             [Enable connection authentication]),
-              [test -z "$KERBEROS_VERSION" && AC_MSG_ERROR([--enable-authentication is given, but a Kerberos version is not provided])],
-	      [test -z "$KERBEROS_VERSION" && enable_authentication=no])
-
-if test -n "$KERBEROS_VERSION"; then
-  test -n "$enable_authentication" || enable_authentication=yes
-  test -n "$enable_encryption" || enable_encryption=yes
-fi
-
-AC_ARG_WITH([wrap],
-            AS_HELP_STRING([--with-wrap],
-                           [Add tcp wrapper support]))
-AC_ARG_WITH([pam],
-            AS_HELP_STRING([--with-pam],
-                           [Add support for PAM]))
 AC_ARG_WITH([idn],
   AS_HELP_STRING([--with-idn[[=DIR]]],
 		 [Use IDN or IDN2 support, with optional inclusion directory]), ,
@@ -95,61 +46,31 @@ AC_ARG_WITH([libidn-prefix],
 		 [Base directory, probes DIR/include and DIR/lib]), ,
 		 [with_libidn_prefix=no])
 
-IU_ENABLE_SERVER(ftpd)
-IU_ENABLE_SERVER(inetd)
-IU_ENABLE_SERVER(rexecd)
-IU_ENABLE_SERVER(rlogind)
-IU_ENABLE_SERVER(rshd)
-IU_ENABLE_SERVER(syslogd)
-IU_ENABLE_SERVER(talkd)
+AC_ARG_ENABLE([servers],
+              AS_HELP_STRING([--disable-servers],
+                             [Do not compile server]),
+          , [enable_servers=yes])
+AC_ARG_ENABLE([clients],
+              AS_HELP_STRING([--disable-clients],
+                             [Do not compile client]),
+          , [enable_clients=yes])
+
 IU_ENABLE_SERVER(telnetd)
-IU_ENABLE_SERVER(tftpd)
-IU_ENABLE_SERVER(uucpd)
-
-IU_ENABLE_CLIENT(ftp)
-IU_ENABLE_CLIENT(dnsdomainname)
-IU_ENABLE_CLIENT(hostname)
-IU_ENABLE_CLIENT(ping)
-IU_ENABLE_CLIENT(ping6)
-IU_ENABLE_CLIENT(rcp)
-IU_ENABLE_CLIENT(rexec)
-IU_ENABLE_CLIENT(rlogin)
-IU_ENABLE_CLIENT(rsh)
-IU_ENABLE_CLIENT(logger)
-IU_ENABLE_CLIENT(talk)
 IU_ENABLE_CLIENT(telnet)
-IU_ENABLE_CLIENT(tftp)
-IU_ENABLE_CLIENT(whois)
-IU_ENABLE_CLIENT(ifconfig)
-IU_ENABLE_CLIENT(traceroute)
-
-AM_SILENT_RULES([yes])
 
 ### Checks for programs.
 AC_PROG_CC
 gl_EARLY
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_CHECK_TOOL(AR, ar)
-AC_PATH_PROG(DD, dd, dd)
-AC_PATH_PROG(MKTEMP, mktemp, mktemp)
-AC_PATH_PROG(NETSTAT, netstat, netstat)
 AC_PATH_PROG(RM, rm, rm)
 AC_PROG_CPP
-AC_PROG_EGREP
-AC_PROG_FGREP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_LN_S
-AC_PROG_SED
-AC_ARG_VAR(GREP, [Location of preferred 'grep' utility.])
-AC_ARG_VAR(EGREP, [Location of preferred 'egrep' utility.])
-AC_ARG_VAR(FGREP, [Location of preferred 'fgrep' utility.])
-AC_ARG_VAR(SED, [Location of preferred 'sed' utility.])
-AC_ARG_VAR(DD, [Location of 'dd'.])
 AC_ARG_VAR(MKTEMP, [Location of 'mktemp'.])
-AC_ARG_VAR(NETSTAT, [Location of 'netstat'.])
 AC_ARG_VAR(TARGET, [IP address used while testing. @<:@127.0.0.1@:>@])
 AC_ARG_VAR(TARGET6, [IPv6 address used while testing. @<:@::1@:>@])
 
@@ -158,13 +79,7 @@ gl_INIT
 ### Checks for libraries.
 AC_SEARCH_LIBS([inet_ntoa], [nsl])
 AC_SEARCH_LIBS([getpeername], [socket])
-
-# See if a termcap library is available (under one of several names)
 IU_LIB_TERMCAP
-
-# See if there's a separate libcrypt (many systems put crypt there).
-AC_CHECK_LIB(crypt, crypt, LIBCRYPT=-lcrypt)
-AC_SUBST(LIBCRYPT)
 
 # libutil is a 4.4BSD library that defines several functions handy for
 # inetutils daemons, doing such things as utmp frobbing, and pty
@@ -176,241 +91,6 @@ AC_CHECK_LIB(util, logoutx, LIBUTIL=-lutil)
 AC_CHECK_LIB(util, logwtmp, LIBUTIL=-lutil)
 AC_CHECK_LIB(util, logwtmpx, LIBUTIL=-lutil)
 AC_SUBST(LIBUTIL)
-
-# Check if they want support for PAM.  Certain daemons like ftpd have
-# support for it.
-
-# See if we have libpam.a.  Investigate PAM versus Linux-PAM.
-if test "$with_pam" = yes ; then
-  AC_CHECK_LIB(dl, dlopen, LIBDL=-ldl)
-  AC_CHECK_LIB(pam, pam_authenticate, LIBPAM=-lpam)
-  if test "$ac_cv_lib_pam_pam_authenticate" = yes ; then
-    AC_DEFINE([WITH_PAM], 1, [Define to one if you have -lpam.])
-    # ftpd was originally coded for Linux-PAM and was later
-    # adapted to go with OpenPAM and with Solaris-PAM.
-    FTPD_LIBPAM=$LIBPAM
-    AC_CHECK_DECLS(PAM_CONV_AGAIN, , , [#include <security/pam_appl.h>])
-    if test "$ac_cv_have_decl_PAM_CONV_AGAIN" = yes ; then
-      AC_DEFINE([WITH_LINUX_PAM], 1, [Define to one if you use Linux-PAM.])
-    fi
-  fi
-fi
-AC_SUBST(LIBDL)
-AC_SUBST(LIBPAM)
-AC_SUBST(FTPD_LIBPAM)
-
-# Can we use libls? but we must have fchdir()
-if test "$enable_libls" = yes && test "$ac_cv_func_fchdir" = yes ; then
-  LIBLS="../libls/libls.a"
-  libls_BUILD="libls.a"
-  AC_DEFINE([WITH_LIBLS], 1, [Define to one if you have -lls])
-else
-  LIBLS=''
-  libls_BUILD=''
-  enable_libls='no'
-fi
-AC_SUBST(LIBLS)
-AC_SUBST(libls_BUILD)
-AC_SUBST(enable_libls)
-AM_CONDITIONAL([ENABLE_libls], [test "$enable_libls" = yes])
-
-# At least OpenSolaris is missing <protocols/talkd.h>.
-AC_CHECK_HEADER(protocols/talkd.h, , ,
-  [IU_FLUSHLEFT([#include <sys/types.h>
-		 #include <sys/socket.h>])])
-
-if test "$ac_cv_header_protocols_talkd_h" = no; then
-  AC_MSG_WARN([protocols/talkd.h is not available, not building talk, nor talkd])
-  IU_DISABLE_TARGET(talk)
-  IU_DISABLE_TARGET(talkd)
-fi
-
-# Only talk uses curses, so only check for it if we want that
-if test "$enable_talk" != no; then
-  IU_LIB_CURSES
-fi
-if test "$enable_talk" != no && test "$LIBCURSES"; then
-  enable_talk=yes
-else
-  if test "$enable_talk" = yes; then
-    AC_MSG_WARN([curses is not available, so not building talk])
-  fi
-  IU_DISABLE_TARGET(talk)
-fi
-
-# The function rcmd() is crucial for remote shells, but is not
-# always implemented in libraries intended for embedded systems.
-# Check for its availability in order to later disable our rcp,
-# rlogin, and rsh when no alternative is present.
-AC_CHECK_FUNC(rcmd, , , [#include <netdb.h>])
-if test "$ac_cv_func_rcmd" = yes; then
-  AC_DEFINE([WITH_RCMD], 1, [Define to one if you can use rcmd.])
-fi
-
-# NetBSD offers orcmd() and orcmd_af() for getting
-# exactly the functionality that rcmd() and rcmd_af()
-# offer on all other targetted systems.
-AC_CHECK_FUNC(rcmd_af, , , [#include <netdb.h>])
-if test "$ac_cv_func_rcmd_af" = yes; then
-  AC_DEFINE([WITH_RCMD_AF], 1, [Define to one if you can use rcmd_af.])
-fi
-AC_CHECK_FUNC(orcmd, , , [#include <unistd.h>])
-if test "$ac_cv_func_orcmd" = yes; then
-  AC_DEFINE([WITH_ORCMD], 1, [Define to one if you can use orcmd.])
-fi
-AC_CHECK_FUNC(orcmd_af, , , [#include <unistd.h>])
-if test "$ac_cv_func_orcmd_af" = yes; then
-  AC_DEFINE([WITH_ORCMD_AF], 1, [Define to one if you can use orcmd_af.])
-fi
-AC_CHECK_FUNC(rresvport_af, , , [#include <netdb.h>])
-if test "$ac_cv_func_rresvport_af" = yes; then
-  AC_DEFINE([WITH_RRESVPORT_AF], 1,
-	    [Define to one if you can use rresvport_af.])
-fi
-
-# FIXME: Presently rshd and rlogind prefer iruserok(3), which is not
-# universally available.  Replacement code?  A fallback is being built
-# from ruserok(3) and inet_ntoa(3).  Calls using iruserok/rusersok are
-# used for non-PAM configured executables rshd/rlogind.
-AC_CHECK_FUNC(iruserok, , , [#include <netdb.h>])
-AC_CHECK_FUNC(iruserok_af, , , [#include <netdb.h>])
-AC_CHECK_FUNC(iruserok_sa, , , [#include <netdb.h>])
-AC_CHECK_FUNC(ruserok, , , [#include <netdb.h>])
-AC_CHECK_FUNC(ruserok_af, , , [#include <netdb.h>])
-if test "$ac_cv_func_iruserok" = yes; then
-  AC_DEFINE([WITH_IRUSEROK], 1, [Define to one if you can use iruserok.])
-  if test "$ac_cv_func_iruserok_af" = yes; then
-    AC_DEFINE([WITH_IRUSEROK_AF], 1,
-	      [Define to one if you can use iruserok_af.])
-  fi
-  if test "$ac_cv_func_iruserok_sa" = yes; then
-    AC_DEFINE([WITH_IRUSEROK_SA], 1,
-	      [Define to one if you can use iruserok_sa.])
-  fi
-else
-  if test "$ac_cv_func_ruserok" = yes; then
-    AC_DEFINE([WITH_RUSEROK], 1, [Define to one if you can use ruserok.])
-    AC_MSG_WARN([iruserok is not available, falling back to ruserok.])
-    if test "$ac_cv_func_ruserok_af" = yes; then
-      AC_DEFINE([WITH_RUSEROK_AF], 1,
-		[Define to on if you can use ruserok_af.])
-    fi
-  else
-    AC_MSG_WARN([Disabling rlogind and rshd, since no iruserok and no ruserok.])
-    IU_DISABLE_TARGET(rlogind)
-    IU_DISABLE_TARGET(rshd)
-  fi
-fi
-
-# Disable targets rcp, rlogin, and rsh when no rcmd variant is available.
-if test "$ac_cv_func_rcmd" != yes \
-   && test "$ac_cv_func_orcmd" != yes \
-   && test "$ac_cv_func_rcmd_af" != yes \
-   && test "$ac_cv_func_orcmd_af" != yes
-then
-  AC_MSG_WARN([Disabling rcp, rlogin and rsh, since no rcmd.])
-  IU_DISABLE_TARGET(rcp)
-  IU_DISABLE_TARGET(rlogin)
-  IU_DISABLE_TARGET(rsh)
-fi
-
-# FIXME: Make this test case a bit more robust.  Remove KRB4
-LIBAUTH=
-INCAUTH=
-if test "$enable_encryption" = yes \
-   || test "$enable_authentication" = yes; then
-  AH_TEMPLATE(KERBEROS, [Define to one if you have Kerberos])
-  AH_TEMPLATE(KRB4, [Define to one if you have Kerberos IV])
-  AH_TEMPLATE(KRB5, [Define to one if you have Kerberos V])
-  AH_TEMPLATE(SHISHI, [Define to 1 if you have Shishi])
-  AH_TEMPLATE(DES_ENCRYPTION, [Define to 1 if you have DES encryption])
-
-  case $KERBEROS_VERSION in
-  krb4)
-    AC_CHECK_LIB(krb, krb_mk_req,
-                 LIBAUTH=-lkrb
-                  AC_DEFINE([KRB4]),
-                 -L$KERBEROS_DIR)
-    if test ".$LIBAUTH" != . ; then
-      AC_CHECK_LIB(des, des_key_sched,
-                   [LIBAUTH="$LIBAUTH -ldes"],
-                   -L$KERBEROS_DIR)
-      # FIXME: Fix this to one test case.
-      test "$enable_authentication" = yes \
-      && test "$ac_cv_lib_krb_krb_mk_req" = yes \
-      && AC_DEFINE([KRB4])
-
-      test "$enable_authentication" = yes \
-      && test "$ac_cv_lib_krb_krb_mk_req" = yes \
-      && AC_DEFINE([KERBEROS])
-
-      test "$enable_encryption" = yes \
-      && test "$ac_cv_lib_des_des_key_sched" = yes \
-      && AC_DEFINE([DES_ENCRYPTION])
-
-      AC_CHECK_HEADERS([com_err.h des.h kerberosIV/des.h \
-			kerberosIV/krb.h krb.h])
-    fi
-    ;;
-  krb5)
-    IU_CHECK_KRB5([5],$KERBEROS_DIR)
-    LIBAUTH="$KRB5_LIBS" # FIXME
-    INCAUTH="$KRB5_CFLAGS"
-    if test ".$LIBAUTH" != . ;then
-      AC_DEFINE([KERBEROS])
-      AC_DEFINE([KRB5])
-      save_CPPFLAGS=$CPPFLAGS
-      CPPFLAGS="$CPPFLAGS $INCAUTH"
-      AC_CHECK_HEADERS([com_err.h kerberosV/krb5.h krb5.h \
-			krb5/asn1.h krb5/crc-32.h krb5/ext-proto.h \
-			krb5/krb5.h krb5/los-proto.h])
-      CPPFLAGS=$save_CPPFLAGS
-      # We have limited support for krcmd() with Kerberos5.
-      # Encryption must be sorted out as a first step.
-      IU_DISABLE_TARGET(rcp)
-      IU_DISABLE_TARGET(rlogin)
-      IU_DISABLE_TARGET(rsh)
-      # Likewise, we need to migrate away from KRB4 and des_*()
-      IU_DISABLE_TARGET(rlogind)
-      IU_DISABLE_TARGET(rshd)
-    fi
-    ;;
-  *)
-    # Properly handle --without-shishi.
-    if test x$KERBEROS_DIR = xno; then
-      KERBEROS_VERSION=
-    else
-      if test x$KERBEROS_DIR != x \
-	  && test x$KERBEROS_DIR != xyes; then
-	LIBAUTH=-L$KERBEROS_DIR/lib
-	INCAUTH=-I$KERBEROS_DIR/include
-      fi
-      LIBAUTH="$LIBAUTH -lshishi"
-      save_LIBS=$LIBS
-      LIBS="$LIBS $LIBAUTH"
-      save_CPPFLAGS=$CPPFLAGS
-      CPPFLAGS="$CPPFLAGS $INCAUTH"
-      AC_CHECK_HEADER(shishi.h,
-	AC_SEARCH_LIBS([shishi_check_version], [shishi],
-	  AC_DEFINE([SHISHI]),
-	  [INCAUTH= LIBAUTH= KERBEROS_VERSION=]),
-	[INCAUTH= LIBAUTH= KERBEROS_VERSION=])
-      LIBS=$save_LIBS
-      CPPFLAGS=$save_CPPFLAGS
-    fi
-  esac
-fi
-AC_SUBST(LIBAUTH)
-AC_SUBST(INCAUTH)
-AC_SUBST(KERBEROS_VERSION)
-
-# Define CPP macros that enable auth/encrypt code
-if test ".$LIBAUTH" != .; then
-  test "$enable_authentication" = yes && AC_DEFINE([AUTHENTICATION], 1,
-                   [Define to one if you want authentication.])
-  test "$enable_encryption" = yes     && AC_DEFINE([ENCRYPTION], 1,
-                   [Define to one if you want encryption.])
-fi
 
 # Make IPv4 tests configurable in testing stage.
 
@@ -484,126 +164,6 @@ else
   fi
 fi
 
-if test "$ipv6" = "no" || test "$working_ipv6" = "no";then
-  IU_DISABLE_TARGET([ping6])
-else
-  working_icmp6=yes
-  AC_CHECK_HEADER(netinet/icmp6.h, , working_icmp6=no,
-    [IU_FLUSHLEFT([#include <sys/types.h>
-		   #include <sys/socket.h>
-		   #include <netinet/in.h>])])
-
-  if test "$working_icmp6" = "yes"; then
-    AC_CHECK_HEADER(netinet/ip6.h, , working_icmp6=no,
-      [IU_FLUSHLEFT([#include <sys/types.h>
-		     #include <sys/socket.h>
-		     #include <netinet/in.h>])])
-
-  fi
-
-  if test "$working_icmp6" = "yes"; then
-    AC_CHECK_TYPE(struct icmp6_filter, , working_icmp6=no,
-      [IU_FLUSHLEFT([#include <sys/types.h>
-		     #include <sys/socket.h>
-		     #include <netinet/in.h>
-		     #include <netinet/icmp6.h>])])
-  fi
-
-  if test "$working_icmp6" = "yes"; then
-    AC_CHECK_TYPE(struct icmp6_hdr, , working_icmp6=no,
-      [IU_FLUSHLEFT([#include <sys/types.h>
-		     #include <sys/socket.h>
-		     #include <netinet/in.h>
-		     #include <netinet/icmp6.h>])])
-  fi
-
-  if test "$working_icmp6" = "yes"; then
-    IU_CHECK_MACRO(IPV6_HOPLIMIT, [#include <netinet/in.h>], ,
-		   [have_hoplimit=yes], [have_hoplimit=no])
-    IU_CHECK_MACRO(IPV6_2292HOPLIMIT, [#include <netinet/in.h>], ,
-		   [have_2292hoplimit=yes], [have_2292hoplimit=no])
-    IU_CHECK_MACRO(IPV6_RECVHOPLIMIT, [#include <netinet/in.h>], ,
-		   [have_recvhoplimit=yes], [have_recvhoplimit=no])
-
-    # Reset, ping6 can't compile without HOPLIMIT/RECVHOPLIMIT (or
-    # similar).
-    working_icmp6=no
-
-    if test $have_recvhoplimit = yes && test $have_hoplimit = yes; then
-      # ping6 uses HOPLIMIT and RECVLIMIT, if those exist, happy happy
-      # joy joy.
-      working_icmp6=yes
-    fi
-
-    if test $have_2292hoplimit = yes && test $have_hoplimit = no; then
-      # Some systems (BSDs) define these macros prefixed with "2292",
-      # violating RFC 2292; work around it.
-      AC_DEFINE([IPV6_HOPLIMIT], IPV6_2292HOPLIMIT,
-                [Define to IPV6_2292HOPLIMIT if not available])
-      have_hoplimit=yes
-      working_icmp6=yes
-    fi
-
-    if test $have_recvhoplimit = no && test $have_hoplimit = yes; then
-      # There exist strange systems (FIXME: which ones?) where
-      # RECVHOPLIMIT might not be defined, but HOPLIMIT is.  So define
-      # that.
-      AC_DEFINE([IPV6_RECVHOPLIMIT], IPV6_HOPLIMIT,
-                [Define to IPV6_HOPLIMIT if not available])
-      working_icmp6=yes
-    fi
-
-    # If we got this far then we are SOL, and the reset above takes
-    # care of the rest.
-  fi
-
-  if test "$working_icmp6" = "yes"; then
-    IU_CHECK_MACRO(ICMP6_DST_UNREACH_BEYONDSCOPE,
-                   [#include <sys/types.h>
-		    #include <sys/socket.h>
-		    #include <netinet/in.h>
-		    #include <netinet/icmp6.h>], ,
-		   [have_beyondscope=yes], [have_beyondscope=no])
-    if test "$have_beyondscope" = "no"; then
-      IU_CHECK_MACRO(ICMP6_DST_UNREACH_NOTNEIGHBOR, [#include <netinet/icmp6.h>], , [
-        AC_DEFINE([ICMP6_DST_UNREACH_BEYONDSCOPE], ICMP6_DST_UNREACH_NOTNEIGHBOR,
-                  [Define to ICMP6_DST_UNREACH_NOTNEIGHBOR if not available])
-      ], [working_icmp6=no])
-    fi
-  fi
-
-  if test "$working_icmp6" = "no"; then
-    AC_MSG_WARN([ICMPv6 support not available, disabling ping6])
-    IU_DISABLE_TARGET([ping6])
-  fi
-fi
-
-
-# Check if they want support for Wrap.  Certain daemons like ftpd have
-# support for it.
-
-if test "$with_wrap" = yes; then
-# See if we have libwrap.a.  We cannot use AC_CHECK_LIB reliably since
-# for the wrap lib you have to define some global variables.
-#AC_CHECK_LIB(wrap, hosts_ctl, LIBWRAP=-lwrap)
-  AC_CHECK_HEADERS([tcpd.h])
-  AC_CHECK_DECLS([hosts_ctl], , , [#include <tcpd.h>])
-  AC_MSG_CHECKING(hosts_ctl in -lwrap);
-  save_LIBS=$LIBS
-  LIBS="$save_LIBS -lwrap"
-  AC_TRY_LINK([int allow_severity = 1; int deny_severity = 1;],
-              hosts_ctl(), eval "ac_cv_lib_wrap_hosts_ctl=yes",
-              eval "ac_cv_lib_wrap_hosts_ctl=no")
-  LIBS=$save_LIBS
-  if test "$ac_cv_lib_wrap_hosts_ctl" = yes \
-      && test "$ac_cv_header_tcpd_h" = yes; then
-    AC_DEFINE([WITH_WRAP], 1, [Define to one if you have -lwrap and <tcpd.h>.])
-    LIBWRAP=-lwrap
-  fi
-  AC_MSG_RESULT($ac_cv_lib_wrap_hosts_ctl);
-fi
-AC_SUBST(LIBWRAP)
-
 ### Check for GNU Libidn
 AC_CHECK_HEADERS([locale.h])
 AC_CHECK_FUNCS([setlocale])
@@ -641,14 +201,6 @@ AC_CHECK_HEADERS([arpa/nameser.h arpa/tftp.h errno.h fcntl.h features.h \
 #endif
 ]
 )
-
-# Recent Cygwin 2.9 has dropped <arpa/tftp.h>.  Other systems
-# might take similar steps.
-if test "$ac_cv_header_arpa_tftp_h" = no; then
-  AC_MSG_WARN([arpa/tftp.h is not available: not building tftp, nor tftpd])
-  IU_DISABLE_TARGET(tftp)
-  IU_DISABLE_TARGET(tftpd)
-fi
 
 ### Checks for types.
 
@@ -748,23 +300,8 @@ IU_CHECK_MEMBERS([struct stat.st_atim.tv_nsec,
 		 [#include <sys/types.h>
 		  #include <sys/stat.h>])
 
-# OpenSolaris does not use a union for `struct tftphdr.th_u'.  As a
-# consequence `struct tftphdr.th_stuff' is a macro resolving to a
-# `ushort_t'.  BSD and Linux produce `char *'.
-IU_CHECK_MEMBERS([struct tftphdr.th_u], , ,
-		 [#include <sys/types.h>
-		  #include <sys/socket.h>
-		  #include <arpa/tftp.h>])
-
 ### Checks for compiler characteristics.
 AC_C_CONST
-
-# See if `weak refs' are possible; these make it possible (with shared
-# libraries) to check for the existance of a standard function at
-# run-time instead of compile time, which is very handy for
-# distributing binary version programs that automatically adapt -- in
-# inetutils case, to whether or not crypt is available.
-IU_CHECK_WEAK_REFS
 
 ### Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
@@ -795,12 +332,6 @@ LIBS="$_SAVE_LIBS"
 # Functions that we will define if necessary.
 AC_REPLACE_FUNCS(getpass getusershell memcmp memcpy memmove memset \
 		 strdup poll)
-
-# Look for the crypt function itself (in libcrypt if possible)
-_SAVE_LIBS="$LIBS"
-LIBS="$LIBCRYPT $LIBS"
-AC_CHECK_FUNCS(crypt)
-LIBS="$_SAVE_LIBS"
 
 AC_CHECK_FUNC(_obstack_free)
 
@@ -903,8 +434,6 @@ AC_MSG_RESULT([$ac_iu_const_enctype_names])
 
 AC_DECL_SYS_SIGLIST
 
-AC_CHECK_DECLS(crypt, , , [#include <unistd.h>])
-
 # EWOULDBLOCK is more or less the BSD version of posix EAGAIN.
 IU_CHECK_MACRO(EWOULDBLOCK, [#include <errno.h>], , ,
   [AC_DEFINE([EWOULDBLOCK], EAGAIN, 1,
@@ -950,8 +479,7 @@ AC_CHECK_DECLS(environ, , ,
   [IU_FLUSHLEFT([#include <unistd.h>
                  #include <stdlib.h>])])
 
-# See if we have h_errno (the test is here so we can use -lresolv if
-# necessary).
+# Look for h_errno (the test is here so we can use -lresolv if necessary).
 AC_CACHE_CHECK([for h_errno], inetutils_cv_var_h_errno,
   AC_TRY_COMPILE([#include <netdb.h>],
     [ extern int h_errno; int iu_x = h_errno; ],
@@ -965,9 +493,8 @@ fi
 
 ## Checks for CPP macros.
 
-# Look for the posix SEEK_ macros (for lseek), and if not found, try
-# the similar berkeley L_ macros; if neither can be found, use the
-# classic unix values.
+# Find posix SEEK_ macros (for lseek), and if not found, try the similar
+# berkeley L_ macros; if neither can be found, use the classic unix values.
 IU_CHECK_MACRO(SEEK_ macros,
   [#include <unistd.h>], SEEK_SET SEEK_CUR SEEK_END,
   :,
@@ -980,8 +507,7 @@ IU_CHECK_MACRO(SEEK_ macros,
     AC_DEFINE([SEEK_CUR], 1, [Define to 1 if missing])
     AC_DEFINE([SEEK_END], 2, [Define to 2 if missing])))
 
-# Look for the posix _FILENO macros; if not found, use the classic
-# unix values.
+# Look posix _FILENO macros; if not found, use the classic unix values.
 IU_CHECK_MACRO(_FILENO macros,
   [#include <unistd.h>], STDIN_FILENO STDOUT_FILENO STDERR_FILENO,
   :,
@@ -989,8 +515,7 @@ IU_CHECK_MACRO(_FILENO macros,
   AC_DEFINE([STDOUT_FILENO], 1, [Define to 1 if missing])
   AC_DEFINE([STDERR_FILENO], 2, [Define to 2 if missing]))
 
-# See where to find fd_set (bit-vectors for select) manipulation
-# macros.
+# See where to find fd_set (bit-vectors for select) manipulation macros.
 IU_CHECK_MACRO(fd_set macros, [#include <sys/types.h>],
   FD_ZERO FD_CLR FD_SET FD_ISSET)
 if test "$inetutils_cv_macro_fd_set_macros" = no; then
@@ -1004,8 +529,6 @@ iu_INCLUDES='-I$(top_srcdir)/lib -I$(top_builddir)/lib -I$(top_srcdir)/libinetut
 AC_SUBST(iu_LIBRARIES)
 AC_SUBST(iu_INCLUDES)
 
-# Configure paths used by inetutils programs.  See the file `paths'
-# for details.
 PATHDEFS_MAKE=pathdefs.make
 PATHS_DEFS=paths.defs
 IU_CONFIG_PATHS($srcdir/paths, PATHDEFS_MAKE, PATHS_DEFS)
@@ -1013,20 +536,8 @@ AH_BOTTOM(
 [/* Defaults for PATH_ variables.  */
 #include <confpaths.h>])
 
-# Ok this is the end of the rope, even autoconf can't help.  For
-# example on certain system login(1) will not work if we don't have an
-# entry in utmpx.  Also for some OS they are better handled with
-# STREAMS.
 case "$host" in
 *-freebsd9* | *-freebsd10* )
-  # FreeBSD 9.0 has implemented a non-standard and singular
-  # UTMPX interface.  The readutmp module from GNUlib does
-  # not support it, but we can fall back to getutxuser() for
-  # use in syslogd and talkd.  For ftpd, rlogind, telnetd,
-  # and uucpd the use of pututxent() should suffice, but
-  # this needs continued observations.
-  #
-  # Other issues?
   ;;
 *olaris* )
   case "$host" in
@@ -1034,7 +545,6 @@ case "$host" in
     AC_DEFINE([SOLARIS10], 1, [Solaris 10 and newer variants.])
     ;;
   * )
-    # Older Solaris variants.
     ;;
   esac
   AC_DEFINE([SOLARIS], 1, [Define to 1 for any Solaris system])
@@ -1042,7 +552,6 @@ case "$host" in
     [Define to 1 for a system using streams for ptys])
   ;;
 *irix* | *hpux* )
-  # Known and needed work-arounds?
   ;;
 esac
 
@@ -1050,84 +559,25 @@ esac
 TARGET=${TARGET:-127.0.0.1}
 TARGET6=${TARGET6:-::1}
 
-# Work around code peculiarities.
-AM_CONDITIONAL([ENABLE_hstrerror], [test "$ipv6" = no])
-
 AC_CONFIG_FILES([
 Makefile
 summary.sh
 lib/Makefile
 libinetutils/Makefile
 libtelnet/Makefile
-libicmp/Makefile
-libls/Makefile
-src/Makefile
 telnet/Makefile
 telnetd/Makefile
-ftp/Makefile
-ftpd/Makefile
-talk/Makefile
-talkd/Makefile
-whois/Makefile
-ping/Makefile
-ifconfig/Makefile
-ifconfig/system/Makefile
-tests/Makefile
 confpaths.h:confpaths.h.in
 ])
 
 AC_CONFIG_COMMANDS([summary], [sh ./summary.sh])
 
-# Collect printable information on each
-# available (i.e., reportable) target.
-#
-# Group similar properties and append
-# by succession in an orderly manner.
-
-# Kerberised services.
-
-rcp_PROPS=$KERBEROS_VERSION
-rlogin_PROPS=$KERBEROS_VERSION
-rlogind_PROPS=$KERBEROS_VERSION
-rsh_PROPS=$KERBEROS_VERSION
-rshd_PROPS=$KERBEROS_VERSION
-telnet_PROPS=$KERBEROS_VERSION
-telnetd_PROPS=$KERBEROS_VERSION
-
-# PAM enabled services.
-
-ftpd_PROPS="${ftpd_PROPS:+$ftpd_PROPS }${FTPD_LIBPAM:+PAM}"
-rexecd_PROPS="${rexecd_PROPS:+$rexecd_PROPS }${LIBPAM:+PAM}"
-rlogind_PROPS="${rlogind_PROPS:+$rlogind_PROPS }${LIBPAM:+PAM}"
-rshd_PROPS="${rshd_PROPS:+$rshd_PROPS }${LIBPAM:+PAM}"
-
-# Support for libwrap.
-
-ftpd_PROPS="${ftpd_PROPS:+$ftpd_PROPS }$LIBWRAP"
-rlogind_PROPS="${rlogind_PROPS:+$rlogind_PROPS }$LIBWRAP"
-
 # Support for libidn.
-
 idn_link=`expr X"$LIBIDN" : '.*-l\(idn2*\)'`
-
-ftp_PROPS="${ftp_PROPS:+$ftp_PROPS }${LIBIDN:+$idn_link}"
-ping_PROPS="${ping_PROPS:+$ping_PROPS }${LIBIDN:+$idn_link}"
-talk_PROPS="${talk_PROPS:+$talk_PROPS }${LIBIDN:+$idn_link}"
 telnet_PROPS="${telnet_PROPS:+$telnet_PROPS }${LIBIDN:+$idn_link}"
-tftp_PROPS="${tftp_PROPS:+$tftp_PROPS }${LIBIDN:+$idn_link}"
-traceroute_PROPS="${traceroute_PROPS:+$traceroute_PROPS }${LIBIDN:+$idn_link}"
 
 # Termcap variants.
-
 telnet_PROPS="${telnet_PROPS:+$telnet_PROPS }$LIBTERMCAP"
 telnetd_PROPS="${telnetd_PROPS:+$telnetd_PROPS }$LIBTERMCAP"
-
-# Readline variants.
-
-ftp_PROPS="${ftp_PROPS:+$ftp_PROPS }$LIBREADLINE"
-
-# Variants of libcurses.
-
-talk_PROPS="${talk_PROPS:+$talk_PROPS }$LIBCURSES"
 
 AC_OUTPUT

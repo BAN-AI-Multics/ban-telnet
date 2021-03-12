@@ -28,65 +28,6 @@ check_PROGRAMS = localhost readutmp runtime-ipv6 test-snprintf waitdaemon
 
 dist_check_SCRIPTS = utmp.sh
 
-if ENABLE_inetd
-check_PROGRAMS += addrpeek tcpget
-endif
-
-if ENABLE_libls
-noinst_PROGRAMS += ls
-ls_LDADD = $(LIBLS) $(iu_LIBRARIES)
-dist_check_SCRIPTS += libls.sh
-endif
-
-if ENABLE_ping
-dist_check_SCRIPTS += ping-localhost.sh
-endif
-if ENABLE_traceroute
-dist_check_SCRIPTS += traceroute-localhost.sh
-endif
-if ENABLE_inetd
-if ENABLE_tftpd
-if ENABLE_tftp
-dist_check_SCRIPTS += tftp.sh
-endif
-endif
-endif
-if ENABLE_logger
-if ENABLE_syslogd
-dist_check_SCRIPTS += syslogd.sh
-endif
-endif
-
-if ENABLE_ftp
-dist_check_SCRIPTS += ftp-parser.sh
-endif
-
-if ENABLE_inetd
-if ENABLE_ftp
-if ENABLE_ftpd
-dist_check_SCRIPTS += ftp-localhost.sh
-endif
-endif
-endif
-
-if ENABLE_inetd
-if ENABLE_telnet
-dist_check_SCRIPTS += inetd.sh telnet-localhost.sh
-endif
-endif
-
-if ENABLE_hostname
-dist_check_SCRIPTS += hostname.sh
-endif
-
-if ENABLE_dnsdomainname
-dist_check_SCRIPTS += dnsdomainname.sh
-endif
-
-if ENABLE_ifconfig
-dist_check_SCRIPTS += ifconfig.sh
-endif
-
 TESTS = localhost test-snprintf waitdaemon $(dist_check_SCRIPTS)
 
 TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT)

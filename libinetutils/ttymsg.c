@@ -99,6 +99,7 @@ ttymsg (struct iovec *iov, int iovcnt, char *line, int tmout)
     {
       /* An attempt to break security... */
       snprintf (errbuf, sizeof (errbuf), "bad line name: %s", line);
+	  free(device);
       return (errbuf);
     }
 
@@ -109,8 +110,9 @@ ttymsg (struct iovec *iov, int iovcnt, char *line, int tmout)
   fd = open (device, O_WRONLY | O_NONBLOCK, 0);
   if (fd < 0)
     {
-      if (errno == EBUSY || errno == EACCES)
-	return (NULL);
+      if (errno == EBUSY || errno == EACCES) {
+		  free (device);
+	return (NULL);}
       snprintf (errbuf, sizeof (errbuf), "%s: %s", device, strerror (errno));
       free (device);
       return errbuf;

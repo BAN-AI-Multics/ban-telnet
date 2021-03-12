@@ -163,7 +163,7 @@ localstat (void)
   if (tty_isbinaryin ())
     {
       if (his_want_state_is_wont (TELOPT_BINARY))
-	send_do (TELOPT_BINARY, 1);
+	send_dont (TELOPT_BINARY, 1);
     }
   else
     {
@@ -174,7 +174,7 @@ localstat (void)
   if (tty_isbinaryout ())
     {
       if (my_want_state_is_wont (TELOPT_BINARY))
-	send_will (TELOPT_BINARY, 1);
+	send_wont (TELOPT_BINARY, 1);
     }
   else
     {

@@ -71,22 +71,22 @@ int termdata;			/* Debugging flag */
 
 #ifdef	USE_TERMIO
 # ifndef VDISCARD
-cc_t termFlushChar;
+//cc_t termFlushChar;
 # endif
 # ifndef VLNEXT
-cc_t termLiteralNextChar;
+//cc_t termLiteralNextChar;
 # endif
 # ifndef VSUSP
-cc_t termSuspChar;
+//cc_t termSuspChar;
 # endif
 # ifndef VWERASE
-cc_t termWerasChar;
+//cc_t termWerasChar;
 # endif
 # ifndef VREPRINT
-cc_t termRprntChar;
+//cc_t termRprntChar;
 # endif
 # ifndef VSTART
-cc_t termStartChar;
+//cc_t termStartChar;
 # endif
 # ifndef VSTOP
 cc_t termStopChar;
@@ -98,7 +98,7 @@ cc_t termForw1Char;
 cc_t termForw2Char;
 # endif
 # ifndef VSTATUS
-cc_t termAytChar;
+//cc_t termAytChar;
 # endif
 #else
 cc_t termForw2Char;

@@ -29,11 +29,7 @@ AM_CPPFLAGS = \
 LDADD = \
 	$(top_builddir)/libtelnet/libtelnet.a \
 	$(iu_LIBRARIES) \
-	$(LIBTERMCAP) $(LIBUTIL) $(PTY_LIB) $(LIBCRYPT) $(LIBAUTH)
-
-if ENABLE_hstrerror
-LDADD += $(LIBRESOLV)
-endif
+	$(LIBTERMCAP) $(LIBUTIL) $(PTY_LIB)
 
 inetdaemondir = @inetdaemondir@
 
@@ -41,6 +37,6 @@ inetdaemon_PROGRAMS = $(telnetd_BUILD)
 
 EXTRA_PROGRAMS = telnetd
 
-telnetd_SOURCES = telnetd.c pty.c term.c utility.c state.c termstat.c slc.c
+telnetd_SOURCES = telnetd.c slc.c pty.c term.c utility.c state.c termstat.c
 
 noinst_HEADERS = telnetd.h

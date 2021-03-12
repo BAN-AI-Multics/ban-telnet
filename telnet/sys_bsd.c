@@ -217,11 +217,11 @@ TerminalSpecialChars (int c)
       sendsusp ();
       return (0);
     }
-  else if (c == termFlushChar)
-    {
-      xmitAO ();		/* Transmit Abort Output */
-      return 0;
-    }
+//  else if (c == termFlushChar)
+//    {
+//      xmitAO ();		/* Transmit Abort Output */
+//      return 0;
+//    }
   else if (!MODE_LOCAL_CHARS (globalmode))
     {
       if (c == termKillChar)
@@ -273,25 +273,25 @@ TerminalSaveState (void)
   new_tc = old_tc;
 
 # ifndef VDISCARD
-  termFlushChar = CONTROL ('O');
+//  termFlushChar = CONTROL ('O');
 # endif
 # ifndef VWERASE
-  termWerasChar = CONTROL ('W');
+//  termWerasChar = CONTROL ('W');
 # endif
 # ifndef VREPRINT
-  termRprntChar = CONTROL ('R');
+//  termRprntChar = CONTROL ('R');
 # endif
 # ifndef VLNEXT
-  termLiteralNextChar = CONTROL ('V');
+//  termLiteralNextChar = CONTROL ('V');
 # endif
 # ifndef VSTART
-  termStartChar = CONTROL ('Q');
+//  termStartChar = CONTROL ('Q');
 # endif
 # ifndef VSTOP
-  termStopChar = CONTROL ('S');
+//  termStopChar = CONTROL ('S');
 # endif
 # ifndef VSTATUS
-  termAytChar = CONTROL ('T');
+//  termAytChar = CONTROL ('T');
 # endif
 #endif /* USE_TERMIO */
 }
@@ -320,10 +320,10 @@ tcval (register int func)
 #ifdef	USE_TERMIO
     case SLC_FORW2:
       return (&termForw2Char);
-# ifdef	VDISCARD
-    case SLC_AO:
-      return (&termFlushChar);
-# endif
+//# ifdef	VDISCARD
+//    case SLC_AO:
+//      return (&termFlushChar);
+//# endif
 # ifdef	VSUSP
     case SLC_SUSP:
       return (&termSuspChar);
@@ -376,15 +376,15 @@ TerminalDefaultChars (void)
 # ifndef VLNEXT
   termLiteralNextChar = CONTROL ('V');
 # endif
-# ifndef VSTART
-  termStartChar = CONTROL ('Q');
-# endif
-# ifndef VSTOP
-  termStopChar = CONTROL ('S');
-# endif
-# ifndef VSTATUS
-  termAytChar = CONTROL ('T');
-# endif
+//# ifndef VSTART
+//  termStartChar = CONTROL ('Q');
+//# endif
+//# ifndef VSTOP
+//  termStopChar = CONTROL ('S');
+//# endif
+//# ifndef VSTATUS
+//  termAytChar = CONTROL ('T');
+//# endif
 #endif /* USE_TERMIO */
 }
 

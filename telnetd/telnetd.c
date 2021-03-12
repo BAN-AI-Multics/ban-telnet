@@ -606,8 +606,8 @@ telnetd_run (void)
   /* Continuing line mode support.  If client does not support
      real linemode, attempt to negotiate kludge linemode by sending
      the do timing mark sequence. */
-  if (lmodetype < REAL_LINEMODE)
-    send_do (TELOPT_TM, 1);
+//  if (lmodetype < REAL_LINEMODE)
+//    send_do (TELOPT_TM, 1);
 
   /* Pick up anything received during the negotiations */
   telrcv ();

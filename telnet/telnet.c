@@ -330,7 +330,7 @@ willoption (int option)
 	  /* Fall through */
 	case TELOPT_EOR:
 #endif /* defined(TN3270) */
-	case TELOPT_BINARY:
+//	case TELOPT_BINARY:
 	case TELOPT_SGA:
 	  settimer (modenegotiated);
 	  /* FALL THROUGH */
@@ -465,11 +465,11 @@ dooption (int option)
 #if defined TN3270
 	    case TELOPT_EOR:	/* end of record */
 #endif /* defined(TN3270) */
-	    case TELOPT_BINARY:	/* binary mode */
+//	    case TELOPT_BINARY:	/* binary mode */
 	    case TELOPT_NAWS:	/* window size */
-	    case TELOPT_TSPEED:	/* terminal speed */
+//	    case TELOPT_TSPEED:	/* terminal speed */
 	    case TELOPT_LFLOW:	/* local flow control */
-	    case TELOPT_TTYPE:	/* terminal type option */
+//	    case TELOPT_TTYPE:	/* terminal type option */
 	    case TELOPT_SGA:	/* no big deal */
 #ifdef	ENCRYPTION
 	    case TELOPT_ENCRYPT:	/* encryption variable option */
@@ -477,19 +477,19 @@ dooption (int option)
 	      new_state_ok = 1;
 	      break;
 
-	    case TELOPT_NEW_ENVIRON:	/* New environment variable option */
-#ifdef	OLD_ENVIRON
-	      if (my_state_is_will (TELOPT_OLD_ENVIRON))
-		send_wont (TELOPT_OLD_ENVIRON, 1);	/* turn off the old */
-	      goto env_common;
-	    case TELOPT_OLD_ENVIRON:	/* Old environment variable option */
-	      if (my_state_is_will (TELOPT_NEW_ENVIRON))
-		break;		/* Don't enable if new one is in use! */
-	    env_common:
-	      telopt_environ = option;
-#endif
-	      new_state_ok = 1;
-	      break;
+//	    case TELOPT_NEW_ENVIRON:	/* New environment variable option */
+//#ifdef	OLD_ENVIRON
+//	      if (my_state_is_will (TELOPT_OLD_ENVIRON))
+//		send_wont (TELOPT_OLD_ENVIRON, 1);	/* turn off the old */
+//	      goto env_common;
+//	    case TELOPT_OLD_ENVIRON:	/* Old environment variable option */
+//	      if (my_state_is_will (TELOPT_NEW_ENVIRON))
+//		break;		/* Don't enable if new one is in use! */
+//	    env_common:
+//	      telopt_environ = option;
+//#endif
+//	      new_state_ok = 1;
+//	      break;
 
 #if defined AUTHENTICATION
 	    case TELOPT_AUTHENTICATION:
@@ -498,21 +498,21 @@ dooption (int option)
 	      break;
 #endif
 
-	    case TELOPT_XDISPLOC:	/* X Display location */
-	      if (env_getvalue ("DISPLAY"))
-		new_state_ok = 1;
-	      break;
+//	    case TELOPT_XDISPLOC:	/* X Display location */
+//	      if (env_getvalue ("DISPLAY"))
+//		new_state_ok = 1;
+//	      break;
 
-	    case TELOPT_LINEMODE:
-#ifdef	KLUDGELINEMODE
-	      kludgelinemode = 0;
-	      send_do (TELOPT_SGA, 1);
-#endif
-	      set_my_want_state_will (TELOPT_LINEMODE);
-	      send_will (option, 0);
-	      set_my_state_will (TELOPT_LINEMODE);
-	      slc_init ();
-	      return;
+//	    case TELOPT_LINEMODE:
+//#ifdef	KLUDGELINEMODE
+//	      kludgelinemode = 0;
+//	      send_do (TELOPT_SGA, 1);
+//#endif
+//	      set_my_want_state_will (TELOPT_LINEMODE);
+//	      send_will (option, 0);
+//	      set_my_state_will (TELOPT_LINEMODE);
+//	      slc_init ();
+//	      return;
 
 	    case TELOPT_ECHO:	/* We're never going to echo... */
 	    default:
@@ -537,18 +537,18 @@ dooption (int option)
 	   * Handle options that need more things done after the
 	   * other side has acknowledged the option.
 	   */
-	  switch (option)
-	    {
-	    case TELOPT_LINEMODE:
-#ifdef	KLUDGELINEMODE
-	      kludgelinemode = 0;
-	      send_do (TELOPT_SGA, 1);
-#endif
-	      set_my_state_will (option);
-	      slc_init ();
-	      send_do (TELOPT_SGA, 0);
-	      return;
-	    }
+//	  switch (option)
+//	    {
+//	    case TELOPT_LINEMODE:
+//#ifdef	KLUDGELINEMODE
+//	      kludgelinemode = 0;
+//	      send_do (TELOPT_SGA, 1);
+//#endif
+//	      set_my_state_will (option);
+//	      slc_init ();
+//	      send_do (TELOPT_SGA, 0);
+//	      return;
+//	    }
 	}
     }
   set_my_state_will (option);
@@ -573,14 +573,14 @@ dontoption (int option)
 	  linemode = 0;		/* put us back to the default state */
 	  break;
 #ifdef	OLD_ENVIRON
-	case TELOPT_NEW_ENVIRON:
+//	case TELOPT_NEW_ENVIRON:
 	  /*
 	   * The new environ option wasn't recognized, try
 	   * the old one.
 	   */
-	  send_will (TELOPT_OLD_ENVIRON, 1);
-	  telopt_environ = TELOPT_OLD_ENVIRON;
-	  break;
+//	  send_will (TELOPT_OLD_ENVIRON, 1);
+//	  telopt_environ = TELOPT_OLD_ENVIRON;
+//	  break;
 #endif
 	}
       /* we always accept a DONT */
@@ -878,35 +878,35 @@ suboption (void)
 	    }
 	}
       break;
-    case TELOPT_TSPEED:
-      if (my_want_state_is_wont (TELOPT_TSPEED))
-	return;
-      if (SB_EOF ())
-	return;
-      if (SB_GET () == TELQUAL_SEND)
-	{
-	  long ospeed, ispeed;
-	  unsigned char temp[50];	/* Two six-digit integers plus 7.  */
-	  int len;
-
-	  TerminalSpeeds (&ispeed, &ospeed);
-
-	  snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%d,%d%c%c",
-		    IAC, SB, TELOPT_TSPEED, TELQUAL_IS,
-		    (int) ospeed, (int) ispeed,
-		    IAC, SE);
-	  len = strlen ((char *) temp + 4) + 4;	/* temp[3] is 0 ... */
-
-	  if (len < NETROOM ())
-	    {
-	      ring_supply_data (&netoring, temp, len);
-	      printsub ('>', temp + 2, len - 2);
-	    }
+//    case TELOPT_TSPEED:
+//      if (my_want_state_is_wont (TELOPT_TSPEED))
+//	return;
+//      if (SB_EOF ())
+//	return;
+//      if (SB_GET () == TELQUAL_SEND)
+//	{
+//	  long ospeed, ispeed;
+//	  unsigned char temp[50];	/* Two six-digit integers plus 7.  */
+//	  int len;
+//
+//	  TerminalSpeeds (&ispeed, &ospeed);
+//
+//	  snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%d,%d%c%c",
+//		    IAC, SB, TELOPT_TSPEED, TELQUAL_IS,
+//		    (int) ospeed, (int) ispeed,
+//		    IAC, SE);
+//	  len = strlen ((char *) temp + 4) + 4;	/* temp[3] is 0 ... */
+//
+//	  if (len < NETROOM ())
+//	    {
+//	      ring_supply_data (&netoring, temp, len);
+//	      printsub ('>', temp + 2, len - 2);
+//	    }
 /*@*/
-	  else
-	    printf ("lm_will: not enough room in buffer\n");
-	}
-      break;
+//	  else
+//	    printf ("lm_will: not enough room in buffer\n");
+//	}
+  //    break;
     case TELOPT_LFLOW:
       if (my_want_state_is_wont (TELOPT_LFLOW))
 	return;
@@ -933,109 +933,102 @@ suboption (void)
       setconnmode (0);
       break;
 
-    case TELOPT_LINEMODE:
-      if (my_want_state_is_wont (TELOPT_LINEMODE))
-	return;
-      if (SB_EOF ())
-	return;
-      switch (SB_GET ())
-	{
-	case WILL:
-	  lm_will (subpointer, SB_LEN ());
-	  break;
-	case WONT:
-	  lm_wont (subpointer, SB_LEN ());
-	  break;
-	case DO:
-	  lm_do (subpointer, SB_LEN ());
-	  break;
-	case DONT:
-	  lm_dont (subpointer, SB_LEN ());
-	  break;
-	case LM_SLC:
-	  slc (subpointer, SB_LEN ());
-	  break;
-	case LM_MODE:
-	  lm_mode (subpointer, SB_LEN (), 0);
-	  break;
-	default:
-	  break;
-	}
-      break;
+//    case TELOPT_LINEMODE:
+//      if (my_want_state_is_wont (TELOPT_LINEMODE))
+//	return;
+//      if (SB_EOF ())
+//	return;
+//      switch (SB_GET ())
+//	{
+//	case WILL:
+//	  lm_will (subpointer, SB_LEN ());
+//	  break;
+//	case WONT:
+//	  lm_wont (subpointer, SB_LEN ());
+//	  break;
+//	case DO:
+//	  lm_do (subpointer, SB_LEN ());
+//	  break;
+//	case DONT:
+//	  lm_dont (subpointer, SB_LEN ());
+//	  break;
+//	case LM_SLC:
+//	  slc (subpointer, SB_LEN ());
+//	  break;
+//	case LM_MODE:
+//	  lm_mode (subpointer, SB_LEN (), 0);
+//	  break;
+//	default:
+//	  break;
+//	}
+//      break;
 
-#ifdef	OLD_ENVIRON
-    case TELOPT_OLD_ENVIRON:
-#endif
-    case TELOPT_NEW_ENVIRON:
-      if (SB_EOF ())
-	return;
-      switch (SB_PEEK ())
-	{
-	case TELQUAL_IS:
-	case TELQUAL_INFO:
-	  if (my_want_state_is_dont (subchar))
-	    return;
-	  break;
-	case TELQUAL_SEND:
-	  if (my_want_state_is_wont (subchar))
-	    {
-	      return;
-	    }
-	  break;
-	default:
-	  return;
-	}
-      env_opt (subpointer, SB_LEN ());
-      break;
+//#ifdef	OLD_ENVIRON
+//    case TELOPT_OLD_ENVIRON:
+//#endif
+//    case TELOPT_NEW_ENVIRON:
+//      if (SB_EOF ())
+//	return;
+//      switch (SB_PEEK ())
+//	{
+//	case TELQUAL_IS:
+//	case TELQUAL_INFO:
+//	  if (my_want_state_is_dont (subchar))
+//	    return;
+//	  break;
+//	case TELQUAL_SEND:
+//	  if (my_want_state_is_wont (subchar))
+//	    {
+//	      return;
+//	    }
+//	  break;
+//default:
+//	return;
+//	}
+  //    env_opt (subpointer, SB_LEN ());
+    //  break;
 
-    case TELOPT_XDISPLOC:
-      if (my_want_state_is_wont (TELOPT_XDISPLOC))
-	return;
-      if (SB_EOF ())
-	return;
-      if (SB_GET () == TELQUAL_SEND)
-	{
-	  unsigned char temp[50], *dp;
-	  int len;
+//    case TELOPT_XDISPLOC:
+//      if (my_want_state_is_wont (TELOPT_XDISPLOC))
+//	return;
+//      if (SB_EOF ())
+//	return;
+//      if (SB_GET () == TELQUAL_SEND)
+//	{
+//	  unsigned char temp[50], *dp;
+//	  int len;
 
-	  if ((dp = env_getvalue ("DISPLAY")) == NULL)
-	    {
-	      /*
-	       * Something happened, we no longer have a DISPLAY
-	       * variable.  So, turn off the option.
-	       */
-	      send_wont (TELOPT_XDISPLOC, 1);
-	      break;
-	    }
+//	      send_wont (TELOPT_XDISPLOC, 1);
+//	      break;
 
 	  /* Remote host, and display server must not be corrupted
 	   * by truncation.  In addition, every character of telnet
 	   * protocol must remain unsevered.  Check that DP fits in
 	   * full within TEMP.  Otherwise report buffer error.
 	   */
-	  if (strlen ((char *) dp) >= sizeof (temp) - 4 - 2)
-	    {
-	      printf ("lm_will: not enough room in buffer\n");
-	      break;
-	    }
+//	  if (strlen ((char *) dp) >= sizeof (temp) - 4 - 2)
+//	    {
+//	      printf ("lm_will: not enough room in buffer\n");
+//	      break;
+//	    }
 
 	  /* Go ahead safely.  */
-	  snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%s%c%c",
-		    IAC, SB, TELOPT_XDISPLOC, TELQUAL_IS,
-		    dp,
-		    IAC, SE);
-	  len = strlen ((char *) temp + 4) + 4;	/* temp[3] is 0 ... */
+//	  snprintf ((char *) temp, sizeof (temp), "%c%c%c%c%s%c%c",
+//		    IAC, SB, TELOPT_XDISPLOC, TELQUAL_IS,
+//		    dp,
+//		    IAC, SE);
+//	  len = strlen ((char *) temp + 4) + 4;	/* temp[3] is 0 ... */
 
-	  if (len < NETROOM ())
-	    {
-	      ring_supply_data (&netoring, temp, len);
-	      printsub ('>', temp + 2, len - 2);
-	    }
+//	  if (len < NETROOM ())
+//	    {
+//	      ring_supply_data (&netoring, temp, len);
+//	      printsub ('>', temp + 2, len - 2);
+//	    }
 /*@*/
-	  else
-	    printf ("lm_will: not enough room in buffer\n");
-	}
-      break;
+//	  else
+//	    printf ("lm_will: not enough room in buffer\n");
+//	}
+  //    break;
 
 #if defined AUTHENTICATION
     case TELOPT_AUTHENTICATION:
@@ -1794,12 +1787,6 @@ env_opt_add (register unsigned char *ep)
 int
 opt_welldefined (char *ep)
 {
-  if ((strcmp (ep, "USER") == 0) ||
-      (strcmp (ep, "DISPLAY") == 0) ||
-      (strcmp (ep, "PRINTER") == 0) ||
-      (strcmp (ep, "SYSTEMTYPE") == 0) ||
-      (strcmp (ep, "JOB") == 0) || (strcmp (ep, "ACCT") == 0))
-    return (1);
   return (0);
 }
 
@@ -2476,17 +2463,22 @@ telnet (char *user)
       send_will (TELOPT_ENCRYPT, 1);
 # endif	/* ENCRYPTION */
       send_do (TELOPT_SGA, 1);
-      send_will (TELOPT_TTYPE, 1);
+	  send_dont (TELOPT_TTYPE, 1);
+      send_wont (TELOPT_TTYPE, 1);
       send_will (TELOPT_NAWS, 1);
-      send_will (TELOPT_TSPEED, 1);
+	  send_dont (TELOPT_TSPEED, 1);
+      send_wont (TELOPT_TSPEED, 1);
       send_will (TELOPT_LFLOW, 1);
-      send_will (TELOPT_LINEMODE, 1);
-      send_will (TELOPT_NEW_ENVIRON, 1);
+	  send_dont (TELOPT_LINEMODE, 1);
+      send_wont (TELOPT_LINEMODE, 1);
+	  send_dont (TELOPT_NEW_ENVIRON, 1);
+      send_wont (TELOPT_NEW_ENVIRON, 1);
       send_do (TELOPT_STATUS, 1);
-      if (env_getvalue ("DISPLAY"))
-	send_will (TELOPT_XDISPLOC, 1);
-      if (eight)
-	tel_enter_binary (eight);
+//      if (env_getvalue ("DISPLAY"))
+//	send_will (TELOPT_XDISPLOC, 1);
+	send_wont (TELOPT_XDISPLOC, 1);
+//      if (eight)
+	tel_leave_binary (eight);
     }
 #endif /* !defined(TN3270) */
 

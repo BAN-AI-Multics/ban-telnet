@@ -3,9 +3,6 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
-/* Define to one if you want authentication. */
-#undef AUTHENTICATION
-
 /* Define to the number of bits in type 'ptrdiff_t'. */
 #undef BITSIZEOF_PTRDIFF_T
 
@@ -21,7 +18,7 @@
 /* Define to the number of bits in type 'wint_t'. */
 #undef BITSIZEOF_WINT_T
 
-/* Define to 1 if the `closedir' function returns void instead of int. */
+/* Define to 1 if the `closedir' function returns void instead of `int'. */
 #undef CLOSEDIR_VOID
 
 /* Define to 1 if using 'alloca.c'. */
@@ -33,9 +30,6 @@
 
 /* Define as the word index where to find the exponent of 'double'. */
 #undef DBL_EXPBIT0_WORD
-
-/* Define to 1 if you have DES encryption */
-#undef DES_ENCRYPTION
 
 /* the name of the file descriptor member of DIR */
 #undef DIR_FD_MEMBER_NAME
@@ -52,9 +46,6 @@
 
 /* Define if struct dirent has a member d_ino that actually works. */
 #undef D_INO_IN_DIRENT
-
-/* Define to one if you want encryption. */
-#undef ENCRYPTION
 
 /* 1 */
 #undef EWOULDBLOCK
@@ -432,7 +423,8 @@
    may be supplied by this distribution. */
 #undef HAVE_ALLOCA
 
-/* Define to 1 if <alloca.h> works. */
+/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
+   */
 #undef HAVE_ALLOCA_H
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
@@ -449,12 +441,6 @@
 
 /* Define to 1 if you have the <arpa/tftp.h> header file. */
 #undef HAVE_ARPA_TFTP_H
-
-/* Define if you have weak "assembler" references */
-#undef HAVE_ASM_WEAK_REFS
-
-/* Define if you have weak "attribute" references */
-#undef HAVE_ATTR_WEAK_REFS
 
 /* Define to 1 if you have the <bcrypt.h> header file. */
 #undef HAVE_BCRYPT_H
@@ -480,17 +466,11 @@
 /* Define to 1 if you have the `closedir' function. */
 #undef HAVE_CLOSEDIR
 
-/* Define to 1 if you have the <com_err.h> header file. */
-#undef HAVE_COM_ERR_H
-
 /* Define to 1 if enctype_names[] must be const char. */
 #undef HAVE_CONST_CHAR_ENCTYPE_NAMES
 
 /* Define to 1 if you have the <crtdefs.h> header file. */
 #undef HAVE_CRTDEFS_H
-
-/* Define to 1 if you have the `crypt' function. */
-#undef HAVE_CRYPT
 
 /* Define to 1 if tgetent() exists in <term.h>. */
 #undef HAVE_CURSES_TGETENT
@@ -502,10 +482,6 @@
 /* Define to 1 if you have the declaration of `clearerr_unlocked', and to 0 if
    you don't. */
 #undef HAVE_DECL_CLEARERR_UNLOCKED
-
-/* Define to 1 if you have the declaration of `crypt', and to 0 if you don't.
-   */
-#undef HAVE_DECL_CRYPT
 
 /* Define to 1 if you have the declaration of `dirfd', and to 0 if you don't.
    */
@@ -675,10 +651,6 @@
    don't. */
 #undef HAVE_DECL_GETUTENT
 
-/* Define to 1 if you have the declaration of `hosts_ctl', and to 0 if you
-   don't. */
-#undef HAVE_DECL_HOSTS_CTL
-
 /* Define to 1 if you have the declaration of `htons', and to 0 if you don't.
    */
 #undef HAVE_DECL_HTONS
@@ -714,10 +686,6 @@
 /* Define to 1 if you have the declaration of `openpty', and to 0 if you
    don't. */
 #undef HAVE_DECL_OPENPTY
-
-/* Define to 1 if you have the declaration of `PAM_CONV_AGAIN', and to 0 if
-   you don't. */
-#undef HAVE_DECL_PAM_CONV_AGAIN
 
 /* Define to 1 if you have the declaration of `pclose', and to 0 if you don't.
    */
@@ -830,9 +798,6 @@
 /* Define to 1 if you have the declaration of `__fsetlocking', and to 0 if you
    don't. */
 #undef HAVE_DECL___FSETLOCKING
-
-/* Define to 1 if you have the <des.h> header file. */
-#undef HAVE_DES_H
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
@@ -1062,38 +1027,8 @@
 /* Define to 1 if you have the `iswctype' function. */
 #undef HAVE_ISWCTYPE
 
-/* Define to 1 if you have the <kerberosIV/des.h> header file. */
-#undef HAVE_KERBEROSIV_DES_H
-
-/* Define to 1 if you have the <kerberosIV/krb.h> header file. */
-#undef HAVE_KERBEROSIV_KRB_H
-
-/* Define to 1 if you have the <kerberosV/krb5.h> header file. */
-#undef HAVE_KERBEROSV_KRB5_H
-
 /* Define to 1 if you have the `killpg' function. */
 #undef HAVE_KILLPG
-
-/* Define to 1 if you have the <krb5/asn1.h> header file. */
-#undef HAVE_KRB5_ASN1_H
-
-/* Define to 1 if you have the <krb5/crc-32.h> header file. */
-#undef HAVE_KRB5_CRC_32_H
-
-/* Define to 1 if you have the <krb5/ext-proto.h> header file. */
-#undef HAVE_KRB5_EXT_PROTO_H
-
-/* Define to 1 if you have the <krb5.h> header file. */
-#undef HAVE_KRB5_H
-
-/* Define to 1 if you have the <krb5/krb5.h> header file. */
-#undef HAVE_KRB5_KRB5_H
-
-/* Define to 1 if you have the <krb5/los-proto.h> header file. */
-#undef HAVE_KRB5_LOS_PROTO_H
-
-/* Define to 1 if you have the <krb.h> header file. */
-#undef HAVE_KRB_H
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
@@ -1283,9 +1218,6 @@
 /* Define to 1 if you have the `posix_openpt' function. */
 #undef HAVE_POSIX_OPENPT
 
-/* Define if you have weak "pragma" references */
-#undef HAVE_PRAGMA_WEAK_REFS
-
 /* Define if program_invocation_name is defined */
 #undef HAVE_PROGRAM_INVOCATION_NAME
 
@@ -1451,9 +1383,6 @@
 /* Define to 1 if you have the <stdio_ext.h> header file. */
 #undef HAVE_STDIO_EXT_H
 
-/* Define to 1 if you have the <stdio.h> header file. */
-#undef HAVE_STDIO_H
-
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
@@ -1476,7 +1405,7 @@
 /* Define to 1 for a system using streams for ptys */
 #undef HAVE_STREAMSPTY
 
-/* Define if you have `strerror_r'. */
+/* Define to 1 if you have the `strerror_r' function. */
 #undef HAVE_STRERROR_R
 
 /* Define to 1 if you have the <strings.h> header file. */
@@ -1599,9 +1528,6 @@
 
 /* Define to 1 if `st_mtim.tv_usec' is member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_MTIM_TV_USEC
-
-/* Define to 1 if `th_u' is member of `struct tftphdr'. */
-#undef HAVE_STRUCT_TFTPHDR_TH_U
 
 /* Define to 1 if `ut_addr_v6' is member of `struct utmpx'. */
 #undef HAVE_STRUCT_UTMPX_UT_ADDR_V6
@@ -1933,9 +1859,6 @@
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
-/* 1 */
-#undef HAVE_WEAK_REFS
-
 /* Define to 1 if the compiler and linker support weak declarations of
    symbols. */
 #undef HAVE_WEAK_SYMBOLS
@@ -2014,26 +1937,8 @@
 /* Define HOST_NAME_MAX when <limits.h> does not define it. */
 #undef HOST_NAME_MAX
 
-/* Define to ICMP6_DST_UNREACH_NOTNEIGHBOR if not available */
-#undef ICMP6_DST_UNREACH_BEYONDSCOPE
-
 /* Define to one if you want IPv6. */
 #undef IPV6
-
-/* Define to IPV6_2292HOPLIMIT if not available */
-#undef IPV6_HOPLIMIT
-
-/* Define to IPV6_HOPLIMIT if not available */
-#undef IPV6_RECVHOPLIMIT
-
-/* Define to one if you have Kerberos */
-#undef KERBEROS
-
-/* Define to one if you have Kerberos IV */
-#undef KRB4
-
-/* Define to one if you have Kerberos V */
-#undef KRB5
 
 /* Define to 1 if lseek does not detect pipes. */
 #undef LSEEK_PIPE_BROKEN
@@ -2166,9 +2071,6 @@
 /* Define to 1 if setlocale (category, NULL) is multithread-safe. */
 #undef SETLOCALE_NULL_ONE_MTSAFE
 
-/* Define to 1 if you have Shishi */
-#undef SHISHI
-
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'sig_atomic_t'. */
 #undef SIG_ATOMIC_T_SUFFIX
@@ -2192,17 +2094,15 @@
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
    automatically deduced at runtime.
-	STACK_DIRECTION > 0 => grows toward higher addresses
-	STACK_DIRECTION < 0 => grows toward lower addresses
-	STACK_DIRECTION = 0 => direction of growth unknown */
+        STACK_DIRECTION > 0 => grows toward higher addresses
+        STACK_DIRECTION < 0 => grows toward lower addresses
+        STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
 
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 #undef STAT_MACROS_BROKEN
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
-   required in a freestanding environment). This macro is provided for
-   backward compatibility; new code need not use it. */
+/* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
 /* Define to 2 if missing */
@@ -2217,8 +2117,7 @@
 /* Define to 1 if strerror_r returns char *. */
 #undef STRERROR_R_CHAR_P
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. This
-   macro is obsolete. */
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Define to 1 if the type of the st_atim member of a struct stat is struct
@@ -2349,48 +2248,6 @@
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'wint_t'. */
 #undef WINT_T_SUFFIX
-
-/* Define to one if you can use iruserok. */
-#undef WITH_IRUSEROK
-
-/* Define to one if you can use iruserok_af. */
-#undef WITH_IRUSEROK_AF
-
-/* Define to one if you can use iruserok_sa. */
-#undef WITH_IRUSEROK_SA
-
-/* Define to one if you have -lls */
-#undef WITH_LIBLS
-
-/* Define to one if you use Linux-PAM. */
-#undef WITH_LINUX_PAM
-
-/* Define to one if you can use orcmd. */
-#undef WITH_ORCMD
-
-/* Define to one if you can use orcmd_af. */
-#undef WITH_ORCMD_AF
-
-/* Define to one if you have -lpam. */
-#undef WITH_PAM
-
-/* Define to one if you can use rcmd. */
-#undef WITH_RCMD
-
-/* Define to one if you can use rcmd_af. */
-#undef WITH_RCMD_AF
-
-/* Define to one if you can use rresvport_af. */
-#undef WITH_RRESVPORT_AF
-
-/* Define to one if you can use ruserok. */
-#undef WITH_RUSEROK
-
-/* Define to on if you can use ruserok_af. */
-#undef WITH_RUSEROK_AF
-
-/* Define to one if you have -lwrap and <tcpd.h>. */
-#undef WITH_WRAP
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -2882,7 +2739,7 @@
 /* Define to `long int' if <sys/types.h> does not define. */
 #undef off_t
 
-/* Define as a signed integer type capable of holding a process identifier. */
+/* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 
 /* Define as the type of the result of subtracting two pointers, if the system

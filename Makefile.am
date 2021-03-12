@@ -23,9 +23,7 @@ ACLOCAL_AMFLAGS = -I am -I m4
 EXTRA_DIST = paths ChangeLog.0 summary.sh.in CHECKLIST
 
 SUBDIRS = lib \
-	libinetutils libtelnet libicmp libls \
-	src telnet telnetd ftp ftpd talk talkd whois ping ifconfig \
-	tests
+	libinetutils libtelnet telnet telnetd
 
 DISTCLEANFILES = pathdefs.make paths.defs \
 	$(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION).tar.xz

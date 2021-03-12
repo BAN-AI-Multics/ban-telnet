@@ -51,9 +51,6 @@
 
 #include <arpa/telnet.h>
 
-#include <libtelnet/auth.h>
-#include <libtelnet/encrypt.h>
-
 #include <termios.h>
 
 #define obstack_chunk_alloc malloc

@@ -760,11 +760,11 @@ static struct togglelist Togglelist[] = {
    &autosynch,
    "send interrupt characters in urgent mode"},
 #if defined AUTHENTICATION
-  {"autologin",
-   "automatic sending of login and/or authentication info",
-   0,
-   &autologin,
-   "send login name and/or authentication information"},
+//  {"autologin",
+//   "automatic sending of login and/or authentication info",
+//   0,
+//   &autologin,
+//   "send login name and/or authentication information"},
   {"authdebug",
    "Toggle authentication debugging",
    auth_togdebug,
@@ -798,21 +798,21 @@ static struct togglelist Togglelist[] = {
    0,
    &skiprc,
    "skip reading of ~/.telnetrc file"},
-  {"binary",
-   "sending and receiving of binary data",
-   togbinary,
-   0,
-   0},
-  {"inbinary",
-   "receiving of binary data",
-   togrbinary,
-   0,
-   0},
-  {"outbinary",
-   "sending of binary data",
-   togxbinary,
-   0,
-   0},
+//  {"binary",
+//   "sending and receiving of binary data",
+//   togbinary,
+//   0,
+//   0},
+//  {"inbinary",
+//   "receiving of binary data",
+//   togrbinary,
+//   0,
+//   0},
+//  {"outbinary",
+//   "sending of binary data",
+//   togxbinary,
+//   0,
+//   0},
   {"crlf",
    "sending carriage returns as telnet <CR><LF>",
    togcrlf,
@@ -823,12 +823,12 @@ static struct togglelist Togglelist[] = {
    0,
    &crmod,
    "map carriage return on output"},
-  {"localchars",
-   "local recognition of certain control characters",
-   lclchars,
-   &localchars,
-   "recognize certain control characters"},
-  {" ", "", 0, NULL, NULL},			/* empty line */
+//  {"localchars",
+//   "local recognition of certain control characters",
+//   lclchars,
+//   &localchars,
+//   "recognize certain control characters"},
+//  {" ", "", 0, NULL, NULL},			/* empty line */
 #if (defined unix || defined __unix || defined __unix__) && defined TN3270
   {"apitrace",
    "(debugging) toggle tracing of API transactions",
@@ -890,7 +890,7 @@ togglehelp (void)
 	    printf ("\n");
 	}
     }
-  printf ("\n");
+//  printf ("\n");
   printf ("%-15s %s\n", "?", "display help information");
   return 0;
 }
@@ -988,28 +988,28 @@ static struct setlist Setlist[] = {
   {"echo", "character to toggle local echoing on/off", 0, &echoc},
 #endif
   {"escape", "character to escape back to telnet command mode", 0, &escape},
-  {"rlogin", "rlogin escape character", 0, &rlogin},
+//  {"rlogin", "rlogin escape character", 0, &rlogin},
   {"tracefile", "file to write trace information to", SetNetTrace,
    (cc_t *) NetTraceFile},
-  {" ", "", 0, NULL},
-  {" ", "The following need 'localchars' to be toggled true", 0, 0},
-  {"flushoutput", "character to cause an Abort Output", 0, termFlushCharp},
+//  {" ", "", 0, NULL},
+//  {" ", "The following need 'localchars' to be toggled true", 0, 0},
+//  {"flushoutput", "character to cause an Abort Output", 0, termFlushCharp},
   {"interrupt", "character to cause an Interrupt Process", 0, termIntCharp},
   {"quit", "character to cause an Abort process", 0, termQuitCharp},
   {"eof", "character to cause an EOF ", 0, termEofCharp},
-  {" ", "", 0, NULL},
-  {" ", "The following are for local editing in linemode", 0, 0},
-  {"erase", "character to use to erase a character", 0, termEraseCharp},
-  {"kill", "character to use to erase a line", 0, termKillCharp},
-  {"lnext", "character to use for literal next", 0, termLiteralNextCharp},
-  {"susp", "character to cause a Suspend Process", 0, termSuspCharp},
-  {"reprint", "character to use for line reprint", 0, termRprntCharp},
-  {"worderase", "character to use to erase a word", 0, termWerasCharp},
-  {"start", "character to use for XON", 0, termStartCharp},
-  {"stop", "character to use for XOFF", 0, termStopCharp},
-  {"forw1", "alternate end of line character", 0, termForw1Charp},
-  {"forw2", "alternate end of line character", 0, termForw2Charp},
-  {"ayt", "alternate AYT character", 0, termAytCharp},
+//  {" ", "", 0, NULL},
+//  {" ", "The following are for local editing in linemode", 0, 0},
+//  {"erase", "character to use to erase a character", 0, termEraseCharp},
+//  {"kill", "character to use to erase a line", 0, termKillCharp},
+//  {"lnext", "character to use for literal next", 0, termLiteralNextCharp},
+//  {"susp", "character to cause a Suspend Process", 0, termSuspCharp},
+//  {"reprint", "character to use for line reprint", 0, termRprntCharp},
+//  {"worderase", "character to use to erase a word", 0, termWerasCharp},
+//  {"start", "character to use for XON", 0, termStartCharp},
+//  {"stop", "character to use for XOFF", 0, termStopCharp},
+//  {"forw1", "alternate end of line character", 0, termForw1Charp},
+//  {"forw2", "alternate end of line character", 0, termForw2Charp},
+//  {"ayt", "alternate AYT character", 0, termAytCharp},
   {NULL, NULL, 0, NULL}
 };
 
@@ -1023,7 +1023,7 @@ _setlist_init ()
 # else
 #  define N 6
 # endif
-  Setlist[N + 0].charp = &termFlushChar;
+//  Setlist[N + 0].charp = &termFlushChar;
   Setlist[N + 1].charp = &termIntChar;
   Setlist[N + 2].charp = &termQuitChar;
   Setlist[N + 3].charp = &termEofChar;
@@ -1031,13 +1031,13 @@ _setlist_init ()
   Setlist[N + 7].charp = &termKillChar;
   Setlist[N + 8].charp = &termLiteralNextChar;
   Setlist[N + 9].charp = &termSuspChar;
-  Setlist[N + 10].charp = &termRprntChar;
+//  Setlist[N + 10].charp = &termRprntChar;
   Setlist[N + 11].charp = &termWerasChar;
   Setlist[N + 12].charp = &termStartChar;
   Setlist[N + 13].charp = &termStopChar;
   Setlist[N + 14].charp = &termForw1Char;
   Setlist[N + 15].charp = &termForw2Char;
-  Setlist[N + 16].charp = &termAytChar;
+//  Setlist[N + 16].charp = &termAytChar;
 # undef	N
 }
 #endif /* defined(CRAY) && !defined(__STDC__) */
@@ -1080,7 +1080,7 @@ setcmd (int argc, char *argv[])
     {
       for (ct = Setlist; ct->name; ct++)
 	printf ("%-15s %s\n", ct->name, ct->help);
-      printf ("\n");
+//      printf ("\n");
       settogglehelp (1);
       printf ("%-15s %s\n", "?", "display help information");
       return 0;
@@ -1421,9 +1421,9 @@ display (int argc, char *argv[])
 
 #define dotog(tl)	if (tl->variable && tl->actionexplanation) { \
 			    if (*tl->variable) { \
-				printf("will"); \
+				printf("Will"); \
 			    } else { \
-				printf("won't"); \
+				printf("Won't"); \
 			    } \
 			    printf(" %s.\n", tl->actionexplanation); \
 			}
@@ -1441,7 +1441,7 @@ display (int argc, char *argv[])
 	{
 	  dotog (tl);
 	}
-      printf ("\n");
+//      printf ("\n");
       for (sl = Setlist; sl->name; sl++)
 	{
 	  doset (sl);
@@ -2856,7 +2856,7 @@ static char
   zhelp[] = "suspend telnet",
 #endif /* unix || __unix || __unix__ */
   shellhelp[] = "invoke a subshell",
-  envhelp[] = "change environment variables ('environ ?' for more)",
+//  envhelp[] = "change environment variables ('environ ?' for more)",
   modestring[] = "try to enter line or character mode ('mode ?' for more)";
 
 static int help (int argc, char **argv);
@@ -2865,7 +2865,7 @@ static Command cmdtab[] = {
   {"close", closehelp, bye, 1},
   {"logout", logouthelp, logoutcmd, 1},
   {"display", displayhelp, display, 0},
-  {"mode", modestring, modecmd, 0},
+//  {"mode", modestring, modecmd, 0},
   {"open", openhelp, tn, 0},
   {"quit", quithelp, quit, 0},
   {"send", sendhelp, sendcmd, 0},
@@ -2891,7 +2891,7 @@ static Command cmdtab[] = {
 #else
   {"!", shellhelp, shell, 0},
 #endif
-  {"environ", envhelp, env_cmd, 0},
+//  {"environ", envhelp, env_cmd, 0},
   {"?", helphelp, help, 0},
   {NULL, NULL, NULL, 0}
 };

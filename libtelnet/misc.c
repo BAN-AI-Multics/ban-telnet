@@ -52,8 +52,6 @@
 #include <stdio.h>
 #include <arpa/telnet.h>
 
-#include "auth.h"
-#include "encrypt.h"
 #include "misc.h"
 
 char *RemoteHostName;
