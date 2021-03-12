@@ -90,7 +90,7 @@ init_network (void)
 
 /*
  * Check to see if any out-of-band data exists on a socket (for
- * Telnet "synch" processing).
+ * TELNET "synch" processing).
  */
 
 int

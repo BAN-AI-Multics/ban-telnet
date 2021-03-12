@@ -184,7 +184,7 @@ ttyflush (int drop)
     }
   return n0 - n + 1;
 }
-
+
 
 /*
  * These routines decides on what the mode should be (based on the values

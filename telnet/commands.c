@@ -299,7 +299,7 @@ struct sendlist
   int nbyte;			/* Number of bytes to send this command */
   int what;			/* Character to be sent (<0 ==> special) */
 };
-
+
 
 static int
 send_esc (void),
@@ -308,24 +308,24 @@ send_docmd (char *),
 send_dontcmd (char *), send_willcmd (char *), send_wontcmd (char *);
 
 static struct sendlist Sendlist[] = {
-  {"ao", "Send Telnet Abort output", 1, 0, 0, 2, AO},
-  {"ayt", "Send Telnet 'Are You There'", 1, 0, 0, 2, AYT},
-  {"brk", "Send Telnet Break", 1, 0, 0, 2, BREAK},
+  {"ao", "Send TELNET Abort output", 1, 0, 0, 2, AO},
+  {"ayt", "Send TELNET 'Are You There'", 1, 0, 0, 2, AYT},
+  {"brk", "Send TELNET Break", 1, 0, 0, 2, BREAK},
   {"break", 0, 1, 0, 0, 2, BREAK},
-  {"ec", "Send Telnet Erase Character", 1, 0, 0, 2, EC},
-  {"el", "Send Telnet Erase Line", 1, 0, 0, 2, EL},
+  {"ec", "Send TELNET Erase Character", 1, 0, 0, 2, EC},
+  {"el", "Send TELNET Erase Line", 1, 0, 0, 2, EL},
   {"escape", "Send current escape character", 1, 0, send_esc, 1, 0},
-  {"ga", "Send Telnet 'Go Ahead' sequence", 1, 0, 0, 2, GA},
-  {"ip", "Send Telnet Interrupt Process", 1, 0, 0, 2, IP},
+  {"ga", "Send TELNET 'Go Ahead' sequence", 1, 0, 0, 2, GA},
+  {"ip", "Send TELNET Interrupt Process", 1, 0, 0, 2, IP},
   {"intp", 0, 1, 0, 0, 2, IP},
   {"interrupt", 0, 1, 0, 0, 2, IP},
   {"intr", 0, 1, 0, 0, 2, IP},
-  {"nop", "Send Telnet 'No operation'", 1, 0, 0, 2, NOP},
-  {"eor", "Send Telnet 'End of Record'", 1, 0, 0, 2, EOR},
-  {"abort", "Send Telnet 'Abort Process'", 1, 0, 0, 2, ABORT},
-  {"susp", "Send Telnet 'Suspend Process'", 1, 0, 0, 2, SUSP},
-  {"eof", "Send Telnet End of File Character", 1, 0, 0, 2, xEOF},
-  {"synch", "Perform Telnet 'Synch operation'", 1, 0, dosynch, 2, 0},
+  {"nop", "Send TELNET 'No operation'", 1, 0, 0, 2, NOP},
+  {"eor", "Send TELNET 'End of Record'", 1, 0, 0, 2, EOR},
+  {"abort", "Send TELNET 'Abort Process'", 1, 0, 0, 2, ABORT},
+  {"susp", "Send TELNET 'Suspend Process'", 1, 0, 0, 2, SUSP},
+  {"eof", "Send TELNET End of File Character", 1, 0, 0, 2, xEOF},
+  {"synch", "Perform TELNET 'Synch operation'", 1, 0, dosynch, 2, 0},
   {"getstatus", "Send request for STATUS", 1, 0, get_status, 6, 0},
   {"?", "Display send options", 0, 0, send_help, 0, 0},
   {"help", 0, 0, 0, send_help, 0, 0},
@@ -414,7 +414,7 @@ sendcmd (int argc, char **argv)
     {
       if ((s = GETSEND (argv[i])) == 0)
 	{
-	  fprintf (stderr, "Telnet 'send' error - argument disappeared!\n");
+	  fprintf (stderr, "TELNET 'send' error - argument disappeared!\n");
 	  quit ();
 	}
       if (s->handler)
@@ -554,7 +554,7 @@ send_help (void)
     }
   return (0);
 }
-
+
 /*
  * The following are the routines and data structures referred
  * to by the arguments to the "toggle" command.
@@ -593,11 +593,11 @@ togcrlf (void)
 {
   if (crlf)
     {
-      printf ("Will send carriage returns as telnet <CR><LF>.\n");
+      printf ("Will send carriage returns as TELNET <CR><LF>.\n");
     }
   else
     {
-      printf ("Will send carriage returns as telnet <CR><NUL>.\n");
+      printf ("Will send carriage returns as TELNET <CR><NUL>.\n");
     }
   return 1;
 }
@@ -814,7 +814,7 @@ static struct togglelist Togglelist[] = {
 //   0,
 //   0},
   {"crlf",
-   "sending carriage returns as telnet <CR><LF>",
+   "sending carriage returns as TELNET <CR><LF>",
    togcrlf,
    &crlf,
    0},
@@ -966,7 +966,7 @@ toggle (int argc, char *argv[])
     }
   return retval;
 }
-
+
 /*
  * The following perform the "set" command.
  */
@@ -987,7 +987,7 @@ static struct setlist Setlist[] = {
 #ifdef	KLUDGELINEMODE
   {"echo", "character to toggle local echoing on/off", 0, &echoc},
 #endif
-  {"escape", "character to escape back to telnet command mode", 0, &escape},
+  {"escape", "character to escape back to TELNET command mode", 0, &escape},
 //  {"rlogin", "rlogin escape character", 0, &rlogin},
   {"tracefile", "file to write trace information to", SetNetTrace,
    (cc_t *) NetTraceFile},
@@ -1055,12 +1055,12 @@ set_escape_char (char *s)
   if (rlogin != _POSIX_VDISABLE)
     {
       rlogin = (s && *s) ? special (s) : _POSIX_VDISABLE;
-      printf ("Telnet rlogin escape character is '%s'.\n", control (rlogin));
+      printf ("TELNET rlogin escape character is '%s'.\n", control (rlogin));
     }
   else
     {
       escape = (s && *s) ? special (s) : _POSIX_VDISABLE;
-      printf ("Telnet escape character is '%s'.\n", control (escape));
+      printf ("TELNET escape character is '%s'.\n", control (escape));
     }
 }
 
@@ -1234,7 +1234,7 @@ unsetcmd (int argc, char *argv[])
     }
   return 1;
 }
-
+
 /*
  * The following are the data structures and routines for the
  * 'mode' command.
@@ -1407,7 +1407,7 @@ modecmd (int argc, char *argv[])
     }
   return 0;
 }
-
+
 /*
  * The following data structures and routines implement the
  * "display" command.
@@ -1486,7 +1486,7 @@ display (int argc, char *argv[])
 #undef	doset
 #undef	dotog
 }
-
+
 /*
  * The following are the data structures, and many of the routines,
  * relating to command processing.
@@ -1668,7 +1668,7 @@ logoutcmd (void)
   netflush ();
   return 1;
 }
-
+
 
 /*
  * The SLC command.
@@ -1748,7 +1748,7 @@ slccmd (int argc, char **argv)
   slcstate ();
   return 1;
 }
-
+
 /*
  * The ENVIRON command.
  */
@@ -2001,7 +2001,7 @@ env_send (const char *var)
     )
     {
       fprintf (stderr,
-	       "Cannot send '%s': Telnet ENVIRON option not enabled\n", var);
+	       "Cannot send '%s': TELNET ENVIRON option not enabled\n", var);
       return;
     }
   ep = env_find (var);
@@ -2797,24 +2797,24 @@ tn (int argc, char *argv[])
   free (hosttmp);
 #endif
 
-  if (autologin && user == NULL)
-    {
-      struct passwd *pw;
+//  if (autologin && user == NULL)
+//    {
+//      struct passwd *pw;
 
-      user = getenv ("USER");
-      if (user == NULL || ((pw = getpwnam (user)) && pw->pw_uid != getuid ()))
-	{
-	  if ((pw = getpwuid (getuid ())))
-	    user = pw->pw_name;
-	  else
-	    user = NULL;
-	}
-    }
-  if (user)
-    {
-      env_define ("USER", (unsigned char *) user);
-      env_export ("USER");
-    }
+//      user = getenv ("USER");
+//      if (user == NULL || ((pw = getpwnam (user)) && pw->pw_uid != getuid ()))
+//	{
+//	  if ((pw = getpwuid (getuid ())))
+//	    user = pw->pw_name;
+//	  else
+//	    user = NULL;
+//	}
+//    }
+//  if (user)
+  //  {
+    //  env_define ("USER", (unsigned char *) user);
+     // env_export ("USER");
+//    }
   call (status, "status", "notmuch", 0);
   err = 0;
   if (setjmp (peerdied) == 0)
@@ -3032,7 +3032,7 @@ command (int top, char *tbuf, int cnt)
 #endif /* defined(TN3270) */
     }
 }
-
+
 /*
  * Help command.
  */

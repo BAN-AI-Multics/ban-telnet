@@ -92,7 +92,7 @@
 #if defined AUTHENTICATION || defined ENCRYPTION
 # include <libtelnet/misc.h>
 #endif
-
+
 
 #define strip(x) ((my_want_state_is_wont(TELOPT_BINARY)) ? ((x)&0x7f) : (x))
 
@@ -144,7 +144,7 @@ cc_t echoc;
 #endif
 
 /*
- * Telnet receiver states for fsm
+ * TELNET receiver states for fsm
  */
 #define TS_DATA		0
 #define TS_IAC		1
@@ -179,11 +179,11 @@ int kludgelinemode = 1;
  */
 
 Clocks clocks;
-
-
+
+
 
 /*
- * Initialize telnet environment.
+ * Initialize TELNET environment.
  */
 
 void
@@ -212,7 +212,7 @@ init_telnet (void)
   flushline = 1;
   telrcv_state = TS_DATA;
 }
-
+
 /*
  * These routines are in charge of sending option negotiations
  * to the other side.
@@ -1252,7 +1252,7 @@ lm_mode (unsigned char *cmd, int len, int init)
     printf ("lm_mode: not enough room in buffer\n");
   setconnmode (0);		/* set changed mode */
 }
-
+
 
 
 /*
@@ -1819,7 +1819,7 @@ env_opt_end (register int emptyok)
       opt_reply = opt_replyp = opt_replyend = NULL;
     }
 }
-
+
 
 
 int
@@ -2337,7 +2337,7 @@ telsnd (void)
     ring_consumed (&ttyiring, count);
   return returnValue || count;	/* Non-zero if we did anything */
 }
-
+
 /*
  * Scheduler()
  *
@@ -2433,7 +2433,7 @@ Scheduler (int block)
     }
   return returnValue;
 }
-
+
 /*
  * Select from tty and network...
  */
@@ -2560,7 +2560,7 @@ telnet (char *user)
     }
 #endif /* !defined(TN3270) */
 }
-
+
 #if 0				/* XXX - this not being in is a bug */
 /*
  * nextitem()
@@ -2670,9 +2670,9 @@ netclear (void)
 
 #endif /* 0 */
 }
-
+
 /*
- * These routines add various telnet commands to the data stream.
+ * These routines add various TELNET commands to the data stream.
  */
 
 static void

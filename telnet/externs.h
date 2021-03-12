@@ -127,7 +127,7 @@ extern int autologin,		/* Autologin enabled */
   connected,			/* Are we connected to the other side? */
   globalmode,			/* Mode tty should be in */
   In3270,			/* Are we in 3270 mode? */
-  telnetport,			/* Are we connected to the telnet port? */
+  telnetport,			/* Are we connected to the TELNET port? */
   localflow,			/* Flow control handled locally */
   restartany,			/* If flow control, restart output on any character */
   localchars,			/* we recognize interrupt/quit */
@@ -138,7 +138,7 @@ extern int autologin,		/* Autologin enabled */
   crlf,				/* Should '\r' be mapped to <CR><LF> (or <CR><NUL>)? */
   autoflush,			/* flush output when interrupting? */
   autosynch,			/* send interrupt characters with SYNCH? */
-  SYNCHing,			/* Is the stream in telnet SYNCH mode? */
+  SYNCHing,			/* Is the stream in TELNET SYNCH mode? */
   donebinarytoggle,		/* the user has put us in binary */
   dontlecho,			/* do we suppress local echoing right now? */
   crmod, netdata,		/* Print out network data flow */

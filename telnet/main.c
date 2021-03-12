@@ -103,7 +103,7 @@ tninit (void)
   init_3270 ();
 #endif
 }
-
+
 int family = 0;
 char *user;
 #ifdef	FORWARD
@@ -328,7 +328,7 @@ static struct argp argp =
   { argp_options, parse_opt, args_doc, doc, NULL, NULL, NULL };
 
 
-
+
 /*
  * main.  Parse arguments, invoke the protocol or command parser.
  */

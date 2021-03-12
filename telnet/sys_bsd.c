@@ -936,7 +936,7 @@ NetSetPgrp (int fd)
   fcntl (fd, F_SETOWN, myPid);
 }
 #endif /*defined(TN3270) */
-
+
 /*
  * Various signal handling routines.
  */
@@ -1009,7 +1009,7 @@ ayt (int sig _GL_UNUSED_PARAMETER)
     ayt_status ();
 }
 #endif
-
+
 
 void
 sys_telnet_init (void)
@@ -1193,7 +1193,7 @@ process_rings (int netin, int netout, int netex, int ttyin, int ttyout,
        * OOB indication and data handling in the kernel
        * is such that if two separate TCP Urgent requests
        * come in, one byte of TCP data will be overlaid.
-       * This is fatal for Telnet, but we try to live
+       * This is fatal for TELNET, but we try to live
        * with it.
        *
        * In addition, in 4.2 (and...), a special protocol
