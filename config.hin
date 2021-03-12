@@ -747,10 +747,6 @@
    don't. */
 #undef HAVE_DECL_STRNLEN
 
-/* Define to 1 if you have the declaration of `sys_siglist', and to 0 if you
-   don't. */
-#undef HAVE_DECL_SYS_SIGLIST
-
 /* Define to 1 if you have the declaration of `telcmds', and to 0 if you
    don't. */
 #undef HAVE_DECL_TELCMDS
@@ -2116,9 +2112,6 @@
 
 /* Define to 1 if strerror_r returns char *. */
 #undef STRERROR_R_CHAR_P
-
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
 
 /* Define to 1 if the type of the st_atim member of a struct stat is struct
    timespec. */
