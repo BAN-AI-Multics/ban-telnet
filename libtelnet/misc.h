@@ -54,4 +54,3 @@ extern char *ServerPrincipal;
 extern int ConnectedCount;
 extern int ReservedPort;
 
-#include "misc-proto.h"
