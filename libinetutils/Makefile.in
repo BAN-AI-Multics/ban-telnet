@@ -247,8 +247,8 @@ libinetutils_a_LIBADD =
 am_libinetutils_a_OBJECTS = argcv.$(OBJEXT) cleansess.$(OBJEXT) \
 	daemon.$(OBJEXT) defauthors.$(OBJEXT) if_index.$(OBJEXT) \
 	localhost.$(OBJEXT) logwtmpko.$(OBJEXT) setsig.$(OBJEXT) \
-	tftpsubs.$(OBJEXT) ttymsg.$(OBJEXT) \
-	utmp_init.$(OBJEXT) utmp_logout.$(OBJEXT)
+	tftpsubs.$(OBJEXT) ttymsg.$(OBJEXT) utmp_init.$(OBJEXT) \
+	utmp_logout.$(OBJEXT)
 libinetutils_a_OBJECTS = $(am_libinetutils_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -267,9 +267,8 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/argcv.Po ./$(DEPDIR)/cleansess.Po \
 	./$(DEPDIR)/daemon.Po ./$(DEPDIR)/defauthors.Po \
-	./$(DEPDIR)/if_index.Po \
-	./$(DEPDIR)/localhost.Po ./$(DEPDIR)/logwtmpko.Po \
-	./$(DEPDIR)/setsig.Po \
+	./$(DEPDIR)/if_index.Po ./$(DEPDIR)/localhost.Po \
+	./$(DEPDIR)/logwtmpko.Po ./$(DEPDIR)/setsig.Po \
 	./$(DEPDIR)/tftpsubs.Po ./$(DEPDIR)/ttymsg.Po \
 	./$(DEPDIR)/utmp_init.Po ./$(DEPDIR)/utmp_logout.Po
 am__mv = mv -f
@@ -1489,7 +1488,6 @@ AM_CPPFLAGS = \
 
 noinst_LIBRARIES = libinetutils.a
 noinst_HEADERS = argcv.h libinetutils.h tftpsubs.h
-
 EXTRA_DIST = logwtmp.c
 libinetutils_a_SOURCES = \
  argcv.c\
