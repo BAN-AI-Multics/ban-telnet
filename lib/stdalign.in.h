@@ -4,7 +4,7 @@
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -104,12 +104,13 @@
 #if !defined __STDC_VERSION__ || __STDC_VERSION__ < 201112
 # if defined __cplusplus && 201103 <= __cplusplus
 #  define _Alignas(a) alignas (a)
-# elif ((defined __APPLE__ && defined __MACH__                  \
-         ? 4 < __GNUC__ + (1 <= __GNUC_MINOR__)                 \
-         : __GNUC__ && !defined __ibmxl__)                      \
-        || (4 <= __clang_major__)                               \
-        || (__ia64 && (61200 <= __HP_cc || 61200 <= __HP_aCC))  \
-        || __ICC || 0x590 <= __SUNPRO_C || 0x0600 <= __xlC__)
+# elif (!defined __attribute__ \
+        && ((defined __APPLE__ && defined __MACH__ \
+             ? 4 < __GNUC__ + (1 <= __GNUC_MINOR__) \
+             : __GNUC__ && !defined __ibmxl__) \
+            || (4 <= __clang_major__) \
+            || (__ia64 && (61200 <= __HP_cc || 61200 <= __HP_aCC)) \
+            || __ICC || 0x590 <= __SUNPRO_C || 0x0600 <= __xlC__))
 #  define _Alignas(a) __attribute__ ((__aligned__ (a)))
 # elif 1300 <= _MSC_VER
 #  define _Alignas(a) __declspec (align (a))

@@ -6,7 +6,7 @@
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -70,7 +70,9 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 
 /* Preparations for including the standard GNU C Library header.  */
 
-# include <libc-config.h>
+# ifndef __attribute_maybe_unused__
+#  include <libc-config.h>
+# endif
 
 # include <stddef.h>
 

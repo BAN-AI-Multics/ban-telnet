@@ -80,7 +80,7 @@ version_etc_arn (FILE *stream,
   /* TRANSLATORS: Translate "(C)" to the copyright symbol
      (C-in-a-circle), if this symbol is available in the user's
      locale.  Otherwise, do not translate "(C)"; leave it as-is.  */
-  fprintf (stream, version_etc_copyright, _("©"), COPYRIGHT_YEAR);
+  fprintf (stream, version_etc_copyright, _("(C)"), COPYRIGHT_YEAR);
 
   fputs ("\n", stream);
 

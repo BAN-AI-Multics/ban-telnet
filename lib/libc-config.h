@@ -3,16 +3,16 @@
    Copyright 2017-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -33,9 +33,9 @@
 #include <config.h>
 
 /* On glibc this includes <features.h> and <sys/cdefs.h> and #defines
-   _FEATURES_H, __WORDSIZE, and __set_errno.  On FreeBSD 11 it
-   includes <sys/cdefs.h> which defines __nonnull.  Elsewhere it
-   is harmless.  */
+   _FEATURES_H, __WORDSIZE, and __set_errno.  On FreeBSD 11 and
+   DragonFlyBSD 5.9 it includes <sys/cdefs.h> which defines __nonnull.
+   Elsewhere it is harmless.  */
 #include <errno.h>
 
 /* From glibc <errno.h>.  */
