@@ -989,9 +989,6 @@
 /* Define to 1 if you have the `initgroups' function. */
 #undef HAVE_INITGROUPS
 
-/* Define to 1 if you have the `initsetproctitle' function. */
-#undef HAVE_INITSETPROCTITLE
-
 /* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
 #undef HAVE_INTMAX_T
 
@@ -1305,9 +1302,6 @@
 
 /* Define to 1 if you have the `setpgid' function. */
 #undef HAVE_SETPGID
-
-/* Define to 1 if you have the `setproctitle' function. */
-#undef HAVE_SETPROCTITLE
 
 /* Define to 1 if you have the `setregid' function. */
 #undef HAVE_SETREGID

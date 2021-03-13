@@ -310,11 +310,11 @@ AC_FUNC_MMAP
 AC_CHECK_FUNCS(cfsetspeed cgetent dirfd fchdir flock \
                fork fpathconf ftruncate \
                getcwd getmsg getpwuid_r getspnam getutxent getutxuser \
-               initgroups initsetproctitle killpg \
+               initgroups killpg \
                ptsname pututline pututxline \
                setegid seteuid setpgid setlogin \
                setsid setregid setreuid setresgid setresuid setutent_r \
-               sigaction sigvec strchr setproctitle tcgetattr tzset utimes \
+               sigaction sigvec strchr tcgetattr tzset utimes \
                utime uname \
                updwtmp updwtmpx vhangup wait3 wait4 __opendir2 \
 	       __rcmd_errstr __check_rhosts_file )

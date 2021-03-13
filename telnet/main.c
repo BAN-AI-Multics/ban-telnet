@@ -219,11 +219,11 @@ parse_opt (int key, char *arg, struct argp_state *state _GL_UNUSED_PARAMETER)
       rlogin = escape = _POSIX_VDISABLE;
       break;
 
-    case 'K':
-#ifdef	AUTHENTICATION
-      autologin = 0;
-#endif
-      break;
+//    case 'K':
+//#ifdef	AUTHENTICATION
+//      autologin = 0;
+//#endif
+//      break;
 
 //    case 'L':
 //      eight |= 2;		/* binary output only */
