@@ -268,7 +268,7 @@ localstat (void)
 	send_will (TELOPT_SGA, 1);
       send_will (TELOPT_ECHO, 1);
       linemode = uselinemode;
-//      goto done;
+      goto done;
     }
 
   /*
@@ -299,7 +299,7 @@ localstat (void)
    * Negotiate linemode on if pty state has changed to turn it on.
    * Send appropriate command and send along edit mode, then all done.
    */
-/*  if (uselinemode && !linemode)
+  if (uselinemode && !linemode)
     {
       if (lmodetype == KLUDGE_LINEMODE)
 	{
@@ -310,6 +310,7 @@ localstat (void)
 	  char data[8];
 
 	  send_do (TELOPT_LINEMODE, 1);
+	  /* send along edit modes */
 	  sprintf (data, "%c%c%c%c%c%c%c",
 		   IAC, SB, TELOPT_LINEMODE,
 		   LM_MODE, useeditmode,
@@ -323,27 +324,27 @@ localstat (void)
       linemode = uselinemode;
       goto done;
     }
-*/
+
   /*
    * None of what follows is of any value if not using
    * real linemode.
    */
-//  if (lmodetype < REAL_LINEMODE)
-  //  goto done;
+  if (lmodetype < REAL_LINEMODE)
+    goto done;
 
-//  if (linemode && his_state_is_will (TELOPT_LINEMODE))
- //   {
+  if (linemode && his_state_is_will (TELOPT_LINEMODE))
+    {
       /*
        * If edit mode changed, send edit mode.
        */
-  //    if (useeditmode != editmode)
-//	{
+      if (useeditmode != editmode)
+	{
 	  /*
 	   * Send along appropriate edit mode mask.
 	   */
-	//  char data[8];
+	  char data[8];
 
-/*	  sprintf (data, "%c%c%c%c%c%c%c",
+	  sprintf (data, "%c%c%c%c%c%c%c",
 		   IAC, SB, TELOPT_LINEMODE,
 		   LM_MODE, useeditmode,
 		   IAC, SE);
@@ -353,19 +354,19 @@ localstat (void)
 
 	  editmode = useeditmode;
 	}
-*/
+
 
       /*
        * Check for changes to special characters in use.
        */
-  //    start_slc (0);
-    //  check_slc ();
-    //  end_slc (0);
-   // }
+      start_slc (0);
+      check_slc ();
+      end_slc (0);
+    }
 
-//done:
- // if (need_will_echo)
-  //  send_will (TELOPT_ECHO, 1);
+done:
+  if (need_will_echo)
+    send_will (TELOPT_ECHO, 1);
   /*
    * Some things should be deferred until after the pty state has
    * been set by the local process.  Do those things that have been
@@ -478,7 +479,7 @@ clientstat (register int code, register int parm1, register int parm2)
 	  if (lmodetype == REAL_LINEMODE && uselinemode)
 	    if (uselinemode)
 	      {
-/*		char data[8];
+		char data[8];
 
 		useeditmode = 0;
 		if (tty_isediting ())
@@ -498,7 +499,7 @@ clientstat (register int code, register int parm1, register int parm2)
 		DEBUG (debug_options, 1,
 		       printsub ('>', data + 2, sizeof (data) - 2));
 
-		editmode = useeditmode; */
+		editmode = useeditmode;
 	      }
 
 
@@ -557,13 +558,13 @@ clientstat (register int code, register int parm1, register int parm2)
 	      {
 		char data[8];
 
-/*		sprintf (data, "%c%c%c%c%c%c%c",
+		sprintf (data, "%c%c%c%c%c%c%c",
 			 IAC, SB, TELOPT_LINEMODE,
 			 LM_MODE, useeditmode | MODE_ACK,
 			 IAC, SE);
 		net_output_datalen (data, sizeof (data));
 		DEBUG (debug_options, 1,
-		       printsub ('>', data + 2, sizeof (data) - 2)); */
+		       printsub ('>', data + 2, sizeof (data) - 2));
 	      }
 
 	    editmode = useeditmode;
