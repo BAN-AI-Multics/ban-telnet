@@ -188,13 +188,13 @@ add_slc (register char func, register char flag, register cc_t val)
 void
 start_slc (register int getit)
 {
-
+/*
   slcchange = 0;
   if (getit)
     init_termbuf ();
   sprintf ((char *) slcbuf, "%c%c%c%c", IAC, SB, TELOPT_LINEMODE, LM_SLC);
   slcptr = slcbuf + 4;
-
+*/
 }				/* end of start_slc */
 
 /*
@@ -222,7 +222,7 @@ end_slc (register unsigned char **bufp)
    * deferred slc request from the client, then do not send any
    * sort of slc negotiation now.  We will respond to the client's
    * request very soon.
-   */
+   */ /*
   if (def_slcbuf && (terminit () == 0))
     {
       return (0);
@@ -241,10 +241,10 @@ end_slc (register unsigned char **bufp)
 	  slcptr += 2;
 	  len = slcptr - slcbuf;
 	  net_output_datalen (slcbuf, len);
-	  netflush ();		/* force it out immediately */
-	  DEBUG (debug_options, 1, printsub ('>', slcbuf + 2, len - 2));
+	  netflush (); */		/* force it out immediately */
+/*	  DEBUG (debug_options, 1, printsub ('>', slcbuf + 2, len - 2));
 	}
-    }
+    } */
   return (0);
 
 }				/* end of end_slc */
