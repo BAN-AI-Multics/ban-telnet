@@ -2547,7 +2547,7 @@ tn (int argc, char *argv[])
 	  continue;
 	}
     usage:
-      printf ("usage: %s [-4] [-6] [-l user] [-a] host-name [port]\n", cmd);
+      printf ("usage: %s [-4] [-6] host-name [port]\n", cmd);
       return 0;
     }
   if (hostp == 0)
