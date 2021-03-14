@@ -664,7 +664,7 @@ netflush (void)
  */
 
 void
-fatal (int f, char *msg)
+fatalmsg (int f, char *msg)
 {
   char buf[BUFSIZ];
 
@@ -691,7 +691,7 @@ fatalperror (int f, char *msg)
   char buf[BUFSIZ];
 
   snprintf (buf, sizeof buf, "%s: %s", msg, strerror (errno));
-  fatal (f, buf);
+  fatalmsg (f, buf);
 }
 
 /* ************************************************************************* */

@@ -341,7 +341,7 @@ telnetd_setup (int fd)
 	errmsg = gai_strerror (err);
 
       syslog (LOG_AUTH | LOG_NOTICE, "Cannot get address: %s", errmsg);
-      fatal (fd, "Cannot get address.");
+      fatalmsg (fd, "Cannot get address.");
     }
 
   /* We use a second buffer so we don't have to call getnameinfo again
@@ -363,7 +363,7 @@ telnetd_setup (int fd)
 	    errmsg = gai_strerror (err);
 
 	  syslog (LOG_AUTH | LOG_NOTICE, "Can't resolve %s: %s", buf, errmsg);
-	  fatal (fd, "Cannot resolve address.");
+	  fatalmsg (fd, "Cannot resolve address.");
 	}
 
       remote_hostname = xstrdup (buf2);
@@ -380,7 +380,7 @@ telnetd_setup (int fd)
 
 	  syslog (LOG_AUTH | LOG_NOTICE, "Forward resolve of %s failed: %s",
 		  remote_hostname, errmsg);
-	  fatal (fd, "Cannot resolve address.");
+	  fatalmsg (fd, "Cannot resolve address.");
 	}
 
       for (aip = result; aip; aip = aip->ai_next)
@@ -407,7 +407,7 @@ telnetd_setup (int fd)
 	{
 	  syslog (LOG_AUTH | LOG_NOTICE,
 		  "No address of %s matched %s", remote_hostname, buf);
-	  fatal (fd, "Cannot resolve address.");
+	  fatalmsg (fd, "Cannot resolve address.");
 	}
 
       freeaddrinfo (result);
@@ -431,7 +431,7 @@ telnetd_setup (int fd)
 	  syslog (LOG_AUTH | LOG_NOTICE,
 		  "Can't resolve %s: %s",
 		  inet_ntoa (saddr.sin_addr), hstrerror (h_errno));
-	  fatal (fd, "Cannot resolve address.");
+	  fatalmsg (fd, "Cannot resolve address.");
 	}
 
       remote_hostname = xstrdup (hp->h_name);
@@ -442,7 +442,7 @@ telnetd_setup (int fd)
 	  syslog (LOG_AUTH | LOG_NOTICE,
 		  "Forward resolve of %s failed: %s",
 		  remote_hostname, hstrerror (h_errno));
-	  fatal (fd, "Cannot resolve address.");
+	  fatalmsg (fd, "Cannot resolve address.");
 	}
 
       for (ap = hp->h_addr_list; *ap; ap++)
@@ -454,7 +454,7 @@ telnetd_setup (int fd)
 	  syslog (LOG_AUTH | LOG_NOTICE,
 		  "No address of %s matched %s",
 		  remote_hostname, inet_ntoa (saddr.sin_addr));
-	  fatal (fd, "Cannot resolve address.");
+	  fatalmsg (fd, "Cannot resolve address.");
 	}
     }
   else

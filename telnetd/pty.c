@@ -49,7 +49,7 @@ startslave (char *host, int autologin, char *autoname)
 
   if (autologin < auth_level)
     {
-      fatal (net, "Authorization failed");
+      fatalmsg (net, "Authorization failed");
       exit (EXIT_FAILURE);
     }
 #else /* !AUTHENTICATION */
@@ -62,12 +62,12 @@ startslave (char *host, int autologin, char *autoname)
       if (errno == ENOENT)
 	{
 	  syslog (LOG_ERR, "Out of ptys");
-	  fatal (net, "Out of ptys");
+	  fatalmsg (net, "Out of ptys");
 	}
       else
 	{
 	  syslog (LOG_ERR, "forkpty: %m");
-	  fatal (net, "Forkpty");
+	  fatalmsg (net, "Forkpty");
 	}
     }
 
@@ -130,7 +130,7 @@ start_login (char *host, int autologin, char *name)
 
   cmd = expand_line (login_invocation);
   if (!cmd)
-    fatal (net, "can't expand login command line");
+    fatalmsg (net, "can't expand login command line");
   argcv_get (cmd, "", &argc, &argv);
   execv (argv[0], argv);
   syslog (LOG_ERR, "%s: %m\n", cmd);

@@ -206,7 +206,7 @@ typedef struct
 
 /* ******* */
 
-void fatal (int f, char *msg);
+void fatalmsg (int f, char *msg);
 
 /*
  * Linemode support states, in decreasing order of importance
@@ -333,7 +333,7 @@ extern void do_opt_slc (unsigned char *, int);
 extern void dooption (int);
 extern void dontoption (int);
 extern void edithost (char *, char *);
-extern void fatal (int, char *);
+extern void fatalmsg (int, char *);
 extern void fatalperror (int, char *);
 extern void get_slc_defaults (void);
 extern void localstat (void);
