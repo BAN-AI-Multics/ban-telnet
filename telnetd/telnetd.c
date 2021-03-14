@@ -687,9 +687,9 @@ telnetd_run (void)
 	      int newflow = (c & TIOCPKT_DOSTOP) ? 1 : 0;
 	      if (newflow != flowmode)
 		{
-		  char data[7];
+		  unsigned char data[7];
 
-		  sprintf (data, "%c%c%c%c%c%c",
+		  sprintf ((char *)data, "%c%c%c%c%c%c",
 			   IAC, SB, TELOPT_LFLOW,
 			   flowmode ? LFLOW_ON : LFLOW_OFF,
 			   IAC, SE);
