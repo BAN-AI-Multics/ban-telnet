@@ -1,0 +1,6 @@
+Makefile linguist-vendored
+.in linguist-vendored
+.am linguist-vendored
+.sh linguist-vendored
+.m4 linguist-vendored
+.tex linguist-vendored
